@@ -1,0 +1,61 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Iniciar sesión";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <h3 class="card-title text-center mb-4">
+                    <i class="bi bi-box-arrow-in-right"></i> Iniciar sesión
+                </h3>
+
+                <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+
+                <form asp-action="Login" method="post">
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" placeholder="nombre@ejemplo.com" autofocus />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-in-right"></i> Iniciar sesión
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center">
+                    <a asp-action="Register">¿No tenés cuenta? Registrate</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+               $(function () {
+         var summary = $('[data-valmsg-summary]');
+                   if (summary.find('li').length === 0) {
+           summary.closest('.alert').hide();
+          }
+              $('form').on('submit', function () {
+                 setTimeout(function () {
+          var sum = $('[data-valmsg-summary]');
+                 if (sum.find('li').length > 0) {
+           sum.closest('.alert').show();
+        }
+                }, 50);
+           });
+    </script>
+}

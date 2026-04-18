@@ -1,0 +1,104 @@
+@model ClienteViewModel
+@{
+    ViewData["Title"] = "Editar Cliente";
+    var clienteId = ViewData["ClienteId"];
+    var rutOriginal = ViewData["RutOriginal"]?.ToString();
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+     <div class="card shadow">
+        <div class="card-body p-4">
+   <h3 class="card-title mb-4">
+<i class="bi bi-pencil"></i> Editar Cliente
+ </h3>
+
+    <div asp-validation-summary="All" class="alert alert-danger" role="alert" style="display:none;"></div>
+
+  <form asp-action="Editar" asp-route-id="@clienteId" method="post">
+    <div class="row">
+    <div class="col-md-6 mb-3">
+           <label asp-for="Rut" class="form-label"></label>
+           <input asp-for="Rut" class="form-control" readonly
+     style="background-color: #e9ecef;" title="El RUT no se puede modificar" />
+       <span asp-validation-for="Rut" class="text-danger"></span>
+       </div>
+  <div class="col-md-6 mb-3">
+ <label asp-for="RazonSocial" class="form-label"></label>
+         <input asp-for="RazonSocial" class="form-control" autofocus />
+    <span asp-validation-for="RazonSocial" class="text-danger"></span>
+  </div>
+   </div>
+
+<div class="row">
+       <div class="col-md-6 mb-3">
+           <label asp-for="NombreFantasia" class="form-label"></label>
+          <input asp-for="NombreFantasia" class="form-control" />
+         </div>
+            <div class="col-md-6 mb-3">
+    <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+       </div>
+     </div>
+
+         <div class="row">
+     <div class="col-md-6 mb-3">
+       <label asp-for="Telefono" class="form-label"></label>
+     <input asp-for="Telefono" class="form-control" />
+   <span asp-validation-for="Telefono" class="text-danger"></span>
+    </div>
+  <div class="col-md-6 mb-3">
+      <label asp-for="TipoContribuyente" class="form-label"></label>
+       <select asp-for="TipoContribuyente" class="form-select">
+ <option value="">-- Seleccionar --</option>
+       <option value="CEDE">CEDE</option>
+           <option value="ResponsableIVA">Responsable IVA</option>
+      <option value="Monotributo">Monotributo</option>
+      <option value="LiteralE">Literal E</option>
+     <option value="NoAlcanzado">No Alcanzado</option>
+    <option value="Exento">Exento</option>
+  </select>
+        <span asp-validation-for="TipoContribuyente" class="text-danger"></span>
+          </div>
+           </div>
+
+      <div class="row">
+      <div class="col-md-6 mb-3">
+   <label asp-for="MonedaBase" class="form-label"></label>
+          <select asp-for="MonedaBase" class="form-select">
+           <option value="">-- Seleccionar --</option>
+    <option value="UYU">UYU (Peso Uruguayo)</option>
+        <option value="USD">USD (Dólar Estadounidense)</option>
+    </select>
+   <span asp-validation-for="MonedaBase" class="text-danger"></span>
+  </div>
+         </div>
+
+      <div class="d-flex gap-2">
+   <button type="submit" class="btn btn-primary">
+   <i class="bi bi-check-lg"></i> Guardar cambios
+       </button>
+   <a asp-action="Index" class="btn btn-outline-secondary">
+    <i class="bi bi-x-lg"></i> Cancelar
+         </a>
+           </div>
+            </form>
+       </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+ <partial name="_ValidationScriptsPartial" />
+  <script>
+ $(function () {
+       var alertDiv = $('.alert-danger');
+   alertDiv.each(function () {
+        if ($(this).text().trim().length > 0) {
+       $(this).show();
+     }
+   });
+    });
+    </script>
+}

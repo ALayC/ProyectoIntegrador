@@ -1,0 +1,46 @@
+﻿@{
+    ViewData["Title"] = "Inicio";
+    var nombreUsuario = User.Identity?.Name ?? "Usuario";
+    var rolUsuario = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+}
+
+<div class="row justify-content-center mt-4">
+  <div class="col-md-8">
+        <div class="text-center mb-4">
+     <h1 class="display-6">
+            <i class="bi bi-calculator"></i> Bienvenido, @nombreUsuario
+  </h1>
+     <p class="text-muted">
+  Rol: <span class="badge bg-primary">@rolUsuario</span>
+   </p>
+        </div>
+
+        <div class="row g-4">
+  <div class="col-md-6">
+     <div class="card shadow-sm h-100">
+      <div class="card-body text-center">
+     <i class="bi bi-people display-4 text-primary"></i>
+  <h5 class="card-title mt-3">Mis Clientes</h5>
+            <p class="card-text text-muted">Gestioná tu cartera de clientes: crear, editar y consultar.</p>
+  <a asp-controller="Clientes" asp-action="Index" class="btn btn-primary">
+      <i class="bi bi-arrow-right"></i> Ir a Clientes
+</a>
+    </div>
+       </div>
+            </div>
+
+  <div class="col-md-6">
+   <div class="card shadow-sm h-100">
+ <div class="card-body text-center">
+         <i class="bi bi-journal-text display-4 text-secondary"></i>
+      <h5 class="card-title mt-3">Próximamente</h5>
+  <p class="card-text text-muted">Asientos contables, reportes, importaciones y más.</p>
+         <button class="btn btn-outline-secondary" disabled>
+ <i class="bi bi-clock"></i> En desarrollo
+        </button>
+     </div>
+           </div>
+     </div>
+ </div>
+    </div>
+</div>
