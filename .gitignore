@@ -1,19 +1,113 @@
+## ===========================
 ## Visual Studio / .NET
+## ===========================
 bin/
 obj/
 .vs/
 *.user
 *.suo
+*.slnLaunch.user
 
-## Archivos de configuración local (cada dev tiene el suyo)
+## ===========================
+## Configuración local
+## (cada desarrollador tiene la suya)
+## ===========================
+
+# NO ignorar appsettings.json (tiene la estructura base)
+# SÍ ignorar el de Development (tiene datos locales de cada dev)
 **/appsettings.Development.json
 
-## Entity Framework migrations temporales
-## (NO ignorar la carpeta Migrations, sí commitearla)
+# Secretos de usuario de .NET (dotnet user-secrets)
+**/secrets.json
+**/.env
+**/.env.*
 
+# Certificados y claves privadas (NUNCA al repositorio)
+*.pfx
+*.p12
+*.cer
+*.key
+*.pem
+
+## ===========================
+## Entity Framework Core
+## ===========================
+# NO ignorar la carpeta Migrations/ — debe commitearse
+# SÍ ignorar snapshots temporales generados fuera del flujo normal
+*.Designer.cs.bak
+
+## ===========================
+## Resultados de tests
+## ===========================
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+*.trx
+
+## ===========================
+## Publicación y deploy
+## ===========================
+publish/
+*.pubxml
+*.pubxml.user
+/out/
+
+## ===========================
+## NuGet
+## ===========================
+*.nupkg
+*.snupkg
+packages/
+!**/packages/build/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## ===========================
+## Base de datos local
+## ===========================
+*.db
+*.db-shm
+*.db-wal
+*.mdf
+*.ldf
+*.bak
+
+## ===========================
 ## Logs
+## ===========================
 logs/
 *.log
+*.log.*
 
-## Publicación
-publish/
+## ===========================
+## Sistema operativo
+## ===========================
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+ehthumbs.db
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverrideI
+._*
+
+# Linux
+*~
+
+## ===========================
+## IDEs alternativos
+## ===========================
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/
+!.vscode/extensions.json
