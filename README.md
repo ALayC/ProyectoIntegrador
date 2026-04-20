@@ -39,12 +39,120 @@ Test  ──────────────────▶  Service  ──
 - Bootstrap (frontend)
 - JWT + OAuth 2.0 Google (autenticación)
 
-## Cómo ejecutar
+---
 
-Este proyecto requiere levantar dos procesos simultáneamente (API y UI):
+## 🚀 Guía de instalación y ejecución
 
-1. En Visual Studio: clic derecho en la solución → Properties → Startup Project → Multiple Startup Projects → poner **ProyectoIntegrador.API** y **ProyectoIntegrador.UI** ambos en "Start".
-2. Presionar F5 o Ctrl+F5.
+### Prerequisitos
+
+| Herramienta | Versión mínima | Descarga |
+|-------------|---------------|----------|
+| **Visual Studio 2022** | 17.8+ | [Descargar](https://visualstudio.microsoft.com/downloads/) |
+| **.NET 8 SDK** | 8.0 | [Descargar](https://dotnet.microsoft.com/download/dotnet/8.0) |
+| **SQL Server** | LocalDB, Express o Developer | Incluido con VS o [descargar Express](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) |
+
+> En Visual Studio Installer asegurarse de tener los workloads: **ASP.NET and web development** y **.NET desktop development**.
+
+### Paso 1 — Clonar el repositorio
+
+```bash
+git clone https://github.com/ALayC/ProyectoIntegrador.git
+cd ProyectoIntegrador
+```
+
+### Paso 2 — Abrir la solución
+
+Abrir `ProyectoIntegrador.sln` con Visual Studio 2022.  
+Los paquetes NuGet se restauran automáticamente. Si no, ejecutar:
+
+```bash
+dotnet restore
+```
+
+### Paso 3 — Configurar la conexión a SQL Server
+
+Editar `ProyectoIntegrador.API\appsettings.json` según tu instancia:
+
+**Windows Auth (por defecto):**
+```json
+"ConnectionStrings": {
+  "DefaultConnection": "Server=localhost;Database=ProyectoIntegrador;Trusted_Connection=true;TrustServerCertificate=true;"
+}
+```
+
+**LocalDB (viene con Visual Studio):**
+```json
+"ConnectionStrings": {
+  "DefaultConnection": "Server=(localdb)\\MSSQLLocalDB;Database=ProyectoIntegrador;Trusted_Connection=true;TrustServerCertificate=true;"
+}
+```
+
+**SQL Server con usuario/contraseña:**
+```json
+"ConnectionStrings": {
+  "DefaultConnection": "Server=localhost;Database=ProyectoIntegrador;User Id=sa;Password=TuPassword;TrustServerCertificate=true;"
+}
+```
+
+### Paso 4 — Crear la base de datos (ejecutar migraciones)
+
+**Opción A — Package Manager Console** (en Visual Studio → Herramientas → NuGet → Package Manager Console):
+
+```powershell
+Update-Database -Project ProyectoIntegrador.Data -StartupProject ProyectoIntegrador.API
+```
+
+**Opción B — Terminal:**
+
+```bash
+dotnet ef database update --project ProyectoIntegrador.Data --startup-project ProyectoIntegrador.API
+```
+
+> Si no tienen `dotnet ef` instalado:
+> ```bash
+> dotnet tool install --global dotnet-ef
+> ```
+
+### Paso 5 — Configurar múltiples proyectos de inicio
+
+1. Click derecho sobre la **Solución** → **Configure Startup Projects...**
+2. Seleccionar **Multiple startup projects**
+3. Poner en **Start**:
+   - `ProyectoIntegrador.API`
+   - `ProyectoIntegrador.UI`
+4. Aceptar
+
+### Paso 6 — Ejecutar
+
+Presionar **F5** (debug) o **Ctrl+F5** (sin debug). Se abrirán:
+
+| Proyecto | URL |
+|----------|-----|
+| **API** (Swagger) | `https://localhost:7225/swagger` |
+| **UI** (Frontend) | `https://localhost:7160` |
+
+### Paso 7 — Ejecutar los tests
+
+**Opción A — Visual Studio:** Menú Test → Run All Tests (Ctrl+R, A)
+
+**Opción B — Terminal:**
+
+```bash
+dotnet test
+```
+
+---
+
+## ⚠️ Solución de problemas comunes
+
+| Problema | Solución |
+|----------|----------|
+| Error de certificado HTTPS / `NET::ERR_CERT_INVALID` | Ejecutar `dotnet dev-certs https --trust` y reiniciar el navegador |
+| `Cannot open database "ProyectoIntegrador"` | Verificar que SQL Server esté corriendo y el connection string sea correcto |
+| `dotnet ef: command not found` | Ejecutar `dotnet tool install --global dotnet-ef` |
+| La UI no conecta con la API | Verificar que ambos proyectos estén corriendo y que los puertos en `appsettings.json` coincidan con `launchSettings.json` |
+
+---
 
 ## Convenciones de código
 
