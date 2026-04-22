@@ -40,14 +40,31 @@ builder.Services.AddAuthentication(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
-    ValidateIssuer = true,
+        ValidateIssuer = true,
     ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
+    ValidateLifetime = true,
+      ValidateIssuerSigningKey = true,
         ValidIssuer = jwtIssuer,
- ValidAudience = jwtAudience,
-    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey)),
-     ClockSkew = TimeSpan.Zero
+        ValidAudience = jwtAudience,
+   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey)),
+        ClockSkew = TimeSpan.Zero
+    };
+    options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+    {
+   OnTokenValidated = async context =>
+        {
+     var repo = context.HttpContext.RequestServices
+     .GetRequiredService<ITokenRevocadoRepository>();
+       var authHeader = context.HttpContext.Request.Headers.Authorization.ToString();
+ var token = authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+              ? authHeader["Bearer ".Length..].Trim()
+  : string.Empty;
+
+            if (!string.IsNullOrEmpty(token) && await repo.EstaRevocado(token))
+          {
+        context.Fail("Token revocado.");
+            }
+        }
     };
 });
 
