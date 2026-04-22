@@ -22,6 +22,7 @@ public class ClientesController : ControllerBase
     /// Obtiene los clientes del contador autenticado con paginación.
     /// </summary>
     [HttpGet]
+    [Authorize(Roles = "Administrador,Contador,Auxiliar Contable")]
     public async Task<IActionResult> ObtenerTodos(
         [FromQuery] int pagina = 1,
      [FromQuery] int cantidadPorPagina = 20)
@@ -35,6 +36,7 @@ public class ClientesController : ControllerBase
     /// Obtiene un cliente por su Id.
     /// </summary>
     [HttpGet("{id:guid}")]
+    [Authorize(Roles = "Administrador,Contador,Auxiliar Contable")]
     public async Task<IActionResult> ObtenerPorId(Guid id)
     {
         var resultado = await _clienteService.ObtenerPorId(id);
@@ -45,6 +47,7 @@ public class ClientesController : ControllerBase
     /// Crea un nuevo cliente. El contadorId se toma del JWT.
     /// </summary>
     [HttpPost]
+    [Authorize(Roles = "Administrador,Contador")]
     public async Task<IActionResult> Crear([FromBody] ClienteDto clienteDto)
     {
         var contadorId = ObtenerUsuarioIdDelToken();
@@ -56,6 +59,7 @@ public class ClientesController : ControllerBase
     /// Actualiza los datos de un cliente existente.
     /// </summary>
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Administrador,Contador")]
     public async Task<IActionResult> Actualizar(Guid id, [FromBody] ClienteDto clienteDto)
     {
         var usuarioId = ObtenerUsuarioIdDelToken();
@@ -67,6 +71,7 @@ public class ClientesController : ControllerBase
     /// Desactiva un cliente (soft delete).
     /// </summary>
     [HttpPatch("{id:guid}/desactivar")]
+    [Authorize(Roles = "Administrador,Contador")]
     public async Task<IActionResult> Desactivar(Guid id)
     {
         var usuarioId = ObtenerUsuarioIdDelToken();
