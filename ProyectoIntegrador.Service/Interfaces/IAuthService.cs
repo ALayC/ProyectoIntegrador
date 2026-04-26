@@ -8,4 +8,5 @@ public interface IAuthService
     Task<AuthResponseDto> Login(LoginDto loginDto);
     Task Logout(Guid usuarioId, string token);
     Task<AuthResponseDto> ObtenerUsuarioActual(Guid id);
+    Task<AuthResponseDto> LoginConGoogle(string? idToken, string? accessToken);
 }

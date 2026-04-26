@@ -30,9 +30,9 @@ public class ApiClient
     /// </summary>
     public async Task<ApiResponse<T>> GetAsync<T>(string url)
     {
-   var client = CrearClienteConToken();
+        var client = CrearClienteConToken();
         var response = await client.GetAsync(url);
-     return await ProcesarRespuesta<T>(response);
+        return await ProcesarRespuesta<T>(response);
     }
 
     /// <summary>
@@ -41,7 +41,7 @@ public class ApiClient
     public async Task<ApiResponse<T>> PostAsync<T>(string url, object data)
     {
         var client = CrearClienteConToken();
-  var content = SerializarContenido(data);
+        var content = SerializarContenido(data);
         var response = await client.PostAsync(url, content);
         return await ProcesarRespuesta<T>(response);
     }
@@ -54,7 +54,7 @@ public class ApiClient
         var client = CrearClienteConToken();
         var content = SerializarContenido(data);
         var response = await client.PutAsync(url, content);
-    return await ProcesarRespuesta<T>(response);
+        return await ProcesarRespuesta<T>(response);
     }
 
     /// <summary>
@@ -63,7 +63,7 @@ public class ApiClient
     public async Task<ApiResponse<object>> PatchAsync(string url)
     {
         var client = CrearClienteConToken();
-    var request = new HttpRequestMessage(HttpMethod.Patch, url);
+        var request = new HttpRequestMessage(HttpMethod.Patch, url);
         var response = await client.SendAsync(request);
         return await ProcesarRespuesta<object>(response);
     }
@@ -74,21 +74,21 @@ public class ApiClient
 
     private HttpClient CrearClienteConToken()
     {
-     var client = _httpClientFactory.CreateClient("API");
+        var client = _httpClientFactory.CreateClient("API");
         var token = _httpContextAccessor.HttpContext?.Session.GetString("JwtToken");
 
         if (!string.IsNullOrEmpty(token))
         {
-       client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
 
-   return client;
+        return client;
     }
 
     private static StringContent SerializarContenido(object data)
     {
         var json = JsonSerializer.Serialize(data, JsonOptions);
-   return new StringContent(json, Encoding.UTF8, "application/json");
+        return new StringContent(json, Encoding.UTF8, "application/json");
     }
 
     private static async Task<ApiResponse<T>> ProcesarRespuesta<T>(HttpResponseMessage response)
@@ -96,16 +96,16 @@ public class ApiClient
         var body = await response.Content.ReadAsStringAsync();
 
         if (response.IsSuccessStatusCode)
-    {
-       var data = string.IsNullOrWhiteSpace(body)
-    ? default
-           : JsonSerializer.Deserialize<T>(body, JsonOptions);
+        {
+            var data = string.IsNullOrWhiteSpace(body)
+         ? default
+                : JsonSerializer.Deserialize<T>(body, JsonOptions);
 
             return ApiResponse<T>.Ok(data);
         }
 
-   // Extraer mensaje de error del cuerpo de la API
-      var mensajeError = ExtraerMensajeError(body, response.StatusCode);
+        // Extraer mensaje de error del cuerpo de la API
+        var mensajeError = ExtraerMensajeError(body, response.StatusCode);
 
         return ApiResponse<T>.Error(mensajeError, response.StatusCode);
     }
@@ -114,31 +114,31 @@ public class ApiClient
     {
         if (string.IsNullOrWhiteSpace(body))
         {
-   return statusCode switch
-    {
-           HttpStatusCode.Unauthorized => "Su sesión ha expirado. Inicie sesión nuevamente.",
-         HttpStatusCode.Forbidden => "No tiene permisos para realizar esta operación.",
-    HttpStatusCode.NotFound => "El recurso solicitado no fue encontrado.",
-        _ => "Ocurrió un error inesperado."
-          };
-     }
-
-    try
-        {
-         using var doc = JsonDocument.Parse(body);
-    if (doc.RootElement.TryGetProperty("error", out var errorProp))
-       {
- return errorProp.GetString() ?? "Ocurrió un error inesperado.";
-         }
-            // Fallback: try "title" (ASP.NET validation errors)
-   if (doc.RootElement.TryGetProperty("title", out var titleProp))
-       {
-   return titleProp.GetString() ?? "Ocurrió un error inesperado.";
- }
+            return statusCode switch
+            {
+                HttpStatusCode.Unauthorized => "Su sesión ha expirado. Inicie sesión nuevamente.",
+                HttpStatusCode.Forbidden => "No tiene permisos para realizar esta operación.",
+                HttpStatusCode.NotFound => "El recurso solicitado no fue encontrado.",
+                _ => "Ocurrió un error inesperado."
+            };
         }
-    catch (JsonException)
- {
-      // Body is not valid JSON
+
+        try
+        {
+            using var doc = JsonDocument.Parse(body);
+            if (doc.RootElement.TryGetProperty("error", out var errorProp))
+            {
+                return errorProp.GetString() ?? "Ocurrió un error inesperado.";
+            }
+            // Fallback: try "title" (ASP.NET validation errors)
+            if (doc.RootElement.TryGetProperty("title", out var titleProp))
+            {
+                return titleProp.GetString() ?? "Ocurrió un error inesperado.";
+            }
+        }
+        catch (JsonException)
+        {
+            // Body is not valid JSON
         }
 
         return "Ocurrió un error inesperado.";
@@ -150,10 +150,10 @@ public class ApiClient
 /// </summary>
 public class ApiResponse<T>
 {
-  public bool EsExitoso { get; set; }
+    public bool EsExitoso { get; set; }
     public T? Data { get; set; }
     public string? MensajeError { get; set; }
-  public HttpStatusCode StatusCode { get; set; }
+    public HttpStatusCode StatusCode { get; set; }
 
     /// <summary>
     /// Indica si la API respondió 401 (sesión expirada).
@@ -162,15 +162,15 @@ public class ApiResponse<T>
 
     public static ApiResponse<T> Ok(T? data) => new()
     {
-    EsExitoso = true,
-   Data = data,
- StatusCode = HttpStatusCode.OK
+        EsExitoso = true,
+        Data = data,
+        StatusCode = HttpStatusCode.OK
     };
 
     public static ApiResponse<T> Error(string mensaje, HttpStatusCode statusCode) => new()
     {
         EsExitoso = false,
-      MensajeError = mensaje,
-  StatusCode = statusCode
+        MensajeError = mensaje,
+        StatusCode = statusCode
     };
 }
