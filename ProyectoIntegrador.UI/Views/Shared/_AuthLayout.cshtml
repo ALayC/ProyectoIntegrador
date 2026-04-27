@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Acceso</title>
+    <link href="~/tabler/css/tabler.min.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/tabler/css/tabler-vendors.min.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/site.css" rel="stylesheet" asp-append-version="true" />
+</head>
+<body class="sg-auth-body">
+    <div class="page page-center">
+        <div class="container container-tight py-5">
+            <div class="text-center mb-4">
+                <a asp-controller="Home" asp-action="Index" class="navbar-brand navbar-brand-autodark text-decoration-none fw-bold text-primary">
+                    SIG Contable
+                </a>
+                <div class="text-secondary mt-1">Sistema Integrado de Gestión Contable y Fiscal</div>
+            </div>
+
+            @RenderBody()
+
+            <div class="text-center text-secondary mt-4 small">
+                &copy; @DateTime.Now.Year - Estudio Contable Uruguay
+            </div>
+        </div>
+    </div>
+
+    <script src="~/tabler/js/tabler.min.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
