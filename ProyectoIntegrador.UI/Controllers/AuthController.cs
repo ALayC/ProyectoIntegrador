@@ -1,4 +1,5 @@
-using System.IdentityModel.Tokens.Jwt;
+Ôªøusing System.IdentityModel.Tokens.Jwt;
+using System.Net.Sockets;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -47,14 +48,14 @@ public class AuthController : Controller
 
         if (!response.EsExitoso || response.Data is null)
         {
-            ModelState.AddModelError(string.Empty, response.MensajeError ?? "Error al iniciar sesiÛn.");
+            ModelState.AddModelError(string.Empty, response.MensajeError ?? "Error al iniciar sesi√≥n.");
             return View(model);
         }
 
-        // Guardar JWT en sesiÛn
+        // Guardar JWT en sesi√≥n
         HttpContext.Session.SetString("JwtToken", response.Data.Token);
 
-        // Crear cookie de autenticaciÛn con claims
+        // Crear cookie de autenticaci√≥n con claims
         await CrearCookieDeAutenticacion(response.Data);
 
         return RedirectToAction("Index", "Home");
@@ -95,7 +96,7 @@ public class AuthController : Controller
             return View(model);
         }
 
-        TempData["Exito"] = "Cuenta creada exitosamente. Inici· sesiÛn.";
+        TempData["Exito"] = "Cuenta creada exitosamente. Inici√° sesi√≥n.";
         return RedirectToAction(nameof(Login));
     }
 
@@ -104,14 +105,71 @@ public class AuthController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
-        // Intentar notificar a la API (si falla, igualmente limpiar la sesiÛn local)
+        // Intentar notificar a la API (si falla, igualmente limpiar la sesi√≥n local)
         await _apiClient.PostAsync<object>("api/auth/logout", new { });
 
-        // Limpiar sesiÛn y cookie
+        // Limpiar sesi√≥n y cookie
         HttpContext.Session.Clear();
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
         return RedirectToAction(nameof(Login));
+    }
+
+    // ?? GET /Auth/LoginGoogle ??????????????????????
+    [HttpGet]
+    public IActionResult LoginGoogle()
+    {
+        var redirectUrl = Url.Action(nameof(GoogleCallback), "Auth");
+        var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+        return Challenge(properties, "Google");
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GoogleCallback()
+    {
+        var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+        if (!result.Succeeded || result.Principal is null)
+        {
+            ModelState.AddModelError(string.Empty, "Error al autenticar con Google.");
+            return View("Login");
+        }
+
+        // Log de debug
+        var tokens = result.Properties?.GetTokens()?.ToList() ?? new();
+        foreach (var t in tokens)
+        {
+            Console.WriteLine($"[GoogleCallback] Token: {t.Name} = {(string.IsNullOrEmpty(t.Value) ? "(vac√≠o)" : t.Value[..Math.Min(20, t.Value.Length)] + "...")}");
+        }
+
+        var idToken = result.Properties?.GetTokenValue("id_token");
+        var accessToken = result.Properties?.GetTokenValue("access_token");
+
+        Console.WriteLine($"[UI ‚Üí API] idToken length: {idToken?.Length ?? 0}");
+        Console.WriteLine($"[UI ‚Üí API] accessToken length: {accessToken?.Length ?? 0}");
+
+        if (string.IsNullOrEmpty(idToken) && string.IsNullOrEmpty(accessToken))
+        {
+            ModelState.AddModelError(string.Empty, "No se pudo obtener el token de Google.");
+            return View("Login");
+        }
+
+        var response = await _apiClient.PostAsync<AuthApiResponse>("api/auth/google-login", new
+        {
+            IdToken = idToken,
+            AccessToken = accessToken
+        });
+
+        if (!response.EsExitoso || response.Data is null)
+        {
+            ModelState.AddModelError(string.Empty, response.MensajeError ?? "Error al iniciar sesi√≥n con Google.");
+            return View("Login");
+        }
+
+        HttpContext.Session.SetString("JwtToken", response.Data.Token);
+        await CrearCookieDeAutenticacion(response.Data);
+
+        return RedirectToAction("Index", "Home");
     }
 
     // ??????????????????????????????????????????????
@@ -120,10 +178,10 @@ public class AuthController : Controller
     private async Task CrearCookieDeAutenticacion(AuthApiResponse authData)
     {
         var claims = new List<Claim>
-{
-  new(ClaimTypes.Name, authData.NombreCompleto),
-   new(ClaimTypes.Email, authData.Email),
-     new(ClaimTypes.Role, authData.Rol)
+        {
+            new(ClaimTypes.Name, authData.NombreCompleto),
+            new(ClaimTypes.Email, authData.Email),
+            new(ClaimTypes.Role, authData.Rol)
         };
 
         // Extraer el sub (userId) del JWT para guardarlo como claim
@@ -142,13 +200,13 @@ public class AuthController : Controller
         var principal = new ClaimsPrincipal(identity);
 
         await HttpContext.SignInAsync(
-           CookieAuthenticationDefaults.AuthenticationScheme,
-       principal,
-         new AuthenticationProperties
-         {
-             IsPersistent = false,
-             ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(60)
-         });
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            principal,
+            new AuthenticationProperties
+            {
+                IsPersistent = false,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(60)
+            });
     }
 
     /// <summary>
@@ -162,3 +220,5 @@ public class AuthController : Controller
         public string Rol { get; set; } = string.Empty;
     }
 }
+
+
