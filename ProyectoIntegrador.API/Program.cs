@@ -93,29 +93,66 @@ builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-    // Política global: 200 requests por minuto por IP
+    // Callback global: agrega el header Retry-After en toda respuesta 429
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+ context.HttpContext.Response.Headers.RetryAfter =
+        ((int)retryAfter.TotalSeconds).ToString();
+        }
+
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+await context.HttpContext.Response.WriteAsync(
+     "{\"error\":\"Demasiadas solicitudes. Intente nuevamente más tarde.\",\"codigo\":\"RATE_LIMIT_EXCEDIDO\",\"detalles\":[]}",
+
+            cancellationToken);
+    };
+
+    // Política global: 200 requests por minuto por usuario autenticado (o por IP como fallback)
     options.AddPolicy("global", context =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "desconocido",
-    factory: _ => new FixedWindowRateLimiterOptions
-            {
-            PermitLimit = 200,
-   Window = TimeSpan.FromMinutes(1),
-           QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-   QueueLimit = 0
-    }));
+    {
+        var usuarioId = context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+    ?? context.User?.FindFirst("sub")?.Value;
+
+        var partitionKey = !string.IsNullOrEmpty(usuarioId)
+         ? $"user:{usuarioId}"
+            : $"ip:{context.Connection.RemoteIpAddress?.ToString() ?? "desconocido"}";
+
+   return RateLimitPartition.GetFixedWindowLimiter(
+     partitionKey: partitionKey,
+            factory: _ => new FixedWindowRateLimiterOptions
+      {
+      PermitLimit = 200,
+        Window = TimeSpan.FromMinutes(1),
+   QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+       QueueLimit = 0
+   });
+    });
 
     // Política de login: 10 intentos cada 15 minutos por IP
     options.AddPolicy("login", context =>
-RateLimitPartition.GetFixedWindowLimiter(
-     partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "desconocido",
-            factory: _ => new FixedWindowRateLimiterOptions
+        RateLimitPartition.GetFixedWindowLimiter(
+          partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "desconocido",
+   factory: _ => new FixedWindowRateLimiterOptions
+   {
+       PermitLimit = 10,
+           Window = TimeSpan.FromMinutes(15),
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+     QueueLimit = 0
+            }));
+
+    // Política de registro: 5 intentos cada 15 minutos por IP
+ options.AddPolicy("register", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+       partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "desconocido",
+     factory: _ => new FixedWindowRateLimiterOptions
             {
-    PermitLimit = 10,
-    Window = TimeSpan.FromMinutes(15),
-    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
- QueueLimit = 0
-      }));
+ PermitLimit = 5,
+      Window = TimeSpan.FromMinutes(15),
+           QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+         QueueLimit = 0
+     }));
 });
 
 // ?? Inyección de dependencias: Repositorios ???
