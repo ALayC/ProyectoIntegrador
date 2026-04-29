@@ -4,11 +4,9 @@
     Layout = "_AuthLayout";
 }
 
-<div class="card card-md">
+<div class="card card-md sg-auth-card">
     <div class="card-body">
         <h2 class="h2 text-center mb-4">Iniciar sesión</h2>
-
-        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
 
         <form asp-action="Login" method="post" autocomplete="off" novalidate>
             <div class="mb-3">
@@ -24,14 +22,14 @@
             </div>
 
             <div class="form-footer mt-4">
-                <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+                <button type="submit" class="btn btn-azure w-100">Ingresar</button>
             </div>
         </form>
 
         <div class="hr-text my-4">o</div>
 
         <div class="d-grid">
-            <a href="/Auth/LoginGoogle" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2">
+            <a href="/Auth/LoginGoogle" class="btn btn-outline-azure d-flex align-items-center justify-content-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
                     <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
                     <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
@@ -46,26 +44,10 @@
 
     <div class="hr-text">¿No tenés cuenta?</div>
     <div class="card-body">
-        <a asp-action="Register" class="btn btn-outline-primary w-100">Crear cuenta</a>
+        <a asp-action="Register" class="btn btn-outline-azure w-100">Crear cuenta</a>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script>
-        $(function () {
-            var summary = $('[data-valmsg-summary]');
-            if (summary.find('li').length === 0) {
-                summary.closest('.alert').hide();
-            }
-            $('form').on('submit', function () {
-                setTimeout(function () {
-                    var sum = $('[data-valmsg-summary]');
-                    if (sum.find('li').length > 0) {
-                        sum.closest('.alert').show();
-                    }
-                }, 50);
-            });
-        });
-    </script>
 }

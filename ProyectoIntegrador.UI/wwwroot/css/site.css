@@ -2,6 +2,22 @@ html {
   font-size: 14px;
 }
 
+:root {
+  --sg-body-bg: #f4f7fb;
+  --sg-title-color: #1f2937;
+  --sg-text-dark: #1f2937;
+  --sg-text-muted: #4b5563;
+  --sg-azure-600: #206bc4;
+  --sg-azure-700: #1a5aa6;
+  --sg-azure-800: #174a8a;
+  --sg-sidebar-text: #eaf2ff;
+  --sg-auth-glow-1: rgba(32, 107, 196, 0.18);
+  --sg-auth-glow-2: rgba(32, 107, 196, 0.12);
+  --sg-auth-start: #eef4ff;
+  --sg-auth-end: #f8fbff;
+  --sg-muted-surface: #eef2f7;
+}
+
 @media (min-width: 768px) {
   html {
     font-size: 16px;
@@ -22,18 +38,20 @@ body {
 }
 
 .sg-body {
-  background-color: #f4f7fb;
+  background-color: var(--sg-body-bg);
+  color: var(--sg-text-dark);
 }
 
 .sg-sidebar {
-  background: linear-gradient(180deg, #0f3e78 0%, #0d2f5c 100%);
+  background: linear-gradient(180deg, var(--sg-azure-700) 0%, var(--sg-azure-800) 100%);
   border-right: 0;
+  width: 85%;
 }
 
 .sg-sidebar .navbar-brand,
 .sg-sidebar .nav-link,
 .sg-sidebar .nav-link-title {
-  color: #eaf2ff !important;
+  color: var(--sg-sidebar-text) !important;
 }
 
 .sg-sidebar .nav-link.active,
@@ -43,16 +61,13 @@ body {
 }
 
 .page-title {
-  color: #123b70;
+  color: var(--sg-title-color);
   font-weight: 700;
 }
 
 .sg-auth-body {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(47, 119, 228, 0.15), transparent 40%),
-    radial-gradient(circle at 80% 0%, rgba(16, 82, 170, 0.12), transparent 35%),
-    linear-gradient(160deg, #eef4ff 0%, #f8fbff 100%);
+  background: var(--sg-auth-start);
 }
 
 .sg-auth-card {
@@ -60,7 +75,7 @@ body {
 }
 
 .sg-auth-card .btn-primary {
-  background: linear-gradient(90deg, #1e63b8 0%, #2f77e4 100%);
+  background: linear-gradient(90deg, var(--sg-azure-700) 0%, var(--sg-azure-600) 100%);
   border: 0;
 }
 
