@@ -4,11 +4,9 @@
     Layout = "_AuthLayout";
 }
 
-<div class="card card-md">
+<div class="card card-md sg-auth-card">
     <div class="card-body">
         <h2 class="h2 text-center mb-4">Crear cuenta</h2>
-
-        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
 
         <form asp-action="Register" method="post" autocomplete="off" novalidate>
             <div class="mb-3">
@@ -36,34 +34,17 @@
             </div>
 
             <div class="form-footer mt-4">
-                <button type="submit" class="btn btn-primary w-100">Crear cuenta</button>
+                <button type="submit" class="btn btn-azure w-100">Crear cuenta</button>
             </div>
         </form>
     </div>
 
     <div class="hr-text">¿Ya tenés cuenta?</div>
     <div class="card-body">
-        <a asp-action="Login" class="btn btn-outline-primary w-100">Iniciar sesión</a>
+        <a asp-action="Login" class="btn btn-outline-azure w-100">Iniciar sesión</a>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script>
-        $(function () {
-            var summary = $('[data-valmsg-summary]');
-            if (summary.find('li').length === 0) {
-                summary.closest('.alert').hide();
-            }
-
-            $('form').on('submit', function () {
-                setTimeout(function () {
-                    var sum = $('[data-valmsg-summary]');
-                    if (sum.find('li').length > 0) {
-                        sum.closest('.alert').show();
-                    }
-                }, 50);
-            });
-        });
-    </script>
 }

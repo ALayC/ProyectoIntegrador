@@ -22,7 +22,7 @@ public class AuthController : ControllerBase
     /// Registra un nuevo usuario con rol Contador por defecto.
     /// </summary>
     [HttpPost("register")]
-    [EnableRateLimiting("login")]
+    [EnableRateLimiting("register")]
     public async Task<IActionResult> Register([FromBody] RegistroDto registroDto)
     {
         var resultado = await _authService.Registrar(registroDto);
