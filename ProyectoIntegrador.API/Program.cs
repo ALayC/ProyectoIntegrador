@@ -1,6 +1,7 @@
-using System.Text;
+﻿using System.Text;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -12,22 +13,22 @@ using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Implementations;
 using ProyectoIntegrador.Service.Interfaces;
 
-// ??????????????????????????????????????????????
+// ──────────────────────────────────────────────
 // Builder
-// ??????????????????????????????????????????????
+// ──────────────────────────────────────────────
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-// ?? Entity Framework Core + SQL Server ????????
+// ── Entity Framework Core + SQL Server ────────
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         configuration.GetConnectionString("DefaultConnection"),
         sqlOptions => sqlOptions.MigrationsAssembly("ProyectoIntegrador.Data")));
 
-// ?? Autenticaci�n JWT Bearer ??????????????????
+// ── Autenticación JWT Bearer ──────────────────
 var jwtSecretKey = configuration["Jwt:SecretKey"]
-    ?? throw new InvalidOperationException("La clave secreta JWT no est� configurada en appsettings.json (Jwt:SecretKey).");
+    ?? throw new InvalidOperationException("La clave secreta JWT no está configurada en appsettings.json (Jwt:SecretKey).");
 var jwtIssuer = configuration["Jwt:Issuer"] ?? "ProyectoIntegrador.API";
 var jwtAudience = configuration["Jwt:Audience"] ?? "ProyectoIntegrador.UI";
 
@@ -41,28 +42,28 @@ builder.Services.AddAuthentication(options =>
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
-    ValidateAudience = true,
-    ValidateLifetime = true,
-      ValidateIssuerSigningKey = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
         ValidIssuer = jwtIssuer,
         ValidAudience = jwtAudience,
-   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey)),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey)),
         ClockSkew = TimeSpan.Zero
     };
-    options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+    options.Events = new JwtBearerEvents
     {
-   OnTokenValidated = async context =>
+        OnTokenValidated = async context =>
         {
-     var repo = context.HttpContext.RequestServices
-     .GetRequiredService<ITokenRevocadoRepository>();
-       var authHeader = context.HttpContext.Request.Headers.Authorization.ToString();
- var token = authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
-              ? authHeader["Bearer ".Length..].Trim()
-  : string.Empty;
+            var repo = context.HttpContext.RequestServices
+                .GetRequiredService<ITokenRevocadoRepository>();
+            var authHeader = context.HttpContext.Request.Headers.Authorization.ToString();
+            var token = authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                ? authHeader["Bearer ".Length..].Trim()
+                : string.Empty;
 
             if (!string.IsNullOrEmpty(token) && await repo.EstaRevocado(token))
-          {
-        context.Fail("Token revocado.");
+            {
+                context.Fail("Token revocado.");
             }
         }
     };
@@ -70,25 +71,25 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// ?? Opciones JWT para la capa Service ?????????
+// ── Opciones JWT para la capa Service ─────────
 builder.Services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
 
-// ?? CORS ??????????????????????????????????????
+// ── CORS ──────────────────────────────────────
 var origenesPermitidos = configuration.GetSection("Cors:OrigenesPermitidos").Get<string[]>()
- ?? ["https://localhost:7001", "http://localhost:5001"];
+    ?? ["https://localhost:7001", "http://localhost:5001"];
 
 builder.Services.AddCors(options =>
 {
-  options.AddPolicy("PermitirUI", policy =>
- {
+    options.AddPolicy("PermitirUI", policy =>
+    {
         policy.WithOrigins(origenesPermitidos)
-        .AllowAnyHeader()
+            .AllowAnyHeader()
             .AllowAnyMethod()
-      .AllowCredentials();
+            .AllowCredentials();
     });
 });
 
-// ?? Rate Limiting ?????????????????????????????
+// ── Rate Limiting ─────────────────────────────
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -98,71 +99,72 @@ builder.Services.AddRateLimiter(options =>
     {
         if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
         {
- context.HttpContext.Response.Headers.RetryAfter =
-        ((int)retryAfter.TotalSeconds).ToString();
+            context.HttpContext.Response.Headers.RetryAfter =
+                ((int)retryAfter.TotalSeconds).ToString();
         }
 
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-await context.HttpContext.Response.WriteAsync(
-     "{\"error\":\"Demasiadas solicitudes. Intente nuevamente m�s tarde.\",\"codigo\":\"RATE_LIMIT_EXCEDIDO\",\"detalles\":[]}",
-
+        context.HttpContext.Response.ContentType = "application/json";
+        await context.HttpContext.Response.WriteAsync(
+            "{\"error\":\"Demasiadas solicitudes. Intente nuevamente más tarde.\",\"codigo\":\"RATE_LIMIT_EXCEDIDO\",\"detalles\":[]}",
             cancellationToken);
     };
 
-    // Pol�tica global: 200 requests por minuto por usuario autenticado (o por IP como fallback)
-    options.AddPolicy("global", context =>
+    // Limitador GLOBAL: 200 requests por minuto por usuario autenticado (o por IP como fallback).
+    // Se aplica a TODA request sin pisar las políticas declaradas vía [EnableRateLimiting].
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
     {
         var usuarioId = context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-    ?? context.User?.FindFirst("sub")?.Value;
+            ?? context.User?.FindFirst("sub")?.Value;
 
         var partitionKey = !string.IsNullOrEmpty(usuarioId)
-         ? $"user:{usuarioId}"
+            ? $"user:{usuarioId}"
             : $"ip:{context.Connection.RemoteIpAddress?.ToString() ?? "desconocido"}";
 
-   return RateLimitPartition.GetFixedWindowLimiter(
-     partitionKey: partitionKey,
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: partitionKey,
             factory: _ => new FixedWindowRateLimiterOptions
-      {
-      PermitLimit = 200,
-        Window = TimeSpan.FromMinutes(1),
-   QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-       QueueLimit = 0
-   });
+            {
+                PermitLimit = 200,
+                Window = TimeSpan.FromMinutes(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            });
     });
 
-    // Pol�tica de login: 10 intentos cada 15 minutos por IP
+    // Política de login: 10 intentos cada 15 minutos por IP
     options.AddPolicy("login", context =>
         RateLimitPartition.GetFixedWindowLimiter(
-          partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "desconocido",
-   factory: _ => new FixedWindowRateLimiterOptions
-   {
-       PermitLimit = 10,
-           Window = TimeSpan.FromMinutes(15),
-            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-     QueueLimit = 0
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "desconocido",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(15),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
             }));
 
-    // Pol�tica de registro: 5 intentos cada 15 minutos por IP
- options.AddPolicy("register", context =>
+    // Política de registro: 5 intentos cada 15 minutos por IP
+    options.AddPolicy("register", context =>
         RateLimitPartition.GetFixedWindowLimiter(
-       partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "desconocido",
-     factory: _ => new FixedWindowRateLimiterOptions
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "desconocido",
+            factory: _ => new FixedWindowRateLimiterOptions
             {
- PermitLimit = 5,
-      Window = TimeSpan.FromMinutes(15),
-           QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-         QueueLimit = 0
-     }));
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(15),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            }));
 });
 
-// ?? Inyecci�n de dependencias: Repositorios ???
+// ── Inyección de dependencias: Repositorios ───
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IRolRepository, RolRepository>();
 builder.Services.AddScoped<ITokenRevocadoRepository, TokenRevocadoRepository>();
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IPlanDeCuentasRepository, PlanDeCuentasRepository>();
 builder.Services.AddScoped<IAuditoriaRepository, AuditoriaRepository>();
-// Los dem�s repositorios se ir�n activando a medida que se creen las implementaciones:
+// Los demás repositorios se irán activando a medida que se creen las implementaciones:
 // builder.Services.AddScoped<IPermisoRepository, PermisoRepository>();
 // builder.Services.AddScoped<ICuentaContableRepository, CuentaContableRepository>();
 // builder.Services.AddScoped<IEjercicioContableRepository, EjercicioContableRepository>();
@@ -174,26 +176,26 @@ builder.Services.AddScoped<IAuditoriaRepository, AuditoriaRepository>();
 // builder.Services.AddScoped<ICentroDeCostoRepository, CentroDeCostoRepository>();
 // builder.Services.AddScoped<ITipoDeCambioRepository, TipoDeCambioRepository>();
 
-// ?? Inyecci�n de dependencias: Servicios ??????
+// ── Inyección de dependencias: Servicios ──────
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
-// Los dem�s servicios se ir�n activando a medida que se creen las implementaciones:
+// Los demás servicios se irán activando a medida que se creen las implementaciones:
 // builder.Services.AddScoped<IAsientoService, AsientoService>();
 // builder.Services.AddScoped<IReporteService, ReporteService>();
 // builder.Services.AddScoped<IImportacionService, ImportacionService>();
 // builder.Services.AddScoped<ICierreEjercicioService, CierreEjercicioService>();
 
-// ?? Controllers ???????????????????????????????
+// ── Controllers ───────────────────────────────
 builder.Services.AddControllers();
 
-// ?? Swagger (solo desarrollo) ?????????????????
+// ── Swagger (solo desarrollo) ─────────────────
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "ProyectoIntegrador API",
-      Version = "v1",
+        Version = "v1",
         Description = "API del sistema contable para estudio contable en Uruguay"
     });
 
@@ -201,31 +203,31 @@ builder.Services.AddSwaggerGen(options =>
     {
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
-     Scheme = "Bearer",
-   BearerFormat = "JWT",
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
         In = ParameterLocation.Header,
         Description = "Ingrese el token JWT. Ejemplo: eyJhbGciOiJIUzI1NiIs..."
-});
+    });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-         new OpenApiSecurityScheme
-  {
-        Reference = new OpenApiReference
-  {
-              Type = ReferenceType.SecurityScheme,
-  Id = "Bearer"
-      }
-      },
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
             Array.Empty<string>()
-     }
+        }
     });
 });
 
-// ??????????????????????????????????????????????
+// ──────────────────────────────────────────────
 // App (pipeline HTTP)
-// ??????????????????????????????????????????????
+// ──────────────────────────────────────────────
 
 var app = builder.Build();
 
@@ -242,17 +244,24 @@ if (app.Environment.IsDevelopment())
 // 3. HTTPS
 app.UseHttpsRedirection();
 
-// 4. CORS (debe ir antes de Authentication/Authorization)
+// 4. Routing (debe ir ANTES de UseRateLimiter para que las políticas
+//    aplicadas vía [EnableRateLimiting] a nivel de endpoint funcionen)
+app.UseRouting();
+
+// 5. CORS (después de UseRouting, antes de Authentication/Authorization)
 app.UseCors("PermitirUI");
 
-// 5. Rate Limiting
+// 6. Rate Limiting (después de UseRouting para que conozca el endpoint destino)
 app.UseRateLimiter();
 
-// 6. Autenticaci�n y autorizaci�n
+// 7. Autenticación y autorización
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 7. Endpoints
-app.MapControllers().RequireRateLimiting("global");
+// 8. Endpoints (sin RequireRateLimiting; el GlobalLimiter ya cubre todos los endpoints)
+app.MapControllers();
 
 app.Run();
+
+// Necesario para que WebApplicationFactory pueda referenciar esta clase desde los integration tests
+public partial class Program { }
