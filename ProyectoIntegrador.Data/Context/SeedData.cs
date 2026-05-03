@@ -3,10 +3,6 @@ using ProyectoIntegrador.Data.Entities;
 
 namespace ProyectoIntegrador.Data.Context;
 
-/// <summary>
-/// Seed data de roles, permisos y asignaciones predefinidas.
-/// Todos los IDs son Guids fijos para consistencia entre ambientes.
-/// </summary>
 public static class SeedData
 {
     // ──────────────────────────────────────────────
@@ -69,6 +65,9 @@ public static class SeedData
     private static readonly Guid PermCentrosCostoEditar = new("b0000000-0009-0001-0001-000000000003");
     private static readonly Guid PermCentrosCostoDesactivar = new("b0000000-0009-0001-0001-000000000004");
 
+    // ID fijo del usuario Administrador
+    public static readonly Guid UsuarioAdminId = new("c0000000-0001-0001-0001-000000000001");
+
     // ──────────────────────────────────────────────
     // Método principal de seed
     // ──────────────────────────────────────────────
@@ -77,6 +76,7 @@ public static class SeedData
         SeedRoles(modelBuilder);
         SeedPermisos(modelBuilder);
         SeedRolPermisos(modelBuilder);
+        SeedUsuarioAdmin(modelBuilder);
     }
 
     // ──────────────────────────────────────────────
@@ -152,87 +152,79 @@ public static class SeedData
     // ──────────────────────────────────────────────
     private static void SeedRolPermisos(ModelBuilder modelBuilder)
     {
-        // Todos los IDs de permisos
-        var todosLosPermisos = new[]
-        {
-            // Usuarios
-     PermUsuariosCrear, PermUsuariosConsultar, PermUsuariosEditar, PermUsuariosDesactivar,
-  // Clientes
-          PermClientesCrear, PermClientesConsultar, PermClientesEditar, PermClientesDesactivar,
-          // Cuentas
-            PermCuentasCrear, PermCuentasConsultar, PermCuentasEditar, PermCuentasDesactivar,
-      // Asientos
-       PermAsientosCrear, PermAsientosConsultar, PermAsientosRevertir,
-   // Comprobantes
-            PermComprobantesCrear, PermComprobantesConsultar, PermComprobantesEditar,
-   // Importaciones
-            PermImportacionesCrear, PermImportacionesConsultar,
-    // Reportes
-       PermReportesConsultar, PermReportesExportar,
-            // Ejercicios
-   PermEjerciciosCrear, PermEjerciciosConsultar, PermEjerciciosEditar, PermEjerciciosDesactivar,
-      // CentrosCosto
-      PermCentrosCostoCrear, PermCentrosCostoConsultar, PermCentrosCostoEditar, PermCentrosCostoDesactivar
-        };
-
-        // Permisos del módulo Usuarios (excluidos para Contador)
+        // Permisos del módulo Usuarios
         var permisosUsuarios = new[]
-              {
-PermUsuariosCrear, PermUsuariosConsultar, PermUsuariosEditar, PermUsuariosDesactivar
-        };
-
-        // Permisos del Contador: todos excepto el módulo Usuarios
-        var permisosContador = todosLosPermisos
-            .Except(permisosUsuarios)
-.ToArray();
-
-        // Permisos del Auxiliar Contable: Consultar en todos + Crear en Asientos y Comprobantes
-        var permisosAuxiliar = new[]
       {
- // Consultar en todos los módulos
-          PermUsuariosConsultar,
- PermClientesConsultar,
-      PermCuentasConsultar,
-     PermAsientosConsultar,
-   PermComprobantesConsultar,
-        PermImportacionesConsultar,
-     PermReportesConsultar,
-     PermEjerciciosConsultar,
-            PermCentrosCostoConsultar,
-            // Crear en Asientos y Comprobantes
-     PermAsientosCrear,
-            PermComprobantesCrear
+            PermUsuariosCrear, PermUsuariosConsultar, PermUsuariosEditar, PermUsuariosDesactivar
         };
 
-        // ── Administrador: todos los permisos ──
-        var rolPermisosAdmin = todosLosPermisos
-       .Select(permisoId => new RolPermiso
-       {
-           RolId = RolAdministradorId,
-           PermisoId = permisoId
-       });
+        // Todos los permisos
+        var todosLosPermisos = new[]
+   {
+ PermUsuariosCrear, PermUsuariosConsultar, PermUsuariosEditar, PermUsuariosDesactivar,
+            PermClientesCrear, PermClientesConsultar, PermClientesEditar, PermClientesDesactivar,
+         PermCuentasCrear, PermCuentasConsultar, PermCuentasEditar, PermCuentasDesactivar,
+     PermAsientosCrear, PermAsientosConsultar, PermAsientosRevertir,
+            PermComprobantesCrear, PermComprobantesConsultar, PermComprobantesEditar,
+    PermImportacionesCrear, PermImportacionesConsultar,
+          PermReportesConsultar, PermReportesExportar,
+            PermEjerciciosCrear, PermEjerciciosConsultar, PermEjerciciosEditar, PermEjerciciosDesactivar,
+    PermCentrosCostoCrear, PermCentrosCostoConsultar, PermCentrosCostoEditar, PermCentrosCostoDesactivar
+  };
 
-        // ── Contador: todos excepto Usuarios ──
+        // Administrador: SOLO módulo Usuarios (Visión 2)
+        var rolPermisosAdmin = permisosUsuarios
+            .Select(permisoId => new RolPermiso { RolId = RolAdministradorId, PermisoId = permisoId });
+
+        // Contador: todos excepto Usuarios
+        var permisosContador = todosLosPermisos.Except(permisosUsuarios).ToArray();
         var rolPermisosContador = permisosContador
-            .Select(permisoId => new RolPermiso
-            {
-                RolId = RolContadorId,
-                PermisoId = permisoId
-            });
+              .Select(permisoId => new RolPermiso { RolId = RolContadorId, PermisoId = permisoId });
 
-        // ── Auxiliar Contable: consultar + crear asientos/comprobantes ──
+        // Auxiliar: consultar todos + crear asientos y comprobantes
+        var permisosAuxiliar = new[]
+           {
+          PermUsuariosConsultar,
+      PermClientesConsultar,
+       PermCuentasConsultar,
+   PermAsientosConsultar, PermAsientosCrear,
+          PermComprobantesConsultar, PermComprobantesCrear,
+  PermImportacionesConsultar,
+    PermReportesConsultar,
+     PermEjerciciosConsultar,
+            PermCentrosCostoConsultar
+   };
         var rolPermisosAuxiliar = permisosAuxiliar
-      .Select(permisoId => new RolPermiso
-      {
-          RolId = RolAuxiliarId,
-          PermisoId = permisoId
-      });
+  .Select(permisoId => new RolPermiso { RolId = RolAuxiliarId, PermisoId = permisoId });
 
         modelBuilder.Entity<RolPermiso>().HasData(
-    rolPermisosAdmin
-    .Concat(rolPermisosContador)
-.Concat(rolPermisosAuxiliar)
-      .ToArray()
-  );
+            rolPermisosAdmin
+  .Concat(rolPermisosContador)
+   .Concat(rolPermisosAuxiliar)
+                .ToArray()
+        );
+    }
+
+    // ──────────────────────────────────────────────
+    // Usuario Administrador predefinido
+    // ──────────────────────────────────────────────
+    private static void SeedUsuarioAdmin(ModelBuilder modelBuilder)
+    {
+        // Hash de "Admin1234!" generado con BCrypt workFactor=12
+        // Se puede regenerar con: BCrypt.Net.BCrypt.HashPassword("Admin1234!", workFactor: 12)
+        const string adminPasswordHash = "$2a$12$siCyK43j/60igAgW0GwTXOojpsf5pt0X6IIu9I5FfBhE645FlNcLW";
+
+        modelBuilder.Entity<Usuario>().HasData(new Usuario
+        {
+            Id = UsuarioAdminId,
+            Email = "admin@sistema.com",
+            PasswordHash = adminPasswordHash,
+            NombreCompleto = "Administrador del Sistema",
+            ProveedorAuth = "Local",
+            Estado = "Activo",
+            RolId = RolAdministradorId,
+            ContadorId = null,
+            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+        });
     }
 }

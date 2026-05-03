@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProyectoIntegrador.API.Filters;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Interfaces;
 
@@ -22,23 +23,23 @@ public class ClientesController : ControllerBase
     /// Obtiene los clientes del contador autenticado con paginación.
     /// </summary>
     [HttpGet]
-    [Authorize(Roles = "Administrador,Contador,Auxiliar Contable")]
+    [RequierePermiso("Clientes", "Consultar")]
     public async Task<IActionResult> ObtenerTodos(
         [FromQuery] int pagina = 1,
      [FromQuery] int cantidadPorPagina = 20)
     {
         var contadorId = ObtenerUsuarioIdDelToken();
         var resultado = await _clienteService.ObtenerPorContador(contadorId, pagina, cantidadPorPagina);
-        return Ok(resultado);
+    return Ok(resultado);
     }
 
     /// <summary>
     /// Obtiene un cliente por su Id.
     /// </summary>
     [HttpGet("{id:guid}")]
-    [Authorize(Roles = "Administrador,Contador,Auxiliar Contable")]
+    [RequierePermiso("Clientes", "Consultar")]
     public async Task<IActionResult> ObtenerPorId(Guid id)
-    {
+{
         var resultado = await _clienteService.ObtenerPorId(id);
         return Ok(resultado);
     }
@@ -47,7 +48,7 @@ public class ClientesController : ControllerBase
     /// Crea un nuevo cliente. El contadorId se toma del JWT.
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "Administrador,Contador")]
+    [RequierePermiso("Clientes", "Crear")]
     public async Task<IActionResult> Crear([FromBody] ClienteDto clienteDto)
     {
         var contadorId = ObtenerUsuarioIdDelToken();
@@ -59,11 +60,11 @@ public class ClientesController : ControllerBase
     /// Actualiza los datos de un cliente existente.
     /// </summary>
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Administrador,Contador")]
+    [RequierePermiso("Clientes", "Editar")]
     public async Task<IActionResult> Actualizar(Guid id, [FromBody] ClienteDto clienteDto)
     {
         var usuarioId = ObtenerUsuarioIdDelToken();
-        var resultado = await _clienteService.Actualizar(id, clienteDto, usuarioId);
+     var resultado = await _clienteService.Actualizar(id, clienteDto, usuarioId);
         return Ok(resultado);
     }
 
@@ -71,10 +72,10 @@ public class ClientesController : ControllerBase
     /// Desactiva un cliente (soft delete).
     /// </summary>
     [HttpPatch("{id:guid}/desactivar")]
-    [Authorize(Roles = "Administrador,Contador")]
+  [RequierePermiso("Clientes", "Desactivar")]
     public async Task<IActionResult> Desactivar(Guid id)
     {
-        var usuarioId = ObtenerUsuarioIdDelToken();
+     var usuarioId = ObtenerUsuarioIdDelToken();
         await _clienteService.Desactivar(id, usuarioId);
         return Ok(new { mensaje = "Cliente desactivado exitosamente." });
     }
