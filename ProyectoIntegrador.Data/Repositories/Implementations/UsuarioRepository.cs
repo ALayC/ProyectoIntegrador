@@ -55,6 +55,15 @@ public class UsuarioRepository : IUsuarioRepository
     .ToListAsync();
     }
 
+    public async Task<List<Usuario>> ObtenerTodos()
+    {
+        return await _context.Usuarios
+    .Include(u => u.Rol)
+        .Include(u => u.Contador)
+            .OrderBy(u => u.NombreCompleto)
+   .ToListAsync();
+    }
+
     public async Task<int> ContarTodos()
     {
         return await _context.Usuarios.CountAsync();
