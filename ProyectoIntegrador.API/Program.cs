@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using ProyectoIntegrador.API.Filters;
 using ProyectoIntegrador.API.Middleware;
 using ProyectoIntegrador.Data.Context;
 using ProyectoIntegrador.Data.Repositories.Implementations;
@@ -164,8 +165,8 @@ builder.Services.AddScoped<ITokenRevocadoRepository, TokenRevocadoRepository>();
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IPlanDeCuentasRepository, PlanDeCuentasRepository>();
 builder.Services.AddScoped<IAuditoriaRepository, AuditoriaRepository>();
+builder.Services.AddScoped<IPermisoRepository, PermisoRepository>();
 // Los demás repositorios se irán activando a medida que se creen las implementaciones:
-// builder.Services.AddScoped<IPermisoRepository, PermisoRepository>();
 // builder.Services.AddScoped<ICuentaContableRepository, CuentaContableRepository>();
 // builder.Services.AddScoped<IEjercicioContableRepository, EjercicioContableRepository>();
 // builder.Services.AddScoped<IAsientoContableRepository, AsientoContableRepository>();
@@ -179,14 +180,18 @@ builder.Services.AddScoped<IAuditoriaRepository, AuditoriaRepository>();
 // ── Inyección de dependencias: Servicios ──────
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
-// Los demás servicios se irán activando a medida que se creen las implementaciones:
-// builder.Services.AddScoped<IAsientoService, AsientoService>();
-// builder.Services.AddScoped<IReporteService, ReporteService>();
-// builder.Services.AddScoped<IImportacionService, ImportacionService>();
-// builder.Services.AddScoped<ICierreEjercicioService, CierreEjercicioService>();
+builder.Services.AddScoped<IRolService, RolService>();
+builder.Services.AddScoped<IPermisoService, PermisoService>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+
+// ── Filtro global de permisos ─────────────────
+builder.Services.AddScoped<PermisosActionFilter>();
 
 // ── Controllers ───────────────────────────────
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.AddService<PermisosActionFilter>();
+});
 
 // ── Swagger (solo desarrollo) ─────────────────
 builder.Services.AddEndpointsApiExplorer();

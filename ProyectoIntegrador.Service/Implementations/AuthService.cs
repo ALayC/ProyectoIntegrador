@@ -155,6 +155,7 @@ public class AuthService : IAuthService
 new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
         new Claim(ClaimTypes.Role, nombreRol),
+            new Claim("rolId", usuario.RolId.ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
      };
 
