@@ -71,20 +71,30 @@ if (dto.ContadorId.HasValue)
 
   public async Task<UsuarioResponseDto> Editar(Guid id, EditarUsuarioDto dto, Guid adminId)
     {
-        // No puede editarse a sí mismo
-if (id == adminId)
- throw new AccesoNoAutorizadoException("El administrador no puede editarse a sí mismo.");
+        if (id == adminId)
+        throw new AccesoNoAutorizadoException("El administrador no puede editarse a sí mismo.");
 
         var usuario = await _usuarioRepository.ObtenerPorId(id)
-  ?? throw new EntidadNoEncontradaException("Usuario", id);
+         ?? throw new EntidadNoEncontradaException("Usuario", id);
+
+        // Validar rol
+        var rol = await _rolRepository.ObtenerPorId(dto.RolId)
+            ?? throw new EntidadNoEncontradaException("Rol", dto.RolId);
 
         // Validar regla de negocio: ContadorId solo para Auxiliar Contable
-        await ValidarContadorId(usuario.RolId, dto.ContadorId);
+        await ValidarContadorId(dto.RolId, dto.ContadorId);
 
-    usuario.NombreCompleto = dto.NombreCompleto;
-   usuario.ContadorId = dto.ContadorId;
+        usuario.NombreCompleto = dto.NombreCompleto;
+      usuario.RolId = dto.RolId;
+        usuario.ContadorId = dto.ContadorId;
 
         await _usuarioRepository.Actualizar(usuario);
+        usuario.Rol = rol;
+   if (dto.ContadorId.HasValue)
+          usuario.Contador = await _usuarioRepository.ObtenerPorId(dto.ContadorId.Value);
+        else
+  usuario.Contador = null;
+
         return Mapear(usuario);
     }
 
@@ -133,10 +143,13 @@ if (id == adminId)
 
     private static UsuarioResponseDto Mapear(Usuario u) => new()
     {
-   Email = u.Email,
+    Id = u.Id,
+        Email = u.Email,
         NombreCompleto = u.NombreCompleto,
         Rol = u.Rol?.Nombre ?? string.Empty,
-  ContadorAsignado = u.Contador?.NombreCompleto,
+  RolId = u.RolId,
+   ContadorAsignado = u.Contador?.NombreCompleto,
+        ContadorId = u.ContadorId,
         Estado = u.Estado
     };
 }

@@ -14,15 +14,19 @@ public class CrearUsuarioDto
 public class EditarUsuarioDto
 {
     public string NombreCompleto { get; set; } = string.Empty;
+    public Guid RolId { get; set; }
     public Guid? ContadorId { get; set; }
 }
 
 /// <summary>Response con datos de un usuario.</summary>
 public class UsuarioResponseDto
 {
+    public Guid Id { get; set; }
     public string Email { get; set; } = string.Empty;
     public string NombreCompleto { get; set; } = string.Empty;
     public string Rol { get; set; } = string.Empty;
+    public Guid RolId { get; set; }
     public string? ContadorAsignado { get; set; }
+    public Guid? ContadorId { get; set; }
     public string Estado { get; set; } = string.Empty;
 }
