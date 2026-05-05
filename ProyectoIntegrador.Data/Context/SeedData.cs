@@ -6,6 +6,22 @@ namespace ProyectoIntegrador.Data.Context;
 public static class SeedData
 {
     // ──────────────────────────────────────────────
+    // IDs fijos para el template de PlanDeCuentas
+    // ──────────────────────────────────────────────
+    public static readonly Guid PlanTemplateId = new("d0000000-0001-0001-0001-000000000001");
+
+    // Nivel 1
+    public static readonly Guid ActivoId = new("d0000000-1000-0000-0000-000000000001");
+    public static readonly Guid PasivoId = new("d0000000-2000-0000-0000-000000000001");
+    public static readonly Guid PatrimonioId = new("d0000000-3000-0000-0000-000000000001");
+    public static readonly Guid IngresosId = new("d0000000-4000-0000-0000-000000000001");
+    public static readonly Guid EgresosId = new("d0000000-5000-0000-0000-000000000001");
+
+    // Nivel 2 ejemplos
+    public static readonly Guid CajaId = new("d0000000-1100-0000-0000-000000000001");
+    public static readonly Guid BancosId = new("d0000000-1200-0000-0000-000000000001");
+
+    // ──────────────────────────────────────────────
     // IDs fijos de Roles
     // ──────────────────────────────────────────────
     public static readonly Guid RolAdministradorId = new("a1b2c3d4-0001-0001-0001-000000000001");
@@ -77,6 +93,8 @@ public static class SeedData
         SeedPermisos(modelBuilder);
         SeedRolPermisos(modelBuilder);
         SeedUsuarioAdmin(modelBuilder);
+        SeedPlanDeCuentasTemplate(modelBuilder);
+        SeedCuentasContablesTemplate(modelBuilder);
     }
 
     // ──────────────────────────────────────────────
@@ -226,5 +244,77 @@ public static class SeedData
             ContadorId = null,
             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         });
+    }
+
+    private static void SeedPlanDeCuentasTemplate(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<PlanDeCuentas>().HasData(
+            new PlanDeCuentas
+            {
+                Id = PlanTemplateId,
+                ClienteId = null,
+                EsTemplate = true
+            }
+        );
+    }
+
+    private static void SeedCuentasContablesTemplate(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CuentaContable>().HasData(
+
+            // Nivel 1
+            new CuentaContable
+            {
+                Id = ActivoId,
+                PlanCuentasId = PlanTemplateId,
+                CuentaPadreId = null,
+                Codigo = "1",
+                Nombre = "Activo",
+                Tipo = "Activo",
+                Naturaleza = "Deudora",
+                EsImputable = false,
+                Estado = "Activa"
+            },
+
+            new CuentaContable
+            {
+                Id = PasivoId,
+                PlanCuentasId = PlanTemplateId,
+                CuentaPadreId = null,
+                Codigo = "2",
+                Nombre = "Pasivo",
+                Tipo = "Pasivo",
+                Naturaleza = "Acreedora",
+                EsImputable = false,
+                Estado = "Activa"
+            },
+
+            // Nivel 2
+            new CuentaContable
+            {
+                Id = CajaId,
+                PlanCuentasId = PlanTemplateId,
+                CuentaPadreId = ActivoId,
+                Codigo = "1.1",
+                Nombre = "Caja",
+                Tipo = "Activo",
+                Naturaleza = "Deudora",
+                EsImputable = true,
+                Estado = "Activa"
+            },
+
+            new CuentaContable
+            {
+                Id = BancosId,
+                PlanCuentasId = PlanTemplateId,
+                CuentaPadreId = ActivoId,
+                Codigo = "1.2",
+                Nombre = "Bancos",
+                Tipo = "Activo",
+                Naturaleza = "Deudora",
+                EsImputable = true,
+                Estado = "Activa"
+            }
+        );
     }
 }

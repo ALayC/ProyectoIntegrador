@@ -67,9 +67,11 @@ IClienteRepository clienteRepository,
         var planDeCuentas = new PlanDeCuentas
         {
             Id = Guid.NewGuid(),
-            ClienteId = cliente.Id
+            ClienteId = cliente.Id,
+            EsTemplate = false
         };
 
+        await ClonarPlanDeCuentas(planDeCuentas);
         await _planDeCuentasRepository.Guardar(planDeCuentas);
 
         // Registrar auditoría
@@ -224,5 +226,49 @@ IClienteRepository clienteRepository,
         };
 
         await _auditoriaRepository.Guardar(auditoria);
+    }
+
+    private async Task ClonarPlanDeCuentas(PlanDeCuentas destino)
+    {
+        var template = await _planDeCuentasRepository.ObtenerTemplate();
+        if (template is null)
+        {
+            throw new EntidadNoEncontradaException("No se encontró el plan de cuentas template.");
+        }
+
+        var cuentasClonadas = new List<CuentaContable>();
+        var mapping = new Dictionary<Guid, CuentaContable>();
+
+        foreach (var cuentaTemplate in template.CuentasContables)
+        {
+            var cuentaNueva = new CuentaContable
+            {
+                Id = Guid.NewGuid(),
+                PlanCuentasId = destino.Id,
+                CuentaPadreId = null,
+                Codigo = cuentaTemplate.Codigo,
+                Nombre = cuentaTemplate.Nombre,
+                Tipo = cuentaTemplate.Tipo,
+                Naturaleza = cuentaTemplate.Naturaleza,
+                EsImputable = cuentaTemplate.EsImputable,
+                Estado = cuentaTemplate.Estado
+            };
+
+            cuentasClonadas.Add(cuentaNueva);
+            mapping[cuentaTemplate.Id] = cuentaNueva;
+        }
+
+        foreach (var cuentaTemplate in template.CuentasContables)
+        {
+            if (cuentaTemplate.CuentaPadreId is null)
+            {
+                continue;
+            }
+
+            var cuentaNueva = mapping[cuentaTemplate.Id];
+            cuentaNueva.CuentaPadreId = mapping[cuentaTemplate.CuentaPadreId.Value].Id;
+        }
+
+        destino.CuentasContables = cuentasClonadas;
     }
 }
