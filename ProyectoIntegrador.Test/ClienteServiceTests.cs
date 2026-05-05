@@ -1,4 +1,4 @@
-using Moq;
+ï»¿using Moq;
 using ProyectoIntegrador.Data.Context;
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
@@ -99,7 +99,7 @@ public class ClienteServiceTests
         Assert.Equal("Activo", resultado.Estado);
         Assert.Equal(contadorId, resultado.ContadorId);
 
-        // Verificar que se guardó el cliente
+        // Verificar que se guardÃ³ el cliente
         _mockClienteRepo.Verify(r => r.Guardar(It.Is<Cliente>(c =>
                  c.Rut == clienteDto.Rut &&
                  c.RazonSocial == clienteDto.RazonSocial &&
@@ -107,12 +107,12 @@ public class ClienteServiceTests
              c.Estado == "Activo"
          )), Times.Once);
 
-        // Verificar que se creó el PlanDeCuentas
+        // Verificar que se creÃ³ el PlanDeCuentas
         _mockPlanRepo.Verify(r => r.Guardar(It.Is<PlanDeCuentas>(p =>
            p.ClienteId == resultado.Id
        )), Times.Once);
 
-        // Verificar que se registró auditoría
+        // Verificar que se registrÃ³ auditorÃ­a
         _mockAuditoriaRepo.Verify(r => r.Guardar(It.Is<Auditoria>(a =>
             a.Entidad == "Cliente" &&
            a.Accion == "Crear" &&
@@ -147,7 +147,7 @@ public class ClienteServiceTests
 
         Assert.Contains("219999870015", exception.Message);
 
-        // Verificar que NO se intentó guardar
+        // Verificar que NO se intentÃ³ guardar
         _mockClienteRepo.Verify(r => r.Guardar(It.IsAny<Cliente>()), Times.Never);
         _mockPlanRepo.Verify(r => r.Guardar(It.IsAny<PlanDeCuentas>()), Times.Never);
         _mockAuditoriaRepo.Verify(r => r.Guardar(It.IsAny<Auditoria>()), Times.Never);

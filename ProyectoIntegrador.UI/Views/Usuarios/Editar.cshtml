@@ -1,4 +1,4 @@
-@model EditarUsuarioViewModel
+ï»¿@model EditarUsuarioViewModel
 @{
     ViewData["Title"] = "Editar Usuario";
     var auxiliarRolId = Model.Roles.FirstOrDefault(r => r.Nombre == "Auxiliar Contable")?.Id;
@@ -80,12 +80,12 @@
         <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Confirmar desactivación</h5>
+                    <h5 class="modal-title">Confirmar desactivaciÃ³n</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body text-secondary">
-                    ¿Deseas desactivar a <strong>@Model.NombreCompleto</strong>?<br />
-                    <small>Esta acción no se puede deshacer desde la interfaz.</small>
+                    Â¿Deseas desactivar a <strong>@Model.NombreCompleto</strong>?<br />
+                    <small>Esta acciÃ³n no se puede deshacer desde la interfaz.</small>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>

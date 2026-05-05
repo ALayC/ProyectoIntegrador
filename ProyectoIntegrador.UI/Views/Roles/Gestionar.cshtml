@@ -1,4 +1,4 @@
-@model GestionPermisosViewModel
+Ôªø@model GestionPermisosViewModel
 @{
     ViewData["Title"] = $"Permisos: {Model.NombreRol}";
 }
@@ -19,7 +19,7 @@
             }
             else
             {
-                <span>Marc· o desmarc· los checkboxes para asignar permisos.</span>
+                <span>Marc√° o desmarc√° los checkboxes para asignar permisos.</span>
             }
         </p>
     </div>
@@ -44,7 +44,7 @@
                             @if (Model.EsPredefinido)
                             {
                                 <span class="badge @(permiso.Asignado ? "bg-success-lt text-success" : "bg-secondary-lt text-secondary")">
-                                    @(permiso.Asignado ? "SÌ" : "No")
+                                    @(permiso.Asignado ? "S√≠" : "No")
                                 </span>
                             }
                             else if (permiso.Asignado)

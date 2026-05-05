@@ -19,7 +19,7 @@ public class CuentaContableService : ICuentaContableService
 
     public async Task<CuentaContableDto> Crear(Guid planCuentasId, CrearCuentaContableDto dto)
     {
-        await ValidarPlanExiste(planCuentasId);
+        await ObtenerPlanExistente(planCuentasId);
 
         if (await _cuentaRepository.ExisteCodigo(planCuentasId, dto.Codigo))
         {
@@ -67,7 +67,7 @@ public class CuentaContableService : ICuentaContableService
 
     public async Task<PaginadoDto<CuentaContableDto>> ObtenerPorPlanPaginado(Guid planCuentasId, int pagina, int cantidadPorPagina)
     {
-        await ValidarPlanExiste(planCuentasId);
+        await ObtenerPlanExistente(planCuentasId);
 
         var cuentas = await _cuentaRepository.ObtenerPorPlanPaginado(planCuentasId, pagina, cantidadPorPagina);
         var total = await _cuentaRepository.ContarPorPlanDeCuentas(planCuentasId);
@@ -78,7 +78,7 @@ public class CuentaContableService : ICuentaContableService
 
     public async Task<List<CuentaContableArbolDto>> ObtenerArbolDeCuentas(Guid planId)
     {
-        await ValidarPlanExiste(planId);
+        await ObtenerPlanExistente(planId);
 
         var cuentas = await _cuentaRepository.ObtenerTodasPorPlan(planId);
 
@@ -114,13 +114,11 @@ public class CuentaContableService : ICuentaContableService
         var cuenta = await _cuentaRepository.ObtenerPorId(id)
             ?? throw new EntidadNoEncontradaException("CuentaContable", id);
 
-        if (await _cuentaRepository.ExisteCodigo(cuenta.PlanCuentasId, dto.Codigo))
+        var existente = await _cuentaRepository.ObtenerPorCodigo(cuenta.PlanCuentasId, dto.Codigo);
+
+        if (existente is not null && existente.Id != id)
         {
-            var existente = await _cuentaRepository.ObtenerPorCodigo(cuenta.PlanCuentasId, dto.Codigo);
-            if (existente is not null && existente.Id != id)
-            {
-                throw new CuentaDuplicadaException(cuenta.PlanCuentasId, dto.Codigo);
-            }
+            throw new CuentaDuplicadaException(cuenta.PlanCuentasId, dto.Codigo);
         }
 
         Guid? cuentaPadreId = null;
@@ -131,7 +129,7 @@ public class CuentaContableService : ICuentaContableService
                 throw new InvalidOperationException("La cuenta no puede ser su propia cuenta padre.");
             }
 
-            if (await EsDescendiente(id, dto.CuentaPadreId.Value))
+            if (await EsDescendiente(id, dto.CuentaPadreId.Value, cuenta.PlanCuentasId))
             {
                 throw new InvalidOperationException("La cuenta padre no puede ser un descendiente de la cuenta actual.");
             }
@@ -216,7 +214,7 @@ public class CuentaContableService : ICuentaContableService
         return false;
     }
 
-    private async Task ValidarPlanExiste(Guid planCuentasId)
+    private async Task ObtenerPlanExistente(Guid planCuentasId)
     {
         var plan = await _planDeCuentasRepository.ObtenerPorId(planCuentasId) ?? throw new EntidadNoEncontradaException("PlanDeCuentas", planCuentasId);
     }

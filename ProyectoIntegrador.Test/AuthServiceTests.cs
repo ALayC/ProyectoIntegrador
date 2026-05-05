@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Options;
+ï»¿using Microsoft.Extensions.Options;
 using Moq;
 using ProyectoIntegrador.Data.Context;
 using ProyectoIntegrador.Data.Entities;
@@ -46,7 +46,7 @@ public class AuthServiceTests
         {
             Email = "contador@test.com",
             Password = "Password123!",
-            NombreCompleto = "Juan Pérez"
+            NombreCompleto = "Juan PÃ©rez"
         };
 
         var rolContador = new Rol
@@ -98,7 +98,7 @@ public class AuthServiceTests
         {
             Email = "existente@test.com",
             Password = "Password123!",
-            NombreCompleto = "María García"
+            NombreCompleto = "MarÃ­a GarcÃ­a"
         };
 
         _mockUsuarioRepo

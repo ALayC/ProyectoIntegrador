@@ -1,4 +1,4 @@
-@model CrearUsuarioViewModel
+﻿@model CrearUsuarioViewModel
 @{
     ViewData["Title"] = "Nuevo Usuario";
 }
@@ -94,7 +94,7 @@
             document.getElementById('selectRol').addEventListener('change', toggleContador);
                 toggleContador();
 
-                // Mostrar resumen de validaci�n si tiene errores
+                // Mostrar resumen de validación si tiene errores
                 document.querySelectorAll('.alert-danger[data-valmsg-summary]').forEach(function(el) {
                     if (el.querySelectorAll('li').length > 0) el.style.display = '';
                 });

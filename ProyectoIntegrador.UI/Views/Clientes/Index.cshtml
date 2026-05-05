@@ -1,4 +1,4 @@
-@model PaginadoViewModel<ClienteListViewModel>
+锘緻model PaginadoViewModel<ClienteListViewModel>
 @{
     ViewData["Title"] = "Mis Clientes";
 }
@@ -13,7 +13,7 @@
 @if (Model.Datos.Count == 0)
 {
     <div class="alert alert-info">
-        <i class="ti ti-info-circle"></i> No hay clientes registrados a鷑.
+        <i class="ti ti-info-circle"></i> No hay clientes registrados a煤n.
     </div>
 }
 else
@@ -23,7 +23,7 @@ else
             <thead>
                 <tr>
                     <th>RUT</th>
-                    <th>Raz髇 Social</th>
+                    <th>Raz贸n Social</th>
                     <th>Email</th>
                     <th>Estado</th>
                     <th class="text-end">Acciones</th>
@@ -66,11 +66,11 @@ else
                                     <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h5 class="modal-title">Confirmar desactivaci髇</h5>
+                                                <h5 class="modal-title">Confirmar desactivaci贸n</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                             </div>
                                             <div class="modal-body text-secondary">
-                                                緿eseas desactivar el cliente <strong>@cliente.RazonSocial</strong>?
+                                                驴Deseas desactivar el cliente <strong>@cliente.RazonSocial</strong>?
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
@@ -89,10 +89,10 @@ else
         </table>
     </div>
 
-    @* Paginaci髇 *@
+    @* Paginaci贸n *@
     @if (Model.TotalPaginas > 1)
     {
-        <nav aria-label="Paginaci髇 de clientes">
+        <nav aria-label="Paginaci贸n de clientes">
             <ul class="pagination justify-content-center">
                 <li class="page-item @(Model.TienePaginaAnterior ? "" : "disabled")">
                     <a class="page-link" asp-action="Index"
@@ -122,7 +122,7 @@ else
         </nav>
 
         <p class="text-center text-muted">
-            Mostrando p醙ina @Model.Pagina de @Model.TotalPaginas
+            Mostrando p谩gina @Model.Pagina de @Model.TotalPaginas
             (@Model.TotalRegistros registros en total)
         </p>
     }
