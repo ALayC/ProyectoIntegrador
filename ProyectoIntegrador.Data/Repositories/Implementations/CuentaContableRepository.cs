@@ -28,13 +28,21 @@ public class CuentaContableRepository : ICuentaContableRepository
             .FirstOrDefaultAsync(c => c.PlanCuentasId == planCuentasId && c.Codigo == codigo);
     }
 
-    public async Task<List<CuentaContable>> ObtenerPorPlanDeCuentas(Guid planCuentasId, int pagina, int cantidadPorPagina)
+    public async Task<List<CuentaContable>> ObtenerPorPlanPaginado(Guid planCuentasId, int pagina, int cantidadPorPagina)
     {
         return await _context.CuentasContables
             .Where(c => c.PlanCuentasId == planCuentasId)
             .OrderBy(c => c.Codigo)
             .Skip((pagina - 1) * cantidadPorPagina)
             .Take(cantidadPorPagina)
+            .ToListAsync();
+    }
+
+    public async Task<List<CuentaContable>> ObtenerTodasPorPlan(Guid planId)
+    {
+        return await _context.CuentasContables
+            .Where(c => c.PlanCuentasId == planId)
+            .OrderBy(c => c.Codigo)
             .ToListAsync();
     }
 
@@ -49,14 +57,6 @@ public class CuentaContableRepository : ICuentaContableRepository
             .Where(c => c.CuentaPadreId == cuentaPadreId)
             .OrderBy(c => c.Codigo)
             .ToListAsync();
-    }
-
-    public async Task<List<CuentaContable>> ObtenerTodasPorPlan(Guid planId)
-    {
-        return await _context.CuentasContables
-        .Where(c => c.PlanCuentasId == planId)
-        .OrderBy(c => c.Codigo)
-        .ToListAsync();
     }
 
     public async Task<List<CuentaContable>> ObtenerImputables(Guid planCuentasId)

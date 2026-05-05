@@ -19,6 +19,8 @@ public class CuentaContableService : ICuentaContableService
 
     public async Task<CuentaContableDto> Crear(Guid planCuentasId, CrearCuentaContableDto dto)
     {
+        await ValidarPlanExiste(planCuentasId);
+
         if (await _cuentaRepository.ExisteCodigo(planCuentasId, dto.Codigo))
         {
             throw new CuentaDuplicadaException(planCuentasId, dto.Codigo);
@@ -63,17 +65,21 @@ public class CuentaContableService : ICuentaContableService
         return Mapear(cuenta);
     }
 
-    public async Task<PaginadoDto<CuentaContableDto>> ObtenerPorPlanDeCuentas(Guid planCuentasId, int pagina, int cantidadPorPagina)
+    public async Task<PaginadoDto<CuentaContableDto>> ObtenerPorPlanPaginado(Guid planCuentasId, int pagina, int cantidadPorPagina)
     {
-        var cuentas = await _cuentaRepository.ObtenerPorPlanDeCuentas(planCuentasId, pagina, cantidadPorPagina);
+        await ValidarPlanExiste(planCuentasId);
+
+        var cuentas = await _cuentaRepository.ObtenerPorPlanPaginado(planCuentasId, pagina, cantidadPorPagina);
         var total = await _cuentaRepository.ContarPorPlanDeCuentas(planCuentasId);
 
         var cuentasDto = cuentas.Select(Mapear).ToList();
         return new PaginadoDto<CuentaContableDto>(cuentasDto, pagina, cantidadPorPagina, total);
     }
 
-    public async Task<List<CuentaContableArbolDto>> ObtenerArbol(Guid planId)
+    public async Task<List<CuentaContableArbolDto>> ObtenerArbolDeCuentas(Guid planId)
     {
+        await ValidarPlanExiste(planId);
+
         var cuentas = await _cuentaRepository.ObtenerTodasPorPlan(planId);
 
         var dict = cuentas.ToDictionary(
@@ -168,4 +174,13 @@ public class CuentaContableService : ICuentaContableService
         Estado = cuenta.Estado,
         CuentaPadreId = cuenta.CuentaPadreId
     };
+
+    private async Task ValidarPlanExiste(Guid planCuentasId)
+    {
+        var plan = await _planDeCuentasRepository.ObtenerPorId(planCuentasId);
+        if (plan is null)
+        {
+            throw new EntidadNoEncontradaException("PlanDeCuentas", planCuentasId);
+        }
+    }
 }

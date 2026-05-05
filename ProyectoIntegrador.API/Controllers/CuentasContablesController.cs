@@ -29,7 +29,7 @@ public class CuentasContablesController : ControllerBase
     [RequierePermiso("Cuentas", "Consultar")]
     public async Task<IActionResult> ObtenerPorPlan([FromQuery] Guid planId, [FromQuery] int pagina = 1, [FromQuery] int cantidad = 20)
     {
-        var resultado = await _cuentaContableService.ObtenerPorPlanDeCuentas(planId, pagina, cantidad);
+        var resultado = await _cuentaContableService.ObtenerPorPlanPaginado(planId, pagina, cantidad);
         return Ok(resultado);
     }
 
@@ -37,7 +37,7 @@ public class CuentasContablesController : ControllerBase
     [RequierePermiso("Cuentas", "Consultar")]
     public async Task<IActionResult> ObtenerArbol([FromQuery] Guid planId)
     {
-        var resultado = await _cuentaContableService.ObtenerArbol(planId);
+        var resultado = await _cuentaContableService.ObtenerArbolDeCuentas(planId);
         return Ok(resultado);
     }
 

@@ -233,7 +233,7 @@ IClienteRepository clienteRepository,
         var template = await _planDeCuentasRepository.ObtenerTemplate();
         if (template is null)
         {
-            throw new EntidadNoEncontradaException("No se encontró el plan de cuentas template.");
+            throw new InvalidOperationException("No se encontró el plan de cuentas template. Verificá la configuración/seed del sistema.");
         }
 
         var cuentasClonadas = new List<CuentaContable>();

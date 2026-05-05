@@ -7,6 +7,6 @@ public class PlanDeCuentas
     public bool EsTemplate { get; set; }
 
     // Navegación
-    public Cliente? Cliente { get; set; } = null!;
+    public Cliente? Cliente { get; set; } 
     public ICollection<CuentaContable> CuentasContables { get; set; } = new List<CuentaContable>();
 }
