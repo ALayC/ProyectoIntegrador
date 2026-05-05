@@ -126,6 +126,16 @@ public class CuentaContableService : ICuentaContableService
         Guid? cuentaPadreId = null;
         if (dto.CuentaPadreId.HasValue)
         {
+            if (dto.CuentaPadreId.Value == id)
+            {
+                throw new InvalidOperationException("La cuenta no puede ser su propia cuenta padre.");
+            }
+
+            if (await EsDescendiente(id, dto.CuentaPadreId.Value))
+            {
+                throw new InvalidOperationException("La cuenta padre no puede ser un descendiente de la cuenta actual.");
+            }
+
             var cuentaPadre = await _cuentaRepository.ObtenerPorId(dto.CuentaPadreId.Value)
                 ?? throw new EntidadNoEncontradaException("CuentaPadre", dto.CuentaPadreId.Value);
 
@@ -175,12 +185,39 @@ public class CuentaContableService : ICuentaContableService
         CuentaPadreId = cuenta.CuentaPadreId
     };
 
+    private async Task<bool> EsDescendiente(Guid cuentaId, Guid posibleDescendienteId, Guid planId)
+    {
+        var cuentas = await _cuentaRepository.ObtenerTodasPorPlan(planId);
+
+        var hijosPorPadre = cuentas
+            .Where(c => c.CuentaPadreId.HasValue)
+            .GroupBy(c => c.CuentaPadreId!.Value)
+            .ToDictionary(g => g.Key, g => g.Select(c => c.Id).ToList());
+
+        var pendientes = new Queue<Guid>();
+        pendientes.Enqueue(cuentaId);
+
+        while (pendientes.Count > 0)
+        {
+            var actualId = pendientes.Dequeue();
+
+            if (!hijosPorPadre.ContainsKey(actualId))
+                continue;
+
+            foreach (var hijaId in hijosPorPadre[actualId])
+            {
+                if (hijaId == posibleDescendienteId)
+                    return true;
+
+                pendientes.Enqueue(hijaId);
+            }
+        }
+
+        return false;
+    }
+
     private async Task ValidarPlanExiste(Guid planCuentasId)
     {
-        var plan = await _planDeCuentasRepository.ObtenerPorId(planCuentasId);
-        if (plan is null)
-        {
-            throw new EntidadNoEncontradaException("PlanDeCuentas", planCuentasId);
-        }
+        var plan = await _planDeCuentasRepository.ObtenerPorId(planCuentasId) ?? throw new EntidadNoEncontradaException("PlanDeCuentas", planCuentasId);
     }
 }
