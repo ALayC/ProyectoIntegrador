@@ -27,14 +27,17 @@ public class CuentasContablesController : ControllerBase
     /// <summary>Lista cuentas contables de un plan con paginación.</summary>
     [HttpGet]
     [RequierePermiso("Cuentas", "Consultar")]
-    public async Task<IActionResult> ObtenerPorPlan([FromQuery] Guid? planId, [FromQuery] int pagina = 1, [FromQuery] int cantidad = 20)
+    public async Task<IActionResult> ObtenerPorPlan([FromQuery] Guid planId, [FromQuery] int pagina = 1, [FromQuery] int cantidad = 20)
     {
-        if (!planId.HasValue)
-        {
-            return BadRequest(new { mensaje = "El parámetro planId es obligatorio." });
-        }
+        var resultado = await _cuentaContableService.ObtenerPorPlanDeCuentas(planId, pagina, cantidad);
+        return Ok(resultado);
+    }
 
-        var resultado = await _cuentaContableService.ObtenerPorPlanDeCuentas(planId.Value, pagina, cantidad);
+    [HttpGet("arbol")]
+    [RequierePermiso("Cuentas", "Consultar")]
+    public async Task<IActionResult> ObtenerArbol([FromQuery] Guid planId)
+    {
+        var resultado = await _cuentaContableService.ObtenerArbol(planId);
         return Ok(resultado);
     }
 

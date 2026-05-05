@@ -14,7 +14,7 @@ public class PermisosController : ControllerBase
 
     public PermisosController(IPermisoService permisoService)
     {
-    _permisoService = permisoService;
+        _permisoService = permisoService;
     }
 
     /// <summary>Lista todos los permisos del sistema.</summary>
@@ -30,8 +30,8 @@ public class PermisosController : ControllerBase
         => Ok(await _permisoService.ObtenerPorModulo(modulo));
 
     /// <summary>Lista permisos asignados a un rol.</summary>
-  [HttpGet("rol/{rolId:guid}")]
+    [HttpGet("rol/{rolId:guid}")]
     [RequierePermiso("Usuarios", "Consultar")]
     public async Task<IActionResult> ObtenerPorRol(Guid rolId)
-  => Ok(await _permisoService.ObtenerPorRol(rolId));
+    => Ok(await _permisoService.ObtenerPorRol(rolId));
 }

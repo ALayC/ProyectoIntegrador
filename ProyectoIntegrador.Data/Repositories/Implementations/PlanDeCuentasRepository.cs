@@ -38,7 +38,7 @@ public class PlanDeCuentasRepository : IPlanDeCuentasRepository
     public async Task Guardar(PlanDeCuentas planDeCuentas)
     {
         await _context.PlanesDeCuentas.AddAsync(planDeCuentas);
-     await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
     }
 
     public async Task Actualizar(PlanDeCuentas planDeCuentas)

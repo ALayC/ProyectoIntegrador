@@ -11,7 +11,7 @@ public class AuditoriaRepository : IAuditoriaRepository
 
     public AuditoriaRepository(AppDbContext context)
     {
- _context = context;
+        _context = context;
     }
 
     public async Task<Auditoria?> ObtenerPorId(Guid id)
@@ -23,42 +23,42 @@ public class AuditoriaRepository : IAuditoriaRepository
 
     public async Task<List<Auditoria>> ObtenerPorUsuario(Guid usuarioId, int pagina, int cantidadPorPagina)
     {
-return await _context.Auditorias
-     .Where(a => a.UsuarioId == usuarioId)
-            .OrderByDescending(a => a.FechaHora)
-            .Skip((pagina - 1) * cantidadPorPagina)
-            .Take(cantidadPorPagina)
-   .ToListAsync();
+        return await _context.Auditorias
+             .Where(a => a.UsuarioId == usuarioId)
+                    .OrderByDescending(a => a.FechaHora)
+                    .Skip((pagina - 1) * cantidadPorPagina)
+                    .Take(cantidadPorPagina)
+           .ToListAsync();
     }
 
- public async Task<int> ContarPorUsuario(Guid usuarioId)
+    public async Task<int> ContarPorUsuario(Guid usuarioId)
     {
         return await _context.Auditorias.CountAsync(a => a.UsuarioId == usuarioId);
     }
 
     public async Task<List<Auditoria>> ObtenerPorEntidad(string entidad, int pagina, int cantidadPorPagina)
     {
-  return await _context.Auditorias
-     .Where(a => a.Entidad == entidad)
- .OrderByDescending(a => a.FechaHora)
- .Skip((pagina - 1) * cantidadPorPagina)
-            .Take(cantidadPorPagina)
-       .ToListAsync();
-  }
+        return await _context.Auditorias
+           .Where(a => a.Entidad == entidad)
+       .OrderByDescending(a => a.FechaHora)
+       .Skip((pagina - 1) * cantidadPorPagina)
+                  .Take(cantidadPorPagina)
+             .ToListAsync();
+    }
 
     public async Task<int> ContarPorEntidad(string entidad)
     {
- return await _context.Auditorias.CountAsync(a => a.Entidad == entidad);
+        return await _context.Auditorias.CountAsync(a => a.Entidad == entidad);
     }
 
     public async Task<List<Auditoria>> ObtenerPorRangoFecha(DateTime fechaDesde, DateTime fechaHasta, int pagina, int cantidadPorPagina)
     {
- return await _context.Auditorias
- .Where(a => a.FechaHora >= fechaDesde && a.FechaHora <= fechaHasta)
-    .OrderByDescending(a => a.FechaHora)
-    .Skip((pagina - 1) * cantidadPorPagina)
-        .Take(cantidadPorPagina)
-   .ToListAsync();
+        return await _context.Auditorias
+        .Where(a => a.FechaHora >= fechaDesde && a.FechaHora <= fechaHasta)
+           .OrderByDescending(a => a.FechaHora)
+           .Skip((pagina - 1) * cantidadPorPagina)
+               .Take(cantidadPorPagina)
+          .ToListAsync();
     }
 
     public async Task<int> ContarPorRangoFecha(DateTime fechaDesde, DateTime fechaHasta)

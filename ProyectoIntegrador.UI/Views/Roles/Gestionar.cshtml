@@ -6,24 +6,24 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h2>
-   <i class="ti ti-shield-check"></i> @Model.NombreRol
-      @if (Model.EsPredefinido)
-         {
-  <span class="badge bg-secondary-lt ms-2 fs-6">Predefinido</span>
-   }
-     </h2>
- <p class="text-muted mb-0">
-  @if (Model.EsPredefinido)
-        {
-       <span><i class="ti ti-info-circle"></i> Este rol es predefinido. Sus permisos no se pueden modificar.</span>
-     }
-      else
-      {
- <span>Marcá o desmarcá los checkboxes para asignar permisos.</span>
-      }
- </p>
+            <i class="ti ti-shield-check"></i> @Model.NombreRol
+            @if (Model.EsPredefinido)
+            {
+                <span class="badge bg-secondary-lt ms-2 fs-6">Predefinido</span>
+            }
+        </h2>
+        <p class="text-muted mb-0">
+            @if (Model.EsPredefinido)
+            {
+                <span><i class="ti ti-info-circle"></i> Este rol es predefinido. Sus permisos no se pueden modificar.</span>
+            }
+            else
+            {
+                <span>Marcá o desmarcá los checkboxes para asignar permisos.</span>
+            }
+        </p>
     </div>
-  <a asp-action="Index" class="btn btn-outline-azure">
+    <a asp-action="Index" class="btn btn-outline-azure">
         <i class="ti ti-arrow-left"></i> Volver a Roles
     </a>
 </div>
@@ -31,46 +31,46 @@
 <div class="row g-3">
     @foreach (var modulo in Model.Modulos)
     {
-   <div class="col-md-4">
-   <div class="card h-100">
-  <div class="card-header">
- <span class="fw-semibold"><i class="ti ti-folder"></i> @modulo.Nombre</span>
-       </div>
-       <div class="card-body">
-    @foreach (var permiso in modulo.Permisos)
-     {
-      <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
-          <span>@permiso.Accion</span>
-   @if (Model.EsPredefinido)
-  {
-       <span class="badge @(permiso.Asignado ? "bg-success-lt text-success" : "bg-secondary-lt text-secondary")">
-        @(permiso.Asignado ? "Sí" : "No")
-          </span>
-        }
-     else if (permiso.Asignado)
-    {
-     <form asp-action="RemoverPermiso" method="post" class="d-inline">
-    <input type="hidden" name="rolId" value="@Model.RolId" />
-      <input type="hidden" name="permisoId" value="@permiso.Id" />
- <button type="submit" class="btn btn-sm btn-success" title="Quitar permiso">
-       <i class="ti ti-check"></i>
-        </button>
-          </form>
-       }
-        else
-     {
-    <form asp-action="AsignarPermiso" method="post" class="d-inline">
-          <input type="hidden" name="rolId" value="@Model.RolId" />
-      <input type="hidden" name="permisoId" value="@permiso.Id" />
-      <button type="submit" class="btn btn-sm btn-outline-secondary" title="Asignar permiso">
-   <i class="ti ti-x"></i>
-   </button>
-    </form>
-    }
-    </div>
-    }
-</div>
-     </div>
-   </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <span class="fw-semibold"><i class="ti ti-folder"></i> @modulo.Nombre</span>
+                </div>
+                <div class="card-body">
+                    @foreach (var permiso in modulo.Permisos)
+                    {
+                        <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                            <span>@permiso.Accion</span>
+                            @if (Model.EsPredefinido)
+                            {
+                                <span class="badge @(permiso.Asignado ? "bg-success-lt text-success" : "bg-secondary-lt text-secondary")">
+                                    @(permiso.Asignado ? "Sí" : "No")
+                                </span>
+                            }
+                            else if (permiso.Asignado)
+                            {
+                                <form asp-action="RemoverPermiso" method="post" class="d-inline">
+                                    <input type="hidden" name="rolId" value="@Model.RolId" />
+                                    <input type="hidden" name="permisoId" value="@permiso.Id" />
+                                    <button type="submit" class="btn btn-sm btn-success" title="Quitar permiso">
+                                        <i class="ti ti-check"></i>
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-action="AsignarPermiso" method="post" class="d-inline">
+                                    <input type="hidden" name="rolId" value="@Model.RolId" />
+                                    <input type="hidden" name="permisoId" value="@permiso.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="Asignar permiso">
+                                        <i class="ti ti-x"></i>
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
     }
 </div>

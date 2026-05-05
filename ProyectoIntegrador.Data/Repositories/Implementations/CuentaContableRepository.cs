@@ -51,6 +51,14 @@ public class CuentaContableRepository : ICuentaContableRepository
             .ToListAsync();
     }
 
+    public async Task<List<CuentaContable>> ObtenerTodasPorPlan(Guid planId)
+    {
+        return await _context.CuentasContables
+        .Where(c => c.PlanCuentasId == planId)
+        .OrderBy(c => c.Codigo)
+        .ToListAsync();
+    }
+
     public async Task<List<CuentaContable>> ObtenerImputables(Guid planCuentasId)
     {
         return await _context.CuentasContables

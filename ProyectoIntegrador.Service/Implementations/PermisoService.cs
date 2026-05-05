@@ -10,32 +10,32 @@ public class PermisoService : IPermisoService
 
     public PermisoService(IPermisoRepository permisoRepository)
     {
-  _permisoRepository = permisoRepository;
+        _permisoRepository = permisoRepository;
     }
 
     public async Task<List<PermisoResponseDto>> ObtenerTodos()
     {
-    var permisos = await _permisoRepository.ObtenerTodos();
-      return permisos.Select(Mapear).ToList();
+        var permisos = await _permisoRepository.ObtenerTodos();
+        return permisos.Select(Mapear).ToList();
     }
 
     public async Task<List<PermisoResponseDto>> ObtenerPorModulo(string modulo)
     {
         var permisos = await _permisoRepository.ObtenerPorModulo(modulo);
- return permisos.Select(Mapear).ToList();
- }
+        return permisos.Select(Mapear).ToList();
+    }
 
     public async Task<List<PermisoResponseDto>> ObtenerPorRol(Guid rolId)
     {
         var permisos = await _permisoRepository.ObtenerPorRol(rolId);
-       return permisos.Select(Mapear).ToList();
+        return permisos.Select(Mapear).ToList();
     }
 
     private static PermisoResponseDto Mapear(Data.Entities.Permiso p) => new()
     {
-    Id = p.Id,
-     Nombre = p.Nombre,
-Modulo = p.Modulo,
-     Accion = p.Accion
+        Id = p.Id,
+        Nombre = p.Nombre,
+        Modulo = p.Modulo,
+        Accion = p.Accion
     };
 }

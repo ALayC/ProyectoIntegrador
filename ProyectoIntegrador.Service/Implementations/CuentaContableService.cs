@@ -72,6 +72,37 @@ public class CuentaContableService : ICuentaContableService
         return new PaginadoDto<CuentaContableDto>(cuentasDto, pagina, cantidadPorPagina, total);
     }
 
+    public async Task<List<CuentaContableArbolDto>> ObtenerArbol(Guid planId)
+    {
+        var cuentas = await _cuentaRepository.ObtenerTodasPorPlan(planId);
+
+        var dict = cuentas.ToDictionary(
+            c => c.Id,
+            c => new CuentaContableArbolDto
+            {
+                Id = c.Id,
+                Codigo = c.Codigo,
+                Nombre = c.Nombre,
+                Hijas = new List<CuentaContableArbolDto>()
+            });
+
+        var raiz = new List<CuentaContableArbolDto>();
+
+        foreach (var cuenta in cuentas)
+        {
+            if (cuenta.CuentaPadreId == null)
+            {
+                raiz.Add(dict[cuenta.Id]);
+            }
+            else if (dict.ContainsKey(cuenta.CuentaPadreId.Value))
+            {
+                dict[cuenta.CuentaPadreId.Value].Hijas.Add(dict[cuenta.Id]);
+            }
+        }
+
+        return raiz;
+    }
+
     public async Task<CuentaContableDto> Actualizar(Guid id, ActualizarCuentaContableDto dto)
     {
         var cuenta = await _cuentaRepository.ObtenerPorId(id)

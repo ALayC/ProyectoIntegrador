@@ -21,15 +21,15 @@ public class AuthServiceTests
     {
         _mockUsuarioRepo = new Mock<IUsuarioRepository>();
         _mockRolRepo = new Mock<IRolRepository>();
-_mockTokenRepo = new Mock<ITokenRevocadoRepository>();
+        _mockTokenRepo = new Mock<ITokenRevocadoRepository>();
 
-    _jwtOptions = Options.Create(new JwtOptions
+        _jwtOptions = Options.Create(new JwtOptions
         {
-  SecretKey = "ClaveSecretaParaTestsDeAlMenos32Caracteres!",
+            SecretKey = "ClaveSecretaParaTestsDeAlMenos32Caracteres!",
             Issuer = "TestIssuer",
-        Audience = "TestAudience",
+            Audience = "TestAudience",
             DuracionMinutos = 60
-    });
+        });
 
         _authService = new AuthService(
             _mockUsuarioRepo.Object,
@@ -41,18 +41,18 @@ _mockTokenRepo = new Mock<ITokenRevocadoRepository>();
     [Fact]
     public async Task Registrar_ConEmailNuevo_CreaUsuarioExitosamente()
     {
-  // Arrange
-  var registroDto = new RegistroDto
+        // Arrange
+        var registroDto = new RegistroDto
         {
             Email = "contador@test.com",
-      Password = "Password123!",
-        NombreCompleto = "Juan Pérez"
+            Password = "Password123!",
+            NombreCompleto = "Juan Pérez"
         };
 
         var rolContador = new Rol
-   {
+        {
             Id = SeedData.RolContadorId,
- Nombre = "Contador",
+            Nombre = "Contador",
             EsPredefinido = true
         };
 
@@ -79,35 +79,35 @@ _mockTokenRepo = new Mock<ITokenRevocadoRepository>();
         Assert.Equal("Contador", resultado.Rol);
 
         _mockUsuarioRepo.Verify(r => r.ExisteEmail(registroDto.Email), Times.Once);
-    _mockUsuarioRepo.Verify(r => r.Guardar(It.Is<Usuario>(u =>
-        u.Email == registroDto.Email &&
-     u.NombreCompleto == registroDto.NombreCompleto &&
-  u.ProveedorAuth == "Local" &&
- u.Estado == "Activo" &&
-            u.RolId == SeedData.RolContadorId &&
-       u.ContadorId == null &&
-   !string.IsNullOrEmpty(u.PasswordHash)
-   )), Times.Once);
+        _mockUsuarioRepo.Verify(r => r.Guardar(It.Is<Usuario>(u =>
+            u.Email == registroDto.Email &&
+         u.NombreCompleto == registroDto.NombreCompleto &&
+      u.ProveedorAuth == "Local" &&
+     u.Estado == "Activo" &&
+                u.RolId == SeedData.RolContadorId &&
+           u.ContadorId == null &&
+       !string.IsNullOrEmpty(u.PasswordHash)
+       )), Times.Once);
     }
 
     [Fact]
     public async Task Registrar_ConEmailExistente_LanzaDuplicadoException()
     {
-   // Arrange
+        // Arrange
         var registroDto = new RegistroDto
         {
-     Email = "existente@test.com",
+            Email = "existente@test.com",
             Password = "Password123!",
             NombreCompleto = "María García"
         };
 
-   _mockUsuarioRepo
-   .Setup(r => r.ExisteEmail(registroDto.Email))
-      .ReturnsAsync(true);
+        _mockUsuarioRepo
+        .Setup(r => r.ExisteEmail(registroDto.Email))
+           .ReturnsAsync(true);
 
         // Act & Assert
-    var exception = await Assert.ThrowsAsync<DuplicadoException>(
-() => _authService.Registrar(registroDto));
+        var exception = await Assert.ThrowsAsync<DuplicadoException>(
+    () => _authService.Registrar(registroDto));
 
         Assert.Contains("existente@test.com", exception.Message);
 

@@ -6,90 +6,90 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2><i class="ti ti-shield"></i> Gestión de Roles</h2>
     <div class="d-flex gap-2">
-<a asp-controller="Usuarios" asp-action="Index" class="btn btn-outline-azure">
-  <i class="ti ti-users"></i> Gestionar Usuarios
-  </a>
-     <button type="button" class="btn btn-azure" data-bs-toggle="modal" data-bs-target="#modal-crear-rol">
-          <i class="ti ti-plus"></i> Nuevo Rol
-  </button>
+        <a asp-controller="Usuarios" asp-action="Index" class="btn btn-outline-azure">
+            <i class="ti ti-users"></i> Gestionar Usuarios
+        </a>
+        <button type="button" class="btn btn-azure" data-bs-toggle="modal" data-bs-target="#modal-crear-rol">
+            <i class="ti ti-plus"></i> Nuevo Rol
+        </button>
     </div>
-</div>      
+</div>
 
 <div class="row g-3">
     @foreach (var rol in Model.Roles)
     {
-   <div class="col-md-6">
-  <div class="card h-100">
-  <div class="card-header d-flex justify-content-between align-items-center">
-      <div>
-       <span class="fw-semibold">@rol.Nombre</span>
-    @if (rol.EsPredefinido)
-       {
-     <span class="badge bg-secondary-lt ms-2">Predefinido</span>
-    }
-       </div>
-        <div class="d-flex gap-1">
-  <a asp-action="Gestionar" asp-route-id="@rol.Id"
-  class="btn btn-sm btn-outline-azure" title="Gestionar permisos">
-        <i class="ti ti-settings"></i> Permisos
-        </a>
-  @if (!rol.EsPredefinido)
-      {
-    <button type="button" class="btn btn-sm btn-outline-secondary"
-      data-bs-toggle="modal"
-        data-bs-target="#modal-editar-@rol.Id"
-      title="Editar nombre">
-<i class="ti ti-edit"></i>
-    </button>
-     }
-   </div>
-     </div>
-   <div class="card-body">
-   @if (rol.Permisos.Count == 0)
-        {
-    <p class="text-muted small mb-0">Sin permisos asignados.</p>
-     }
-     else
-      {
-    var porModulo = rol.Permisos.GroupBy(p => p.Modulo);
-     @foreach (var modulo in porModulo)
-      {
-          <div class="mb-2">
-          <small class="text-muted fw-semibold text-uppercase">@modulo.Key</small><br />
-       @foreach (var p in modulo)
-      {
-              <span class="badge bg-azure-lt text-azure me-1 mb-1">@p.Accion</span>
-        }
-     </div>
-         }
-     }
- </div>
- </div>
-  </div>
-
-  @if (!rol.EsPredefinido)
-    {
-   <div class="modal modal-blur fade" id="modal-editar-@rol.Id" tabindex="-1" role="dialog" aria-hidden="true">
-   <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-              <div class="modal-content">
-    <div class="modal-header">
-         <h5 class="modal-title">Editar nombre del rol</h5>
-     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="fw-semibold">@rol.Nombre</span>
+                        @if (rol.EsPredefinido)
+                        {
+                            <span class="badge bg-secondary-lt ms-2">Predefinido</span>
+                        }
+                    </div>
+                    <div class="d-flex gap-1">
+                        <a asp-action="Gestionar" asp-route-id="@rol.Id"
+                               class="btn btn-sm btn-outline-azure" title="Gestionar permisos">
+                            <i class="ti ti-settings"></i> Permisos
+                        </a>
+                        @if (!rol.EsPredefinido)
+                        {
+                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modal-editar-@rol.Id"
+                                    title="Editar nombre">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                        }
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (rol.Permisos.Count == 0)
+                    {
+                        <p class="text-muted small mb-0">Sin permisos asignados.</p>
+                    }
+                    else
+                    {
+                        var porModulo = rol.Permisos.GroupBy(p => p.Modulo);
+                        @foreach (var modulo in porModulo)
+                        {
+                            <div class="mb-2">
+                                <small class="text-muted fw-semibold text-uppercase">@modulo.Key</small><br />
+                                @foreach (var p in modulo)
+                                {
+                                    <span class="badge bg-azure-lt text-azure me-1 mb-1">@p.Accion</span>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
         </div>
-     <form asp-action="EditarNombre" asp-route-id="@rol.Id" method="post">
-    <div class="modal-body">
-           <label class="form-label">Nombre</label>
-        <input type="text" name="nombre" value="@rol.Nombre" class="form-control" required />
-     </div>
-   <div class="modal-footer">
-        <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
- <button type="submit" class="btn btn-azure">Guardar</button>
-    </div>
-        </form>
-     </div>
-   </div>
-   </div>
-    }
+
+        @if (!rol.EsPredefinido)
+        {
+            <div class="modal modal-blur fade" id="modal-editar-@rol.Id" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Editar nombre del rol</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <form asp-action="EditarNombre" asp-route-id="@rol.Id" method="post">
+                            <div class="modal-body">
+                                <label class="form-label">Nombre</label>
+                                <input type="text" name="nombre" value="@rol.Nombre" class="form-control" required />
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-azure">Guardar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
     }
 </div>
 
@@ -97,20 +97,20 @@
 <div class="modal modal-blur fade" id="modal-crear-rol" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
         <div class="modal-content">
-         <div class="modal-header">
-     <h5 class="modal-title">Nuevo Rol</h5>
-  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
- </div>
-         <form asp-action="Crear" method="post">
-   <div class="modal-body">
-          <label class="form-label">Nombre del rol</label>
-    <input type="text" name="Nombre" class="form-control" required placeholder="Ej: Auditor" />
-  </div>
- <div class="modal-footer">
-    <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
-   <button type="submit" class="btn btn-azure">Crear</button>
-         </div>
-      </form>
-   </div>
+            <div class="modal-header">
+                <h5 class="modal-title">Nuevo Rol</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form asp-action="Crear" method="post">
+                <div class="modal-body">
+                    <label class="form-label">Nombre del rol</label>
+                    <input type="text" name="Nombre" class="form-control" required placeholder="Ej: Auditor" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-azure">Crear</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
