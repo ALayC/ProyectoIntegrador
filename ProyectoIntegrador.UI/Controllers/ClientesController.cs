@@ -121,6 +121,23 @@ public class ClientesController : Controller
         return View(response.Data);
     }
 
+    // ?? GET /Clientes/PlanDeCuentas/{id} ??????????
+    [HttpGet]
+    public async Task<IActionResult> PlanDeCuentas(Guid id)
+    {
+        var response = await _apiClient.GetAsync<List<CuentaContableArbolViewModel>>($"api/clientes/{id}/plan-de-cuentas");
+
+        if (response.EsNoAutorizado) return RedirectToAction("Login", "Auth");
+
+        if (!response.EsExitoso)
+        {
+            TempData["Error"] = response.MensajeError ?? "No se pudo cargar el plan de cuentas.";
+            return RedirectToAction(nameof(Detalles), new { id });
+        }
+
+        return View(response.Data ?? new List<CuentaContableArbolViewModel>());
+    }
+
     // ?? POST /Clientes/Editar/{id} ????????????????
     [HttpPost]
     [ValidateAntiForgeryToken]

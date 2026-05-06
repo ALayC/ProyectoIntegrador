@@ -1,0 +1,23 @@
+@model CuentaContableArbolViewModel
+@{
+    var nivel = ViewData["Nivel"] as int? ?? 0;
+    var paddingLeft = nivel * 24;
+}
+
+<tr>
+    <td class="text-nowrap">@Model.Codigo</td>
+    <td>
+        <div style="padding-left: @(paddingLeft)px;">
+            <span class="fw-semibold">@Model.Nombre</span>
+        </div>
+    </td>
+</tr>
+
+@if (Model.Hijas?.Count > 0)
+{
+    var siguienteNivel = nivel + 1;
+    foreach (var hija in Model.Hijas)
+    {
+        @await Html.PartialAsync("_CuentaContableFila", hija, new ViewDataDictionary(ViewData) { ["Nivel"] = siguienteNivel })
+    }
+}
