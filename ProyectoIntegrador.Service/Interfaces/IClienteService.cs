@@ -32,4 +32,9 @@ public interface IClienteService
     /// Cambia estado a Inactivo y registra auditoría.
     /// </summary>
     Task Desactivar(Guid id, Guid usuarioId);
+
+    /// <summary>
+    /// Obtiene el plan de cuentas en formato árbol para un cliente.
+    /// </summary>
+    Task<List<CuentaContableArbolDto>> ObtenerPlanDeCuentas(Guid clienteId);
 }

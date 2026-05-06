@@ -14,17 +14,20 @@ public class ClienteService : IClienteService
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IPlanDeCuentasRepository _planDeCuentasRepository;
     private readonly IAuditoriaRepository _auditoriaRepository;
+    private readonly ICuentaContableService _cuentaContableService;
 
     public ClienteService(
 IClienteRepository clienteRepository,
     IUsuarioRepository usuarioRepository,
         IPlanDeCuentasRepository planDeCuentasRepository,
-        IAuditoriaRepository auditoriaRepository)
+        IAuditoriaRepository auditoriaRepository,
+        ICuentaContableService cuentaContableService)
     {
         _clienteRepository = clienteRepository;
         _usuarioRepository = usuarioRepository;
         _planDeCuentasRepository = planDeCuentasRepository;
         _auditoriaRepository = auditoriaRepository;
+        _cuentaContableService = cuentaContableService;
     }
 
     /// <inheritdoc />
@@ -167,6 +170,15 @@ IClienteRepository clienteRepository,
             "Desactivar",
   datosAnteriores: datosAnteriores,
               datosNuevos: SerializarCliente(cliente));
+    }
+
+    /// <inheritdoc />
+    public async Task<List<CuentaContableArbolDto>> ObtenerPlanDeCuentas(Guid clienteId)
+    {
+        var plan = await _planDeCuentasRepository.ObtenerPorClienteId(clienteId)
+            ?? throw new EntidadNoEncontradaException("PlanDeCuentas", clienteId);
+
+        return await _cuentaContableService.ObtenerArbolDeCuentas(plan.Id);
     }
 
     // ??????????????????????????????????????????????
