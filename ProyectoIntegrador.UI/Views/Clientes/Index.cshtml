@@ -34,9 +34,21 @@ else
                 {
                     var esInactivo = cliente.Estado == "Inactivo";
                     <tr class="@(esInactivo ? "text-muted text-decoration-line-through" : "")">
-                        <td>@cliente.Rut</td>
-                        <td>@cliente.RazonSocial</td>
-                        <td>@cliente.Email</td>
+                        <td>
+                            <a asp-action="Detalles" asp-route-id="@cliente.Id" class="text-decoration-none">
+                                @cliente.Rut
+                            </a>
+                        </td>
+                        <td>
+                            <a asp-action="Detalles" asp-route-id="@cliente.Id" class="text-decoration-none">
+                                @cliente.RazonSocial
+                            </a>
+                        </td>
+                        <td>
+                            <a asp-action="Detalles" asp-route-id="@cliente.Id" class="text-decoration-none">
+                                @cliente.Email
+                            </a>
+                        </td>
                         <td>
                             @if (esInactivo)
                             {

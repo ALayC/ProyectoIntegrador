@@ -104,6 +104,23 @@ public class ClientesController : Controller
         return View(viewModel);
     }
 
+    // ?? GET /Clientes/Detalles/{id} ???????????????
+    [HttpGet]
+    public async Task<IActionResult> Detalles(Guid id)
+    {
+        var response = await _apiClient.GetAsync<ClienteListViewModel>($"api/clientes/{id}");
+
+        if (response.EsNoAutorizado) return RedirectToAction("Login", "Auth");
+
+        if (!response.EsExitoso || response.Data is null)
+        {
+            TempData["Error"] = response.MensajeError ?? "Cliente no encontrado.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        return View(response.Data);
+    }
+
     // ?? POST /Clientes/Editar/{id} ????????????????
     [HttpPost]
     [ValidateAntiForgeryToken]
