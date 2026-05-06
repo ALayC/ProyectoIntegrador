@@ -96,11 +96,11 @@ public class CuentaContableService : ICuentaContableService
 
         foreach (var cuenta in cuentas)
         {
-            if (cuenta.CuentaPadreId == null)
+            if (cuenta.CuentaPadreId == null || !dict.ContainsKey(cuenta.CuentaPadreId.Value))
             {
                 raiz.Add(dict[cuenta.Id]);
             }
-            else if (dict.ContainsKey(cuenta.CuentaPadreId.Value))
+            else
             {
                 dict[cuenta.CuentaPadreId.Value].Hijas.Add(dict[cuenta.Id]);
             }

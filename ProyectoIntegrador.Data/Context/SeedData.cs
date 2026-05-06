@@ -289,6 +289,45 @@ public static class SeedData
                 Estado = "Activa"
             },
 
+            new CuentaContable
+            {
+                Id = PatrimonioId,
+                PlanCuentasId = PlanTemplateId,
+                CuentaPadreId = null,
+                Codigo = "3",
+                Nombre = "Patrimonio",
+                Tipo = "Patrimonio",
+                Naturaleza = "Acreedora",
+                EsImputable = false,
+                Estado = "Activa"
+            },
+
+            new CuentaContable
+            {
+                Id = IngresosId,
+                PlanCuentasId = PlanTemplateId,
+                CuentaPadreId = null,
+                Codigo = "4",
+                Nombre = "Ingresos",
+                Tipo = "Ingreso",
+                Naturaleza = "Acreedora",
+                EsImputable = false,
+                Estado = "Activa"
+            },
+
+            new CuentaContable
+            {
+                Id = EgresosId,
+                PlanCuentasId = PlanTemplateId,
+                CuentaPadreId = null,
+                Codigo = "5",
+                Nombre = "Egresos",
+                Tipo = "Egreso",
+                Naturaleza = "Deudora",
+                EsImputable = false,
+                Estado = "Activa"
+            },
+
             // Nivel 2
             new CuentaContable
             {
