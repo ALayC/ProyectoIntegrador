@@ -6,21 +6,21 @@ namespace ProyectoIntegrador.Service.Exceptions;
 /// </summary>
 public class ImportacionInvalidaException : Exception
 {
-  private const string MensajePorDefecto =
-        "El archivo de importación tiene una estructura incorrecta o contiene datos inválidos.";
+    private const string MensajePorDefecto =
+          "El archivo de importación tiene una estructura incorrecta o contiene datos inválidos.";
 
     public ImportacionInvalidaException()
         : base(MensajePorDefecto)
     {
     }
 
-  public ImportacionInvalidaException(string mensaje)
-        : base(mensaje)
+    public ImportacionInvalidaException(string mensaje)
+          : base(mensaje)
     {
     }
 
-  public ImportacionInvalidaException(string mensaje, Exception innerException)
-      : base(mensaje, innerException)
+    public ImportacionInvalidaException(string mensaje, Exception innerException)
+        : base(mensaje, innerException)
     {
     }
 

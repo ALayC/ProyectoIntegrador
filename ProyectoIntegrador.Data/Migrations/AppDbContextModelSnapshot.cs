@@ -282,6 +282,87 @@ namespace ProyectoIntegrador.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("CuentasContables");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("d0000000-1000-0000-0000-000000000001"),
+                            Codigo = "1",
+                            EsImputable = false,
+                            Estado = "Activa",
+                            Naturaleza = "Deudora",
+                            Nombre = "Activo",
+                            PlanCuentasId = new Guid("d0000000-0001-0001-0001-000000000001"),
+                            Tipo = "Activo"
+                        },
+                        new
+                        {
+                            Id = new Guid("d0000000-2000-0000-0000-000000000001"),
+                            Codigo = "2",
+                            EsImputable = false,
+                            Estado = "Activa",
+                            Naturaleza = "Acreedora",
+                            Nombre = "Pasivo",
+                            PlanCuentasId = new Guid("d0000000-0001-0001-0001-000000000001"),
+                            Tipo = "Pasivo"
+                        },
+                        new
+                        {
+                            Id = new Guid("d0000000-3000-0000-0000-000000000001"),
+                            Codigo = "3",
+                            EsImputable = false,
+                            Estado = "Activa",
+                            Naturaleza = "Acreedora",
+                            Nombre = "Patrimonio",
+                            PlanCuentasId = new Guid("d0000000-0001-0001-0001-000000000001"),
+                            Tipo = "Patrimonio"
+                        },
+                        new
+                        {
+                            Id = new Guid("d0000000-4000-0000-0000-000000000001"),
+                            Codigo = "4",
+                            EsImputable = false,
+                            Estado = "Activa",
+                            Naturaleza = "Acreedora",
+                            Nombre = "Ingresos",
+                            PlanCuentasId = new Guid("d0000000-0001-0001-0001-000000000001"),
+                            Tipo = "Ingreso"
+                        },
+                        new
+                        {
+                            Id = new Guid("d0000000-5000-0000-0000-000000000001"),
+                            Codigo = "5",
+                            EsImputable = false,
+                            Estado = "Activa",
+                            Naturaleza = "Deudora",
+                            Nombre = "Egresos",
+                            PlanCuentasId = new Guid("d0000000-0001-0001-0001-000000000001"),
+                            Tipo = "Egreso"
+                        },
+                        new
+                        {
+                            Id = new Guid("d0000000-1100-0000-0000-000000000001"),
+                            Codigo = "1.1",
+                            CuentaPadreId = new Guid("d0000000-1000-0000-0000-000000000001"),
+                            EsImputable = true,
+                            Estado = "Activa",
+                            Naturaleza = "Deudora",
+                            Nombre = "Caja",
+                            PlanCuentasId = new Guid("d0000000-0001-0001-0001-000000000001"),
+                            Tipo = "Activo"
+                        },
+                        new
+                        {
+                            Id = new Guid("d0000000-1200-0000-0000-000000000001"),
+                            Codigo = "1.2",
+                            CuentaPadreId = new Guid("d0000000-1000-0000-0000-000000000001"),
+                            EsImputable = true,
+                            Estado = "Activa",
+                            Naturaleza = "Deudora",
+                            Nombre = "Bancos",
+                            PlanCuentasId = new Guid("d0000000-0001-0001-0001-000000000001"),
+                            Tipo = "Activo"
+                        });
                 });
 
             modelBuilder.Entity("ProyectoIntegrador.Data.Entities.EjercicioContable", b =>
@@ -631,15 +712,26 @@ namespace ProyectoIntegrador.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ClienteId")
+                    b.Property<Guid?>("ClienteId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("EsTemplate")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ClienteId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[ClienteId] IS NOT NULL");
 
                     b.ToTable("PlanesDeCuentas");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("d0000000-0001-0001-0001-000000000001"),
+                            EsTemplate = true
+                        });
                 });
 
             modelBuilder.Entity("ProyectoIntegrador.Data.Entities.Rol", b =>
@@ -1049,7 +1141,7 @@ namespace ProyectoIntegrador.Data.Migrations
                             Email = "admin@sistema.com",
                             Estado = "Activo",
                             NombreCompleto = "Administrador del Sistema",
-                            PasswordHash = "$2a$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
+                            PasswordHash = "$2a$12$siCyK43j/60igAgW0GwTXOojpsf5pt0X6IIu9I5FfBhE645FlNcLW",
                             ProveedorAuth = "Local",
                             RolId = new Guid("a1b2c3d4-0001-0001-0001-000000000001")
                         });
@@ -1226,8 +1318,7 @@ namespace ProyectoIntegrador.Data.Migrations
                     b.HasOne("ProyectoIntegrador.Data.Entities.Cliente", "Cliente")
                         .WithOne("PlanDeCuentas")
                         .HasForeignKey("ProyectoIntegrador.Data.Entities.PlanDeCuentas", "ClienteId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Cliente");
                 });

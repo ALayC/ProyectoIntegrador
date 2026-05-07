@@ -21,7 +21,7 @@ public class TokenRevocadoRepository : ITokenRevocadoRepository
 
     public async Task<bool> EstaRevocado(string token)
     {
-  return await _context.TokensRevocados.AnyAsync(t => t.Token == token);
+        return await _context.TokensRevocados.AnyAsync(t => t.Token == token);
     }
 
     public async Task Guardar(TokenRevocado tokenRevocado)
@@ -33,14 +33,14 @@ public class TokenRevocadoRepository : ITokenRevocadoRepository
     public async Task EliminarExpirados()
     {
         var ahora = DateTime.UtcNow;
-     var expirados = await _context.TokensRevocados
-  .Where(t => t.ExpiraEn <= ahora)
-       .ToListAsync();
+        var expirados = await _context.TokensRevocados
+     .Where(t => t.ExpiraEn <= ahora)
+          .ToListAsync();
 
         if (expirados.Count > 0)
-  {
-      _context.TokensRevocados.RemoveRange(expirados);
-   await _context.SaveChangesAsync();
+        {
+            _context.TokensRevocados.RemoveRange(expirados);
+            await _context.SaveChangesAsync();
         }
     }
 }

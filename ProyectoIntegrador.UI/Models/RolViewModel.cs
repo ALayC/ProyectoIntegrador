@@ -8,7 +8,7 @@ public class RolIndexViewModel
 
 public class RolItemViewModel
 {
- public Guid Id { get; set; }
+    public Guid Id { get; set; }
     public string Nombre { get; set; } = string.Empty;
     public bool EsPredefinido { get; set; }
     public List<PermisoItemViewModel> Permisos { get; set; } = [];
@@ -34,7 +34,7 @@ public class GestionPermisosViewModel
 {
     public Guid RolId { get; set; }
     public string NombreRol { get; set; } = string.Empty;
-public bool EsPredefinido { get; set; }
+    public bool EsPredefinido { get; set; }
     public List<ModuloPermisosViewModel> Modulos { get; set; } = [];
 }
 

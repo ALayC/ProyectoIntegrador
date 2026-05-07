@@ -1,4 +1,4 @@
-@model RegisterViewModel
+ï»¿@model RegisterViewModel
 @{
     ViewData["Title"] = "Registrarse";
     Layout = "_AuthLayout";
@@ -11,7 +11,7 @@
         <form asp-action="Register" method="post" autocomplete="off" novalidate>
             <div class="mb-3">
                 <label asp-for="NombreCompleto" class="form-label"></label>
-                <input asp-for="NombreCompleto" class="form-control" placeholder="Juan Pérez" autofocus />
+                <input asp-for="NombreCompleto" class="form-control" placeholder="Juan PÃ©rez" autofocus />
                 <span asp-validation-for="NombreCompleto" class="text-danger small"></span>
             </div>
 
@@ -39,9 +39,9 @@
         </form>
     </div>
 
-    <div class="hr-text">¿Ya tenés cuenta?</div>
+    <div class="hr-text">Â¿Ya tenÃ©s cuenta?</div>
     <div class="card-body">
-        <a asp-action="Login" class="btn btn-outline-azure w-100">Iniciar sesión</a>
+        <a asp-action="Login" class="btn btn-outline-azure w-100">Iniciar sesiÃ³n</a>
     </div>
 </div>
 

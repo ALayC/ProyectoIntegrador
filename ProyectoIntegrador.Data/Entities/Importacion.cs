@@ -8,7 +8,7 @@ public class Importacion
     public string NombreArchivo { get; set; } = string.Empty;
     public DateTime FechaImportacion { get; set; }
     public int RegistrosImportados { get; set; }
-public int RegistrosRechazados { get; set; }
+    public int RegistrosRechazados { get; set; }
 
     // Navegación
     public Usuario Usuario { get; set; } = null!;

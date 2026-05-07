@@ -1,0 +1,54 @@
+@model List<CuentaContableArbolViewModel>
+@{
+    ViewData["Title"] = "Plan de cuentas";
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col">
+                <h2 class="page-title">Plan de cuentas</h2>
+                <div class="text-secondary">Detalle del plan de cuentas del cliente</div>
+            </div>
+            <div class="col-auto ms-auto">
+                <a asp-action="Index" class="btn btn-outline-azure">
+                    <i class="ti ti-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Cuenta</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Count == 0)
+                            {
+                                <tr>
+                                    <td colspan="2" class="text-center text-secondary">No hay cuentas registradas.</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var cuenta in Model)
+                                {
+                                    @await Html.PartialAsync("_CuentaContableFila", cuenta)
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

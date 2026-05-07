@@ -10,9 +10,9 @@ public sealed class RequierePermisoAttribute : Attribute
     public string Modulo { get; }
     public string Accion { get; }
 
-  public RequierePermisoAttribute(string modulo, string accion)
+    public RequierePermisoAttribute(string modulo, string accion)
     {
-     Modulo = modulo;
+        Modulo = modulo;
         Accion = accion;
     }
 }

@@ -9,6 +9,6 @@ public interface IImportacionRepository
     Task<int> ContarPorCliente(Guid clienteId);
     Task<List<Importacion>> ObtenerPorUsuario(Guid usuarioId, int pagina, int cantidadPorPagina);
     Task<int> ContarPorUsuario(Guid usuarioId);
- Task Guardar(Importacion importacion);
+    Task Guardar(Importacion importacion);
     Task Actualizar(Importacion importacion);
 }

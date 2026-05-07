@@ -3,9 +3,10 @@ namespace ProyectoIntegrador.Data.Entities;
 public class PlanDeCuentas
 {
     public Guid Id { get; set; }
-    public Guid ClienteId { get; set; }
+    public Guid? ClienteId { get; set; }
+    public bool EsTemplate { get; set; }
 
     // Navegación
-    public Cliente Cliente { get; set; } = null!;
+    public Cliente? Cliente { get; set; } 
     public ICollection<CuentaContable> CuentasContables { get; set; } = new List<CuentaContable>();
 }

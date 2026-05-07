@@ -16,7 +16,7 @@ public class EjercicioSolapadoException : Exception
 
     public EjercicioSolapadoException(string mensaje)
         : base(mensaje)
-  {
+    {
     }
 
     public EjercicioSolapadoException(string mensaje, Exception innerException)

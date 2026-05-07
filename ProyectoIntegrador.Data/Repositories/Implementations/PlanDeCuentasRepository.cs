@@ -28,10 +28,17 @@ public class PlanDeCuentasRepository : IPlanDeCuentasRepository
      .FirstOrDefaultAsync(p => p.ClienteId == clienteId);
     }
 
+    public async Task<PlanDeCuentas?> ObtenerTemplate()
+    {
+        return await _context.PlanesDeCuentas
+            .Include(p => p.CuentasContables)
+            .FirstOrDefaultAsync(p => p.EsTemplate);
+    }
+
     public async Task Guardar(PlanDeCuentas planDeCuentas)
     {
         await _context.PlanesDeCuentas.AddAsync(planDeCuentas);
-     await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
     }
 
     public async Task Actualizar(PlanDeCuentas planDeCuentas)

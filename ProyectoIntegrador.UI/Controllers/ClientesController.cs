@@ -104,6 +104,40 @@ public class ClientesController : Controller
         return View(viewModel);
     }
 
+    // ?? GET /Clientes/Detalles/{id} ???????????????
+    [HttpGet]
+    public async Task<IActionResult> Detalles(Guid id)
+    {
+        var response = await _apiClient.GetAsync<ClienteListViewModel>($"api/clientes/{id}");
+
+        if (response.EsNoAutorizado) return RedirectToAction("Login", "Auth");
+
+        if (!response.EsExitoso || response.Data is null)
+        {
+            TempData["Error"] = response.MensajeError ?? "Cliente no encontrado.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        return View(response.Data);
+    }
+
+    // ?? GET /Clientes/PlanDeCuentas/{id} ??????????
+    [HttpGet]
+    public async Task<IActionResult> PlanDeCuentas(Guid id)
+    {
+        var response = await _apiClient.GetAsync<List<CuentaContableArbolViewModel>>($"api/clientes/{id}/plan-de-cuentas");
+
+        if (response.EsNoAutorizado) return RedirectToAction("Login", "Auth");
+
+        if (!response.EsExitoso)
+        {
+            TempData["Error"] = response.MensajeError ?? "No se pudo cargar el plan de cuentas.";
+            return RedirectToAction(nameof(Detalles), new { id });
+        }
+
+        return View(response.Data ?? new List<CuentaContableArbolViewModel>());
+    }
+
     // ?? POST /Clientes/Editar/{id} ????????????????
     [HttpPost]
     [ValidateAntiForgeryToken]

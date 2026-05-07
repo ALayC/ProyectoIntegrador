@@ -76,7 +76,7 @@ public class AuthController : ControllerBase
         Console.WriteLine($"[API recibió] IdToken length: {dto.IdToken?.Length ?? 0}");
         Console.WriteLine($"[API recibió] AccessToken length: {dto.AccessToken?.Length ?? 0}");
 
-        var resultado = await _authService.LoginConGoogle(dto.IdToken, dto.AccessToken);  
+        var resultado = await _authService.LoginConGoogle(dto.IdToken, dto.AccessToken);
         return Ok(resultado);
     }
 

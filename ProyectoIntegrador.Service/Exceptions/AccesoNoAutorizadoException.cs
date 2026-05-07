@@ -27,5 +27,5 @@ public class AccesoNoAutorizadoException : Exception
     public AccesoNoAutorizadoException(Guid usuarioId, string recurso)
  : base($"El usuario '{usuarioId}' no tiene permisos para acceder a '{recurso}'.")
     {
-  }
+    }
 }

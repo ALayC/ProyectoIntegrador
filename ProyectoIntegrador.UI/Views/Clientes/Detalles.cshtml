@@ -1,0 +1,154 @@
+@model ClienteListViewModel
+@{
+    ViewData["Title"] = "Detalle de Cliente";
+    var esInactivo = Model.Estado == "Inactivo";
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col">
+                <div class="page-pretitle text-secondary">Cliente</div>
+                <h2 class="page-title">@Model.RazonSocial</h2>
+                <div class="text-secondary">RUT: @Model.Rut</div>
+            </div>
+            <div class="col-auto ms-auto">
+                <a asp-action="Index" class="btn btn-outline-azure">
+                    <i class="ti ti-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    <a asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-azure">
+                        <i class="ti ti-edit"></i> Editar cliente
+                    </a>
+                    @if (!esInactivo)
+                    {
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmar-desactivar-detalle">
+                            <i class="ti ti-ban"></i> Desactivar
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-outline-green" disabled>
+                            <i class="ti ti-circle-check"></i> Activar
+                        </button>
+                    }
+                    <a asp-action="PlanDeCuentas" asp-route-id="@Model.Id" class="btn btn-outline-azure">
+                        <i class="ti ti-chart-bar"></i> Ver plan de cuentas
+                    </a>
+                    <button type="button" class="btn btn-outline-secondary" disabled>
+                        <i class="ti ti-book"></i> Libro diario
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" disabled>
+                        <i class="ti ti-receipt"></i> Comprobantes
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" disabled>
+                        <i class="ti ti-cash"></i> IVA
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-12 col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Información General</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <div class="text-secondary">RUT</div>
+                                <div class="fw-semibold">@Model.Rut</div>
+                            </div>
+                            <div class="col-12">
+                                <div class="text-secondary">Razón Social</div>
+                                <div class="fw-semibold">@Model.RazonSocial</div>
+                            </div>
+                            <div class="col-12">
+                                <div class="text-secondary">Nombre Fantasía</div>
+                                <div class="fw-semibold">@(string.IsNullOrWhiteSpace(Model.NombreFantasia) ? "No informado" : Model.NombreFantasia)</div>
+                            </div>
+                            <div class="col-12">
+                                <div class="text-secondary">Tipo de contribuyente</div>
+                                <div class="fw-semibold">@Model.TipoContribuyente</div>
+                            </div>
+                            <div class="col-12">
+                                <div class="text-secondary">Estado</div>
+                                @if (esInactivo)
+                                {
+                                    <span class="badge bg-red-lt text-red">Inactivo</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-green-lt text-green">Activo</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+@if (!esInactivo)
+{
+    <div class="modal modal-blur fade" id="confirmar-desactivar-detalle" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar desactivación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body text-secondary">
+                    ¿Deseas desactivar el cliente <strong>@Model.RazonSocial</strong>?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
+                    <form asp-action="Desactivar" asp-route-id="@Model.Id" method="post">
+                        <button type="submit" class="btn btn-danger">Desactivar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Contacto</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <div class="text-secondary">Email</div>
+                                <div class="fw-semibold">@Model.Email</div>
+                            </div>
+                            <div class="col-12">
+                                <div class="text-secondary">Teléfono</div>
+                                <div class="fw-semibold">@Model.Telefono</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Configuración</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-secondary">Moneda base</div>
+                        <div class="fw-semibold">@Model.MonedaBase</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

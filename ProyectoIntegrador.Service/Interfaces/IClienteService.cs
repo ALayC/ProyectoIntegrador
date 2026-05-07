@@ -7,12 +7,12 @@ public interface IClienteService
     /// <summary>
     /// Crea un nuevo cliente asociado al contador indicado.
     /// Valida RUT único, crea PlanDeCuentas y registra auditoría.
- /// </summary>
+    /// </summary>
     Task<ClienteResponseDto> Crear(ClienteDto clienteDto, Guid contadorId);
 
     /// <summary>
     /// Obtiene un cliente por su Id.
-  /// Lanza EntidadNoEncontradaException si no existe.
+    /// Lanza EntidadNoEncontradaException si no existe.
     /// </summary>
     Task<ClienteResponseDto> ObtenerPorId(Guid id);
 
@@ -32,4 +32,9 @@ public interface IClienteService
     /// Cambia estado a Inactivo y registra auditoría.
     /// </summary>
     Task Desactivar(Guid id, Guid usuarioId);
+
+    /// <summary>
+    /// Obtiene el plan de cuentas en formato árbol para un cliente.
+    /// </summary>
+    Task<List<CuentaContableArbolDto>> ObtenerPlanDeCuentas(Guid clienteId);
 }
