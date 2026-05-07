@@ -181,8 +181,7 @@ public class AuthController : Controller
         {
             new(ClaimTypes.Name, authData.NombreCompleto),
             new(ClaimTypes.Email, authData.Email),
-            new(ClaimTypes.Role, authData.Rol),
-            new("JwtToken", authData.Token)
+            new(ClaimTypes.Role, authData.Rol)
         };
 
         // Extraer el sub (userId) del JWT para guardarlo como claim
