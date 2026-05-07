@@ -3,6 +3,27 @@
     ViewData["Title"] = "Mis Clientes";
 }
 
+@section Scripts {
+    <script>
+        (function () {
+            var input = document.getElementById('buscar-clientes');
+            if (!input) return;
+
+            input.addEventListener('input', function () {
+                var filtro = input.value.toLowerCase();
+                var filas = document.querySelectorAll('tbody tr');
+
+                filas.forEach(function (fila) {
+                    var rut = (fila.getAttribute('data-rut') || '').toLowerCase();
+                    var razon = (fila.getAttribute('data-razon') || '').toLowerCase();
+                    var visible = rut.includes(filtro) || razon.includes(filtro);
+                    fila.style.display = visible ? '' : 'none';
+                });
+            });
+        })();
+    </script>
+}
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2><i class="ti ti-users"></i> Mis Clientes</h2>
     <a asp-action="Crear" class="btn btn-azure">
@@ -11,7 +32,7 @@
 </div>
 
 <div class="row mb-3">
-    <div class="col-md-6">
+    <div class="col-md-3">
         <div class="input-icon">
             <span class="input-icon-addon">
                 <i class="ti ti-search"></i>
@@ -66,26 +87,6 @@ else
                                 <span class="text-danger fw-semibold">Inactivo</span>
                             }
 
-@section Scripts {
-    <script>
-        (function () {
-            var input = document.getElementById('buscar-clientes');
-            if (!input) return;
-
-            input.addEventListener('input', function () {
-                var filtro = input.value.toLowerCase();
-                var filas = document.querySelectorAll('tbody tr');
-
-                filas.forEach(function (fila) {
-                    var rut = (fila.getAttribute('data-rut') || '').toLowerCase();
-                    var razon = (fila.getAttribute('data-razon') || '').toLowerCase();
-                    var visible = rut.includes(filtro) || razon.includes(filtro);
-                    fila.style.display = visible ? '' : 'none';
-                });
-            });
-        })();
-    </script>
-}
                             else
                             {
                                 <span class="text-success fw-semibold">Activo</span>
