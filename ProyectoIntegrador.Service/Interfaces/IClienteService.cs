@@ -34,6 +34,12 @@ public interface IClienteService
     Task Desactivar(Guid id, Guid usuarioId);
 
     /// <summary>
+    /// Activa un cliente.
+    /// Cambia estado a Activo y registra auditoría.
+    /// </summary>
+    Task Activar(Guid id, Guid usuarioId);
+
+    /// <summary>
     /// Obtiene el plan de cuentas en formato árbol para un cliente.
     /// </summary>
     Task<List<CuentaContableArbolDto>> ObtenerPlanDeCuentas(Guid clienteId);

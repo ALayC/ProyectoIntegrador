@@ -193,4 +193,23 @@ public class ClientesController : Controller
         TempData["Exito"] = "Cliente desactivado exitosamente.";
         return RedirectToAction(nameof(Index));
     }
+
+    // ?? POST /Clientes/Activar/{id} ???????????????
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Activar(Guid id)
+    {
+        var response = await _apiClient.PatchAsync($"api/clientes/{id}/activar");
+
+        if (response.EsNoAutorizado) return RedirectToAction("Login", "Auth");
+
+        if (!response.EsExitoso)
+        {
+            TempData["Error"] = response.MensajeError ?? "Error al activar el cliente.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        TempData["Exito"] = "Cliente activado exitosamente.";
+        return RedirectToAction(nameof(Index));
+    }
 }

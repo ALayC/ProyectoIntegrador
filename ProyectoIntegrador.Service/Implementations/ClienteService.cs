@@ -173,6 +173,26 @@ IClienteRepository clienteRepository,
     }
 
     /// <inheritdoc />
+    public async Task Activar(Guid id, Guid usuarioId)
+    {
+        var cliente = await _clienteRepository.ObtenerPorId(id)
+            ?? throw new EntidadNoEncontradaException("Cliente", id);
+
+        var datosAnteriores = SerializarCliente(cliente);
+
+        cliente.Estado = "Activo";
+
+        await _clienteRepository.Actualizar(cliente);
+
+        await RegistrarAuditoria(
+            usuarioId,
+            "Cliente",
+            "Activar",
+            datosAnteriores: datosAnteriores,
+            datosNuevos: SerializarCliente(cliente));
+    }
+
+    /// <inheritdoc />
     public async Task<List<CuentaContableArbolDto>> ObtenerPlanDeCuentas(Guid clienteId)
     {
         var plan = await _planDeCuentasRepository.ObtenerPorClienteId(clienteId)
