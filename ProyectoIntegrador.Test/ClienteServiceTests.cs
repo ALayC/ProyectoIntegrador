@@ -5,6 +5,7 @@ using ProyectoIntegrador.Data.Repositories.Interfaces;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Exceptions;
 using ProyectoIntegrador.Service.Implementations;
+using ProyectoIntegrador.Service.Interfaces;
 
 namespace ProyectoIntegrador.Test;
 
