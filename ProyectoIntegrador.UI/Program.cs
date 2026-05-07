@@ -122,6 +122,21 @@ app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity?.IsAuthenticated == true &&
+        string.IsNullOrEmpty(context.Session.GetString("JwtToken")))
+    {
+        var token = context.User.FindFirst("JwtToken")?.Value;
+        if (!string.IsNullOrEmpty(token))
+        {
+            context.Session.SetString("JwtToken", token);
+        }
+    }
+
+    await next();
+});
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

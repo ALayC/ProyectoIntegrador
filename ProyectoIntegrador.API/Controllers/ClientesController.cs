@@ -81,6 +81,18 @@ public class ClientesController : ControllerBase
     }
 
     /// <summary>
+    /// Activa un cliente.
+    /// </summary>
+    [HttpPatch("{id:guid}/activar")]
+    [RequierePermiso("Clientes", "Desactivar")]
+    public async Task<IActionResult> Activar(Guid id)
+    {
+        var usuarioId = ObtenerUsuarioIdDelToken();
+        await _clienteService.Activar(id, usuarioId);
+        return Ok(new { mensaje = "Cliente activado exitosamente." });
+    }
+
+    /// <summary>
     /// Obtiene el plan de cuentas del cliente en formato árbol.
     /// </summary>
     [HttpGet("{id:guid}/plan-de-cuentas")]

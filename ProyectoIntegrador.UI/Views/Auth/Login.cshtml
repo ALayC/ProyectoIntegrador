@@ -8,6 +8,11 @@
     <div class="card-body">
         <h2 class="h2 text-center mb-4">Iniciar sesión</h2>
 
+        @if (TempData["AuthExito"] != null)
+        {
+            <div class="text-success small mb-3">@TempData["AuthExito"]</div>
+        }
+
         <form asp-action="Login" method="post" autocomplete="off" novalidate>
             <div class="mb-3">
                 <label asp-for="Email" class="form-label"></label>
@@ -20,6 +25,15 @@
                 <input asp-for="Password" class="form-control" />
                 <span asp-validation-for="Password" class="text-danger small"></span>
             </div>
+
+            @if (ViewData.ModelState.ErrorCount > 0)
+            {
+                var mensaje = ViewData.ModelState[string.Empty]?.Errors.FirstOrDefault()?.ErrorMessage;
+                if (!string.IsNullOrWhiteSpace(mensaje))
+                {
+                    <div class="text-danger small mt-2">@mensaje</div>
+                }
+            }
 
             <div class="form-footer mt-4">
                 <button type="submit" class="btn btn-azure w-100">Ingresar</button>

@@ -33,6 +33,15 @@
                 <span asp-validation-for="ConfirmarPassword" class="text-danger small"></span>
             </div>
 
+            @if (ViewData.ModelState.ErrorCount > 0)
+            {
+                var mensaje = ViewData.ModelState[string.Empty]?.Errors.FirstOrDefault()?.ErrorMessage;
+                if (!string.IsNullOrWhiteSpace(mensaje))
+                {
+                    <div class="text-danger small mt-2">@mensaje</div>
+                }
+            }
+
             <div class="form-footer mt-4">
                 <button type="submit" class="btn btn-azure w-100">Crear cuenta</button>
             </div>
