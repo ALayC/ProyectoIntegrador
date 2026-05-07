@@ -121,7 +121,7 @@ public class UsuarioService : IUsuarioService
         {
             // Auxiliar: ContadorId es obligatorio y debe ser un Contador activo
             if (!contadorId.HasValue)
-                throw new EntidadNoEncontradaException("ContadorId es obligatorio para el rol Auxiliar Contable.");
+                throw new ValidacionException("ContadorId es obligatorio para el rol Auxiliar Contable.");
 
             var contador = await _usuarioRepository.ObtenerPorId(contadorId.Value)
     ?? throw new EntidadNoEncontradaException("Contador", contadorId.Value);

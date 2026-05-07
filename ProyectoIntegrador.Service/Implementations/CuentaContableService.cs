@@ -126,12 +126,12 @@ public class CuentaContableService : ICuentaContableService
         {
             if (dto.CuentaPadreId.Value == id)
             {
-                throw new InvalidOperationException("La cuenta no puede ser su propia cuenta padre.");
+                throw new CuentaJerarquiaInvalidaException("La cuenta no puede ser su propia cuenta padre.");
             }
 
             if (await EsDescendiente(id, dto.CuentaPadreId.Value, cuenta.PlanCuentasId))
             {
-                throw new InvalidOperationException("La cuenta padre no puede ser un descendiente de la cuenta actual.");
+                throw new CuentaJerarquiaInvalidaException("La cuenta padre no puede ser un descendiente de la cuenta actual.");
             }
 
             var cuentaPadre = await _cuentaRepository.ObtenerPorId(dto.CuentaPadreId.Value)
@@ -216,6 +216,9 @@ public class CuentaContableService : ICuentaContableService
 
     private async Task ObtenerPlanExistente(Guid planCuentasId)
     {
-        var plan = await _planDeCuentasRepository.ObtenerPorId(planCuentasId) ?? throw new EntidadNoEncontradaException("PlanDeCuentas", planCuentasId);
+        if (await _planDeCuentasRepository.ObtenerPorId(planCuentasId) is null)
+        {
+            throw new EntidadNoEncontradaException("PlanDeCuentas", planCuentasId);
+        }
     }
 }

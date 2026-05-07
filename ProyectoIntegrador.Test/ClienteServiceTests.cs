@@ -14,6 +14,7 @@ public class ClienteServiceTests
     private readonly Mock<IUsuarioRepository> _mockUsuarioRepo;
     private readonly Mock<IPlanDeCuentasRepository> _mockPlanRepo;
     private readonly Mock<IAuditoriaRepository> _mockAuditoriaRepo;
+    private readonly Mock<ICuentaContableService> _mockCuentaService;
     private readonly ClienteService _clienteService;
 
     public ClienteServiceTests()
@@ -22,12 +23,14 @@ public class ClienteServiceTests
         _mockUsuarioRepo = new Mock<IUsuarioRepository>();
         _mockPlanRepo = new Mock<IPlanDeCuentasRepository>();
         _mockAuditoriaRepo = new Mock<IAuditoriaRepository>();
+        _mockCuentaService = new Mock<ICuentaContableService>();
 
         _clienteService = new ClienteService(
        _mockClienteRepo.Object,
    _mockUsuarioRepo.Object,
        _mockPlanRepo.Object,
-       _mockAuditoriaRepo.Object);
+        _mockAuditoriaRepo.Object,
+        _mockCuentaService.Object);
     }
 
     [Fact]
@@ -65,6 +68,27 @@ public class ClienteServiceTests
             CreatedAt = DateTime.UtcNow
         };
 
+        var template = new PlanDeCuentas
+        {
+            Id = Guid.NewGuid(),
+            EsTemplate = true,
+            CuentasContables = new List<CuentaContable>
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    PlanCuentasId = SeedData.PlanTemplateId,
+                    CuentaPadreId = null,
+                    Codigo = "1",
+                    Nombre = "Activo",
+                    Tipo = "Activo",
+                    Naturaleza = "Deudora",
+                    EsImputable = false,
+                    Estado = "Activa"
+                }
+            }
+        };
+
         _mockClienteRepo
             .Setup(r => r.ExisteRut(clienteDto.Rut))
    .ReturnsAsync(false);
@@ -76,6 +100,10 @@ public class ClienteServiceTests
         _mockClienteRepo
          .Setup(r => r.Guardar(It.IsAny<Cliente>()))
    .Returns(Task.CompletedTask);
+
+        _mockPlanRepo
+            .Setup(r => r.ObtenerTemplate())
+            .ReturnsAsync(template);
 
         _mockPlanRepo
           .Setup(r => r.Guardar(It.IsAny<PlanDeCuentas>()))
@@ -150,6 +178,7 @@ public class ClienteServiceTests
         // Verificar que NO se intentó guardar
         _mockClienteRepo.Verify(r => r.Guardar(It.IsAny<Cliente>()), Times.Never);
         _mockPlanRepo.Verify(r => r.Guardar(It.IsAny<PlanDeCuentas>()), Times.Never);
+        _mockPlanRepo.Verify(r => r.ObtenerTemplate(), Times.Never);
         _mockAuditoriaRepo.Verify(r => r.Guardar(It.IsAny<Auditoria>()), Times.Never);
     }
 }

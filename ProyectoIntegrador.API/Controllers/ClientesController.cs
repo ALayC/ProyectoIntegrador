@@ -1,4 +1,4 @@
-using System.Security.Claims;
+ï»¿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProyectoIntegrador.API.Filters;
@@ -20,7 +20,7 @@ public class ClientesController : ControllerBase
     }
 
     /// <summary>
-    /// Obtiene los clientes del contador autenticado con paginación.
+    /// Obtiene los clientes del contador autenticado con paginaciÃ³n.
     /// </summary>
     [HttpGet]
     [RequierePermiso("Clientes", "Consultar")]
@@ -81,7 +81,7 @@ public class ClientesController : ControllerBase
     }
 
     /// <summary>
-    /// Obtiene el plan de cuentas del cliente en formato árbol.
+    /// Obtiene el plan de cuentas del cliente en formato Ã¡rbol.
     /// </summary>
     [HttpGet("{id:guid}/plan-de-cuentas")]
     [RequierePermiso("Clientes", "Consultar")]

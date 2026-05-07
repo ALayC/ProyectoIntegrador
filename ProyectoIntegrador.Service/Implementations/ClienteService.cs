@@ -1,4 +1,4 @@
-using System.Text.Json;
+ï»¿using System.Text.Json;
 using ProyectoIntegrador.Data.Context;
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
@@ -33,7 +33,7 @@ IClienteRepository clienteRepository,
     /// <inheritdoc />
     public async Task<ClienteResponseDto> Crear(ClienteDto clienteDto, Guid contadorId)
     {
-        // Validar RUT único
+        // Validar RUT Ãºnico
         var existeRut = await _clienteRepository.ExisteRut(clienteDto.Rut);
         if (existeRut)
         {
@@ -66,7 +66,7 @@ IClienteRepository clienteRepository,
 
         await _clienteRepository.Guardar(cliente);
 
-        // Crear automáticamente el PlanDeCuentas asociado (relación 1:1)
+        // Crear automÃ¡ticamente el PlanDeCuentas asociado (relaciÃ³n 1:1)
         var planDeCuentas = new PlanDeCuentas
         {
             Id = Guid.NewGuid(),
@@ -77,7 +77,7 @@ IClienteRepository clienteRepository,
         await ClonarPlanDeCuentas(planDeCuentas);
         await _planDeCuentasRepository.Guardar(planDeCuentas);
 
-        // Registrar auditoría
+        // Registrar auditorÃ­a
         await RegistrarAuditoria(
        contadorId,
   "Cliente",
@@ -114,7 +114,7 @@ IClienteRepository clienteRepository,
         var cliente = await _clienteRepository.ObtenerPorId(id)
      ?? throw new EntidadNoEncontradaException("Cliente", id);
 
-        // Si cambió el RUT, validar que no exista otro cliente con ese RUT
+        // Si cambiÃ³ el RUT, validar que no exista otro cliente con ese RUT
         if (cliente.Rut != clienteDto.Rut)
         {
             var existeRut = await _clienteRepository.ExisteRut(clienteDto.Rut);
@@ -124,7 +124,7 @@ IClienteRepository clienteRepository,
             }
         }
 
-        // Capturar datos anteriores para auditoría
+        // Capturar datos anteriores para auditorÃ­a
         var datosAnteriores = SerializarCliente(cliente);
 
         // Actualizar propiedades
@@ -138,7 +138,7 @@ IClienteRepository clienteRepository,
 
         await _clienteRepository.Actualizar(cliente);
 
-        // Registrar auditoría con datos anteriores y nuevos
+        // Registrar auditorÃ­a con datos anteriores y nuevos
         await RegistrarAuditoria(
         usuarioId,
             "Cliente",
@@ -163,7 +163,7 @@ IClienteRepository clienteRepository,
 
         await _clienteRepository.Actualizar(cliente);
 
-        // Registrar auditoría
+        // Registrar auditorÃ­a
         await RegistrarAuditoria(
               usuarioId,
       "Cliente",
@@ -182,7 +182,7 @@ IClienteRepository clienteRepository,
     }
 
     // ??????????????????????????????????????????????
-    // Métodos privados
+    // MÃ©todos privados
     // ??????????????????????????????????????????????
 
     private static ClienteResponseDto MapearAResponseDto(Cliente cliente)
@@ -245,7 +245,7 @@ IClienteRepository clienteRepository,
         var template = await _planDeCuentasRepository.ObtenerTemplate();
         if (template is null)
         {
-            throw new InvalidOperationException("No se encontró el plan de cuentas template. Verificá la configuración/seed del sistema.");
+            throw new InvalidOperationException("No se encontrÃ³ el plan de cuentas template. VerificÃ¡ la configuraciÃ³n/seed del sistema.");
         }
 
         var cuentasClonadas = new List<CuentaContable>();
