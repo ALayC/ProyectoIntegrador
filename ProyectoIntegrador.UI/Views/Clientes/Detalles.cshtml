@@ -86,29 +86,27 @@
                                 @if (esInactivo)
                                 {
                                     <span class="badge bg-red-lt text-red">Inactivo</span>
+
+                                    <div class="modal modal-blur fade" id="confirmar-activar-detalle" tabindex="-1" role="dialog" aria-hidden="true">
+                                        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Confirmar activación</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                                </div>
+                                                <div class="modal-body text-secondary">
+                                                    ¿Deseas activar el cliente <strong>@Model.RazonSocial</strong>?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
+                                                    <form asp-action="Activar" asp-route-id="@Model.Id" method="post">
+                                                        <button type="submit" class="btn btn-success">Activar</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 }
-@if (esInactivo)
-{
-    <div class="modal modal-blur fade" id="confirmar-activar-detalle" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirmar activación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                </div>
-                <div class="modal-body text-secondary">
-                    ¿Deseas activar el cliente <strong>@Model.RazonSocial</strong>?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
-                    <form asp-action="Activar" asp-route-id="@Model.Id" method="post">
-                        <button type="submit" class="btn btn-success">Activar</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-}
                                 else
                                 {
                                     <span class="badge bg-green-lt text-green">Activo</span>
