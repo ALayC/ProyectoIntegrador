@@ -21,34 +21,64 @@
 
 <div class="page-body">
     <div class="container-xl">
-        <div class="card">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle">
-                        <thead>
-                            <tr>
-                                <th>Código</th>
-                                <th>Cuenta</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (Model.Count == 0)
-                            {
-                                <tr>
-                                    <td colspan="2" class="text-center text-secondary">No hay cuentas registradas.</td>
-                                </tr>
-                            }
-                            else
-                            {
-                                @foreach (var cuenta in Model)
-                                {
-                                    @await Html.PartialAsync("_CuentaContableFila", cuenta)
-                                }
-                            }
-                        </tbody>
-                    </table>
+        <div class="card shadow-sm">
+            <div class="card-status-start bg-azure"></div>
+            <div class="card-header">
+                <div>
+                    <div class="card-title">Árbol de cuentas</div>
+                    <div class="text-secondary">Estructura jerárquica completa del plan de cuentas.</div>
                 </div>
+                <div class="card-actions">
+                    <span class="badge bg-azure-lt text-azure">Total: @Model.Count</span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.Count == 0)
+                {
+                    <div class="p-4">
+                        <div class="empty">
+                            <div class="empty-img">
+                                <i class="ti ti-folder-off fs-1 text-secondary"></i>
+                            </div>
+                            <p class="empty-title">No hay cuentas registradas</p>
+                            <p class="empty-subtitle text-secondary">Todavía no se cargaron cuentas para este cliente.</p>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="list-group list-group-flush list-group-hoverable">
+                        @foreach (var cuenta in Model)
+                        {
+                            @await Html.PartialAsync("_CuentaContableFila", cuenta, new ViewDataDictionary(ViewData) { ["Nivel"] = 0 })
+                        }
+                    </div>
+                }
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .tree-node summary {
+        list-style: none;
+    }
+
+    .tree-node summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .tree-caret {
+        transition: transform 0.2s ease;
+    }
+
+    details[open] .tree-caret {
+        transform: rotate(90deg);
+    }
+
+    .tree-children {
+        border-left: 1px solid rgba(24, 36, 51, 0.08);
+        margin-left: 0.5rem;
+        padding-left: 0.75rem;
+    }
+</style>
