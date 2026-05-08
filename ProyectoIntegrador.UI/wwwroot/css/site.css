@@ -16,6 +16,7 @@ html {
     --sg-auth-start: #eef4ff;
     --sg-auth-end: #f8fbff;
     --sg-muted-surface: #eef2f7;
+    --sg-tree-border: var(--tblr-border-color-translucent, rgba(24, 36, 51, 0.08));
 }
 
 @media (min-width: 768px) {
@@ -72,6 +73,28 @@ body {
 
 .sg-auth-card {
     border-radius: 0.75rem;
+}
+
+.tree-node summary {
+    list-style: none;
+}
+
+.tree-node summary::-webkit-details-marker {
+    display: none;
+}
+
+.tree-caret {
+    transition: transform 0.2s ease;
+}
+
+details[open] .tree-caret {
+    transform: rotate(90deg);
+}
+
+.tree-children {
+    border-left: 1px solid var(--sg-tree-border);
+    margin-left: 0.5rem;
+    padding-left: 0.75rem;
 }
 
     .sg-auth-card .btn-primary {
