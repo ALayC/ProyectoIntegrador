@@ -10,8 +10,8 @@ public interface IAsientoContableRepository
     Task<int> ContarPorCliente(Guid clienteId);
     Task<List<AsientoContable>> ObtenerPorEjercicio(Guid clienteId, Guid ejercicioId, int pagina, int cantidadPorPagina);
     Task<int> ContarPorEjercicio(Guid clienteId, Guid ejercicioId);
-    Task<List<AsientoContable>> ObtenerPorRangoFecha(Guid clienteId, DateTime fechaDesde, DateTime fechaHasta, int pagina, int cantidadPorPagina);
-    Task<int> ContarPorRangoFecha(Guid clienteId, DateTime fechaDesde, DateTime fechaHasta);
+    Task<List<AsientoContable>> ObtenerPorRangoFecha(Guid clienteId, DateOnly fechaDesde, DateOnly fechaHasta, int pagina, int cantidadPorPagina);
+    Task<int> ContarPorRangoFecha(Guid clienteId, DateOnly fechaDesde, DateOnly fechaHasta);
     Task<int> ObtenerUltimoNumero(Guid clienteId, Guid ejercicioId);
     Task Guardar(AsientoContable asientoContable);
     Task Actualizar(AsientoContable asientoContable);

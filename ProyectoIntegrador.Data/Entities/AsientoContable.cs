@@ -8,7 +8,7 @@ public class AsientoContable
     public Guid EjercicioId { get; set; }
     public Guid? AsientoOrigenId { get; set; }
     public int Numero { get; set; }
-    public DateTime Fecha { get; set; }
+    public DateOnly Fecha { get; set; }
     public string Glosa { get; set; } = string.Empty;
     public string Estado { get; set; } = string.Empty; // Confirmado, Revertido
 
