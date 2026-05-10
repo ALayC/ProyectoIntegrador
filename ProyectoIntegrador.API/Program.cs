@@ -167,8 +167,9 @@ builder.Services.AddScoped<IPlanDeCuentasRepository, PlanDeCuentasRepository>();
 builder.Services.AddScoped<IAuditoriaRepository, AuditoriaRepository>();
 builder.Services.AddScoped<IPermisoRepository, PermisoRepository>();
 builder.Services.AddScoped<ICuentaContableRepository, CuentaContableRepository>();
-// Los demás repositorios se irán activando a medida que se creen las implementaciones:
-// builder.Services.AddScoped<IEjercicioContableRepository, EjercicioContableRepository>();
+builder.Services.AddScoped<IEjercicioContableRepository, EjercicioContableRepository>();
+
+// Los demás repositorios se irán activando a medida que se creen las implementaciones.
 // builder.Services.AddScoped<IAsientoContableRepository, AsientoContableRepository>();
 // builder.Services.AddScoped<ILineaAsientoRepository, LineaAsientoRepository>();
 // builder.Services.AddScoped<IComprobanteRepository, ComprobanteRepository>();
@@ -184,6 +185,7 @@ builder.Services.AddScoped<IRolService, RolService>();
 builder.Services.AddScoped<IPermisoService, PermisoService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<ICuentaContableService, CuentaContableService>();
+builder.Services.AddScoped<IEjercicioContableService, EjercicioContableService>();
 
 // ── Filtro global de permisos ─────────────────
 builder.Services.AddScoped<PermisosActionFilter>();
