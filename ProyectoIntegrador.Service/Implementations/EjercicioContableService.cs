@@ -21,15 +21,24 @@ public class EjercicioContableService : IEjercicioContableService
 
     public async Task<EjercicioContableDto> Crear(CrearEjercicioContableDto dto)
     {
-        await ValidarClienteExistente(dto.ClienteId);
-        ValidarRangoFechas(dto.FechaInicio, dto.FechaFin);
-         // Verificar si el cliente en la vida real lleva 2 ejercicios contables abiertos a la vez
-        if (await _ejercicioRepository.ExisteSolapamiento(dto.ClienteId, dto.FechaInicio, dto.FechaFin))
+        if (!dto.ClienteId.HasValue || !dto.FechaInicio.HasValue || !dto.FechaFin.HasValue)
         {
-            throw new EjercicioSolapadoException(dto.FechaInicio.ToDateTime(TimeOnly.MinValue), dto.FechaFin.ToDateTime(TimeOnly.MinValue));
+            throw new ValidacionException("El cliente y las fechas son obligatorios.");
         }
 
-        var abierto = await _ejercicioRepository.ObtenerAbiertoPorCliente(dto.ClienteId);
+        var clienteId = dto.ClienteId.Value;
+        var fechaInicio = dto.FechaInicio.Value;
+        var fechaFin = dto.FechaFin.Value;
+
+        await ValidarClienteExistente(clienteId);
+        ValidarRangoFechas(fechaInicio, fechaFin);
+
+        if (await _ejercicioRepository.ExisteSolapamiento(clienteId, fechaInicio, fechaFin))
+        {
+            throw new EjercicioSolapadoException(fechaInicio.ToDateTime(TimeOnly.MinValue), fechaFin.ToDateTime(TimeOnly.MinValue));
+        }
+
+        var abierto = await _ejercicioRepository.ObtenerAbiertoPorCliente(clienteId);
         if (abierto is not null)
         {
             throw new ValidacionException("Ya existe un ejercicio abierto para el cliente.");
@@ -38,9 +47,9 @@ public class EjercicioContableService : IEjercicioContableService
         var ejercicio = new EjercicioContable
         {
             Id = Guid.NewGuid(),
-            ClienteId = dto.ClienteId,
-            FechaInicio = dto.FechaInicio,
-            FechaFin = dto.FechaFin,
+            ClienteId = clienteId,
+            FechaInicio = fechaInicio,
+            FechaFin = fechaFin,
             Estado = "Abierto"
         };
 
