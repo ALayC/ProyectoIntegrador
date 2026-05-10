@@ -8,8 +8,8 @@ namespace ProyectoIntegrador.Service.DTOs;
 public class ActualizarEjercicioContableDto
 {
     [Required(ErrorMessage = "La fecha de inicio es obligatoria.")]
-    public DateOnly FechaInicio { get; set; }
+    public DateOnly? FechaInicio { get; set; }
 
     [Required(ErrorMessage = "La fecha de fin es obligatoria.")]
-    public DateOnly FechaFin { get; set; }
+    public DateOnly? FechaFin { get; set; }
 }

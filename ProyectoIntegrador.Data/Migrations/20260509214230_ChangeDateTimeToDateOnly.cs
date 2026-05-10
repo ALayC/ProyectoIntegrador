@@ -11,6 +11,18 @@ namespace ProyectoIntegrador.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropIndex(
+                name: "IX_TiposDeCambio_Moneda_Fecha",
+                table: "TiposDeCambio");
+
+            migrationBuilder.DropIndex(
+                name: "IX_AsientosContables_ClienteId_EjercicioId_Fecha",
+                table: "AsientosContables");
+
+            migrationBuilder.DropIndex(
+                name: "IX_SaldosCuenta_ClienteId_CuentaContableId_Periodo",
+                table: "SaldosCuenta");
+
             migrationBuilder.AlterColumn<DateOnly>(
                 name: "Fecha",
                 table: "TiposDeCambio",
@@ -50,11 +62,39 @@ namespace ProyectoIntegrador.Data.Migrations
                 nullable: false,
                 oldClrType: typeof(DateTime),
                 oldType: "datetime2");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TiposDeCambio_Moneda_Fecha",
+                table: "TiposDeCambio",
+                columns: new[] { "Moneda", "Fecha" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AsientosContables_ClienteId_EjercicioId_Fecha",
+                table: "AsientosContables",
+                columns: new[] { "ClienteId", "EjercicioId", "Fecha" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SaldosCuenta_ClienteId_CuentaContableId_Periodo",
+                table: "SaldosCuenta",
+                columns: new[] { "ClienteId", "CuentaContableId", "Periodo" });
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropIndex(
+                name: "IX_TiposDeCambio_Moneda_Fecha",
+                table: "TiposDeCambio");
+
+            migrationBuilder.DropIndex(
+                name: "IX_AsientosContables_ClienteId_EjercicioId_Fecha",
+                table: "AsientosContables");
+
+            migrationBuilder.DropIndex(
+                name: "IX_SaldosCuenta_ClienteId_CuentaContableId_Periodo",
+                table: "SaldosCuenta");
+
             migrationBuilder.AlterColumn<DateTime>(
                 name: "Fecha",
                 table: "TiposDeCambio",
@@ -94,6 +134,22 @@ namespace ProyectoIntegrador.Data.Migrations
                 nullable: false,
                 oldClrType: typeof(DateOnly),
                 oldType: "date");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TiposDeCambio_Moneda_Fecha",
+                table: "TiposDeCambio",
+                columns: new[] { "Moneda", "Fecha" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AsientosContables_ClienteId_EjercicioId_Fecha",
+                table: "AsientosContables",
+                columns: new[] { "ClienteId", "EjercicioId", "Fecha" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SaldosCuenta_ClienteId_CuentaContableId_Periodo",
+                table: "SaldosCuenta",
+                columns: new[] { "ClienteId", "CuentaContableId", "Periodo" });
         }
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProyectoIntegrador.API.Filters;
 using ProyectoIntegrador.Service.DTOs;
+using ProyectoIntegrador.Service.Exceptions;
 using ProyectoIntegrador.Service.Interfaces;
 
 namespace ProyectoIntegrador.API.Controllers;
@@ -66,7 +67,10 @@ public class EjerciciosController : ControllerBase
     {
         var claim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("sub");
         if (claim is null || !Guid.TryParse(claim.Value, out var id))
-            throw new UnauthorizedAccessException("No se pudo obtener el ID del usuario del token.");
+        {
+            throw new AccesoNoAutorizadoException("No se pudo obtener el ID del usuario del token.");
+        }
+
         return id;
     }
 }

@@ -58,6 +58,11 @@ public class EjercicioContableService : IEjercicioContableService
 
     public async Task<PaginadoDto<EjercicioContableDto>> ObtenerPorCliente(Guid clienteId, int pagina, int cantidadPorPagina)
     {
+        if (pagina < 1 || cantidadPorPagina <= 0)
+        {
+            throw new ValidacionException("Los parámetros de paginación no son válidos.");
+        }
+
         await ValidarClienteExistente(clienteId);
 
         var ejercicios = await _ejercicioRepository.ObtenerPorCliente(clienteId, pagina, cantidadPorPagina);
@@ -77,11 +82,19 @@ public class EjercicioContableService : IEjercicioContableService
             throw new EjercicioCerradoException(id);
         }
 
-        ValidarRangoFechas(dto.FechaInicio, dto.FechaFin);
-
-        if (await _ejercicioRepository.ExisteSolapamiento(ejercicio.ClienteId, dto.FechaInicio, dto.FechaFin, id))
+        if (!dto.FechaInicio.HasValue || !dto.FechaFin.HasValue)
         {
-            throw new EjercicioSolapadoException(dto.FechaInicio.ToDateTime(TimeOnly.MinValue), dto.FechaFin.ToDateTime(TimeOnly.MinValue));
+            throw new ValidacionException("La fecha de inicio y fin son obligatorias.");
+        }
+
+        var fechaInicio = dto.FechaInicio.Value;
+        var fechaFin = dto.FechaFin.Value;
+
+        ValidarRangoFechas(fechaInicio, fechaFin);
+
+        if (await _ejercicioRepository.ExisteSolapamiento(ejercicio.ClienteId, fechaInicio, fechaFin, id))
+        {
+            throw new EjercicioSolapadoException(fechaInicio.ToDateTime(TimeOnly.MinValue), fechaFin.ToDateTime(TimeOnly.MinValue));
         }
 
         var abierto = await _ejercicioRepository.ObtenerAbiertoPorCliente(ejercicio.ClienteId);
@@ -90,8 +103,8 @@ public class EjercicioContableService : IEjercicioContableService
             throw new ValidacionException("Ya existe un ejercicio abierto para el cliente.");
         }
 
-        ejercicio.FechaInicio = dto.FechaInicio;
-        ejercicio.FechaFin = dto.FechaFin;
+        ejercicio.FechaInicio = fechaInicio;
+        ejercicio.FechaFin = fechaFin;
 
         await _ejercicioRepository.Actualizar(ejercicio);
         return Mapear(ejercicio);
