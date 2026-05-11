@@ -100,6 +100,9 @@ public class CuentaContableService : ICuentaContableService
                 Id = c.Id,
                 Codigo = c.Codigo,
                 Nombre = c.Nombre,
+                EsSistema = c.EsSistema,
+                EsImputable = c.EsImputable,
+                Estado = c.Estado,
                 Hijas = new List<CuentaContableArbolDto>()
             });
 
@@ -214,6 +217,7 @@ public class CuentaContableService : ICuentaContableService
         Tipo = cuenta.Tipo,
         Naturaleza = cuenta.Naturaleza,
         EsImputable = cuenta.EsImputable,
+        EsSistema = cuenta.EsSistema,
         Estado = cuenta.Estado,
         CuentaPadreId = cuenta.CuentaPadreId
     };

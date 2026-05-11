@@ -64,4 +64,13 @@ public class CuentasContablesController : ControllerBase
         await _cuentaContableService.Desactivar(id);
         return Ok(new { mensaje = "Cuenta contable desactivada correctamente." });
     }
+
+    /// <summary>Activa una cuenta contable.</summary>
+    [HttpPost("{id:guid}/activar")]
+    [RequierePermiso("Cuentas", "Desactivar")]
+    public async Task<IActionResult> Activar(Guid id)
+    {
+        await _cuentaContableService.Activar(id);
+        return Ok(new { mensaje = "Cuenta contable activada correctamente." });
+    }
 }

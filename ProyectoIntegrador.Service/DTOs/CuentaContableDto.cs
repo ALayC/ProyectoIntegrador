@@ -11,6 +11,7 @@ public class CuentaContableDto
     public string Tipo { get; set; } = string.Empty;
     public string Naturaleza { get; set; } = string.Empty;
     public bool EsImputable { get; set; }
+    public bool EsSistema { get; set; }
     public string Estado { get; set; } = string.Empty;
     public Guid? CuentaPadreId { get; set; }
 }
