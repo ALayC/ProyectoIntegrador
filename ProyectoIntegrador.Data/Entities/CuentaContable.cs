@@ -10,6 +10,7 @@ public class CuentaContable
     public string Tipo { get; set; } = string.Empty; // Activo, Pasivo, Patrimonio, Ingreso, Egreso
     public string Naturaleza { get; set; } = string.Empty; // Deudora, Acreedora
     public bool EsImputable { get; set; }
+    public bool EsSistema { get; set; }
     public string Estado { get; set; } = string.Empty; // Activa, Inactiva
 
     // Navegación
