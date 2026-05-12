@@ -6,6 +6,7 @@ namespace ProyectoIntegrador.Service.DTOs;
 public class CuentaContableDto
 {
     public Guid Id { get; set; }
+    public Guid PlanCuentasId { get; set; }
     public string Codigo { get; set; } = string.Empty;
     public string Nombre { get; set; } = string.Empty;
     public string Tipo { get; set; } = string.Empty;

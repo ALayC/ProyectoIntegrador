@@ -212,6 +212,7 @@ public class CuentaContableService : ICuentaContableService
     private static CuentaContableDto Mapear(CuentaContable cuenta) => new()
     {
         Id = cuenta.Id,
+        PlanCuentasId = cuenta.PlanCuentasId,
         Codigo = cuenta.Codigo,
         Nombre = cuenta.Nombre,
         Tipo = cuenta.Tipo,
