@@ -44,45 +44,68 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label asp-for="Tipo" class="form-label"></label>
-                            <select asp-for="Tipo" class="form-select" @(esSistema ? "disabled" : string.Empty)>
-                                <option value="">-- Seleccionar --</option>
-                                <option value="Activo">Activo</option>
-                                <option value="Pasivo">Pasivo</option>
-                                <option value="Patrimonio">Patrimonio</option>
-                                <option value="Ingreso">Ingreso</option>
-                                <option value="Egreso">Egreso</option>
-                            </select>
-                            <span asp-validation-for="Tipo" class="text-danger"></span>
                             @if (esSistema)
                             {
+                                <select asp-for="Tipo" class="form-select" disabled>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Activo">Activo</option>
+                                    <option value="Pasivo">Pasivo</option>
+                                    <option value="Patrimonio">Patrimonio</option>
+                                    <option value="Ingreso">Ingreso</option>
+                                    <option value="Egreso">Egreso</option>
+                                </select>
                                 <input type="hidden" asp-for="Tipo" />
                             }
+                            else
+                            {
+                                <select asp-for="Tipo" class="form-select">
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Activo">Activo</option>
+                                    <option value="Pasivo">Pasivo</option>
+                                    <option value="Patrimonio">Patrimonio</option>
+                                    <option value="Ingreso">Ingreso</option>
+                                    <option value="Egreso">Egreso</option>
+                                </select>
+                            }
+                            <span asp-validation-for="Tipo" class="text-danger"></span>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label asp-for="Naturaleza" class="form-label"></label>
-                            <select asp-for="Naturaleza" class="form-select" @(esSistema ? "disabled" : string.Empty)>
-                                <option value="">-- Seleccionar --</option>
-                                <option value="Deudora">Deudora</option>
-                                <option value="Acreedora">Acreedora</option>
-                            </select>
-                            <span asp-validation-for="Naturaleza" class="text-danger"></span>
                             @if (esSistema)
                             {
+                                <select asp-for="Naturaleza" class="form-select" disabled>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Deudora">Deudora</option>
+                                    <option value="Acreedora">Acreedora</option>
+                                </select>
                                 <input type="hidden" asp-for="Naturaleza" />
                             }
+                            else
+                            {
+                                <select asp-for="Naturaleza" class="form-select">
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Deudora">Deudora</option>
+                                    <option value="Acreedora">Acreedora</option>
+                                </select>
+                            }
+                            <span asp-validation-for="Naturaleza" class="text-danger"></span>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <div class="form-check">
-                                <input asp-for="EsImputable" class="form-check-input" @(esSistema ? "disabled" : string.Empty) />
+                                @if (esSistema)
+                                {
+                                    <input asp-for="EsImputable" class="form-check-input" disabled />
+                                    <input type="hidden" asp-for="EsImputable" />
+                                }
+                                else
+                                {
+                                    <input asp-for="EsImputable" class="form-check-input" />
+                                }
                                 <label asp-for="EsImputable" class="form-check-label"></label>
                             </div>
-                            @if (esSistema)
-                            {
-                                <input type="hidden" asp-for="EsImputable" />
-                            }
                         </div>
                         <div class="col-md-4 mb-3">
                             <label asp-for="Estado" class="form-label"></label>
