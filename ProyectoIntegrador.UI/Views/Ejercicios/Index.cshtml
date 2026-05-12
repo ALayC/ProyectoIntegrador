@@ -20,7 +20,7 @@
         <a asp-action="Crear" asp-route-clienteId="@Model.ClienteId" class="btn btn-azure">
             <i class="ti ti-plus"></i> Nuevo ejercicio
         </a>
-        <button type="button" class="btn btn-outline-secondary" @(Model.TieneEjercicioAbierto ? null : "disabled")>
+        <button type="button" class="btn btn-outline-secondary" disabled aria-disabled="true">
             <i class="ti ti-notes"></i> Nuevo asiento
         </button>
     </div>
@@ -74,10 +74,19 @@ else
                                     }
                                 </td>
                                 <td class="text-end">
-                                    <a asp-action="Editar" asp-route-id="@ejercicio.Id" asp-route-clienteId="@Model.ClienteId"
-                                       class="btn btn-sm btn-outline-azure @(esAbierto ? string.Empty : "disabled")" title="Editar" aria-disabled="@(!esAbierto)">
-                                        <i class="ti ti-edit"></i>
-                                    </a>
+                                    @if (esAbierto)
+                                    {
+                                        <a asp-action="Editar" asp-route-id="@ejercicio.Id" asp-route-clienteId="@Model.ClienteId"
+                                           class="btn btn-sm btn-outline-azure" title="Editar">
+                                            <i class="ti ti-edit"></i>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-azure" disabled aria-disabled="true">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                    }
                                     @if (esAbierto)
                                     {
                                         <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cerrar-@ejercicio.Id">

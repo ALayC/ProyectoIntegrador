@@ -25,6 +25,11 @@ public class EjerciciosController : Controller
 
         var clienteResponse = await _apiClient.GetAsync<ClienteListViewModel>($"api/clientes/{clienteId}");
         if (clienteResponse.EsNoAutorizado) return RedirectToAction("Login", "Auth");
+        if (!clienteResponse.EsExitoso || clienteResponse.Data is null)
+        {
+            TempData["Error"] = clienteResponse.MensajeError ?? "No se pudo cargar el cliente.";
+            return RedirectToAction("Index", "Clientes");
+        }
 
         if (!response.EsExitoso)
         {
@@ -32,7 +37,7 @@ public class EjerciciosController : Controller
             return View(new EjercicioContableIndexViewModel
             {
                 ClienteId = clienteId,
-                ClienteNombre = clienteResponse.Data?.RazonSocial,
+                ClienteNombre = clienteResponse.Data.RazonSocial,
                 Paginado = new PaginadoViewModel<EjercicioContableViewModel>()
             });
         }
@@ -43,7 +48,7 @@ public class EjerciciosController : Controller
         return View(new EjercicioContableIndexViewModel
         {
             ClienteId = clienteId,
-            ClienteNombre = clienteResponse.Data?.RazonSocial,
+            ClienteNombre = clienteResponse.Data.RazonSocial,
             Paginado = paginado,
             TieneEjercicioAbierto = tieneAbierto
         });
@@ -57,16 +62,25 @@ public class EjerciciosController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Crear(EjercicioContableFormViewModel model)
+    public async Task<IActionResult> Crear(Guid clienteId, EjercicioContableFormViewModel model)
     {
         if (!ModelState.IsValid)
         {
+            model.ClienteId = clienteId;
             return View(model);
+        }
+
+        var clienteResponse = await _apiClient.GetAsync<ClienteListViewModel>($"api/clientes/{clienteId}");
+        if (clienteResponse.EsNoAutorizado) return RedirectToAction("Login", "Auth");
+        if (!clienteResponse.EsExitoso || clienteResponse.Data is null)
+        {
+            TempData["Error"] = clienteResponse.MensajeError ?? "No se pudo cargar el cliente.";
+            return RedirectToAction("Index", "Clientes");
         }
 
         var response = await _apiClient.PostAsync<EjercicioContableViewModel>("api/ejercicios", new
         {
-            clienteId = model.ClienteId,
+            clienteId,
             fechaInicio = model.FechaInicio,
             fechaFin = model.FechaFin
         });
@@ -80,7 +94,7 @@ public class EjerciciosController : Controller
         }
 
         TempData["Exito"] = "Ejercicio contable creado correctamente.";
-        return RedirectToAction(nameof(Index), new { clienteId = model.ClienteId });
+        return RedirectToAction(nameof(Index), new { clienteId });
     }
 
     [HttpGet]
@@ -96,10 +110,16 @@ public class EjerciciosController : Controller
             return RedirectToAction(nameof(Index), new { clienteId });
         }
 
+        if (response.Data.ClienteId != clienteId)
+        {
+            TempData["Error"] = "El ejercicio contable no pertenece al cliente indicado.";
+            return RedirectToAction(nameof(Index), new { clienteId = response.Data.ClienteId });
+        }
+
         return View(new EjercicioContableFormViewModel
         {
             Id = id,
-            ClienteId = clienteId,
+            ClienteId = response.Data.ClienteId,
             FechaInicio = response.Data.FechaInicio,
             FechaFin = response.Data.FechaFin
         });
@@ -107,12 +127,29 @@ public class EjerciciosController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Editar(Guid id, EjercicioContableFormViewModel model)
+    public async Task<IActionResult> Editar(Guid id, Guid clienteId, EjercicioContableFormViewModel model)
     {
         if (!ModelState.IsValid)
         {
             model.Id = id;
+            model.ClienteId = clienteId;
             return View(model);
+        }
+
+        var ejercicioResponse = await _apiClient.GetAsync<EjercicioContableViewModel>($"api/ejercicios/{id}");
+
+        if (ejercicioResponse.EsNoAutorizado) return RedirectToAction("Login", "Auth");
+
+        if (!ejercicioResponse.EsExitoso || ejercicioResponse.Data is null)
+        {
+            TempData["Error"] = ejercicioResponse.MensajeError ?? "Ejercicio contable no encontrado.";
+            return RedirectToAction("Index", "Clientes");
+        }
+
+        if (ejercicioResponse.Data.ClienteId != clienteId)
+        {
+            TempData["Error"] = "El ejercicio contable no pertenece al cliente indicado.";
+            return RedirectToAction(nameof(Index), new { clienteId = ejercicioResponse.Data.ClienteId });
         }
 
         var response = await _apiClient.PutAsync<EjercicioContableViewModel>($"api/ejercicios/{id}", new
@@ -130,7 +167,7 @@ public class EjerciciosController : Controller
         }
 
         TempData["Exito"] = "Ejercicio contable actualizado correctamente.";
-        return RedirectToAction(nameof(Index), new { clienteId = model.ClienteId });
+        return RedirectToAction(nameof(Index), new { clienteId = ejercicioResponse.Data.ClienteId });
     }
 
     [HttpPost]

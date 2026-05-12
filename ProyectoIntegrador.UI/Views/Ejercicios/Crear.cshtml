@@ -11,13 +11,9 @@
                     <i class="ti ti-plus"></i> Nuevo ejercicio contable
                 </h3>
 
-                @if (!ViewData.ModelState.IsValid)
-                {
-                    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
-                }
+                <div asp-validation-summary="All" class="alert alert-danger" role="alert" style="display:none;"></div>
 
-                <form asp-action="Crear" method="post">
-                    <input type="hidden" asp-for="ClienteId" />
+                <form asp-action="Crear" asp-route-clienteId="@Model.ClienteId" method="post">
 
                     <div class="mb-3">
                         <label asp-for="FechaInicio" class="form-label"></label>
@@ -47,4 +43,9 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.querySelectorAll('.alert-danger[data-valmsg-summary]').forEach(function (el) {
+            if (el.querySelectorAll('li').length > 0) el.style.display = '';
+        });
+    </script>
 }
