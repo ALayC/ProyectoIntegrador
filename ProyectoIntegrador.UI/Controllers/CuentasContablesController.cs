@@ -64,8 +64,7 @@ public class CuentasContablesController : Controller
             nombre = vm.Nombre,
             tipo = vm.Tipo,
             naturaleza = vm.Naturaleza,
-            esImputable = vm.EsImputable,
-            estado = vm.Estado
+            esImputable = vm.EsImputable
         });
 
         if (response.EsNoAutorizado)
@@ -170,7 +169,6 @@ public class CuentasContablesController : Controller
             tipo = form.Cuenta.Tipo,
             naturaleza = form.Cuenta.Naturaleza,
             esImputable = form.Cuenta.EsImputable,
-            estado = form.Cuenta.Estado,
             cuentaPadreId = form.Cuenta.CuentaPadreId
         });
 

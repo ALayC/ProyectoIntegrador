@@ -131,8 +131,7 @@ public class CuentaContableService : ICuentaContableService
         if (cuenta.EsSistema && (dto.Codigo != cuenta.Codigo
             || dto.Tipo != cuenta.Tipo
             || dto.Naturaleza != cuenta.Naturaleza
-            || dto.EsImputable != cuenta.EsImputable
-            || dto.Estado != cuenta.Estado))
+            || dto.EsImputable != cuenta.EsImputable))
         {
             throw new ValidacionException("No se permite modificar propiedades estructurales de cuentas del sistema.");
         }
@@ -158,7 +157,7 @@ public class CuentaContableService : ICuentaContableService
         cuenta.Tipo = dto.Tipo;
         cuenta.Naturaleza = dto.Naturaleza;
         cuenta.EsImputable = dto.EsImputable;
-        cuenta.Estado = dto.Estado;
+        // Estado no se modifica desde Actualizar; se gestiona en Activar/Desactivar.
 
         await _cuentaRepository.Actualizar(cuenta);
         return Mapear(cuenta);
@@ -178,6 +177,11 @@ public class CuentaContableService : ICuentaContableService
         if (hijas.Any(hija => hija.Estado == "Activa"))
         {
             throw new CuentaJerarquiaInvalidaException("No se puede desactivar una cuenta con subcuentas activas.");
+        }
+
+        if (await _cuentaRepository.TieneMovimientos(id))
+        {
+            throw new CuentaConMovimientosException(id);
         }
 
         cuenta.Estado = "Inactiva";

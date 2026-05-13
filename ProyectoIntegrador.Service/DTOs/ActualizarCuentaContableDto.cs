@@ -21,8 +21,7 @@ public class ActualizarCuentaContableDto
 
     public bool EsImputable { get; set; }
 
-    [Required(ErrorMessage = "El estado es obligatorio.")]
-    public string Estado { get; set; } = string.Empty;
+    public string? Estado { get; set; }
 
     public Guid? CuentaPadreId { get; set; }
 }

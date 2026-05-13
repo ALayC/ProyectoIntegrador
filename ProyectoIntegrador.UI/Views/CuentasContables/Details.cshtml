@@ -14,9 +14,9 @@
                 <div class="text-secondary">Detalle de la cuenta seleccionada</div>
             </div>
             <div class="col-auto ms-auto">
-                <a asp-controller="Clientes" asp-action="PlanDeCuentas" asp-route-id="@Model.PlanCuentasId" class="btn btn-outline-azure">
+                <button type="button" class="btn btn-outline-azure" onclick="history.back()">
                     <i class="ti ti-arrow-left"></i> Volver al plan
-                </a>
+                </button>
             </div>
         </div>
     </div>
