@@ -283,6 +283,7 @@ IClienteRepository clienteRepository,
                 Tipo = cuentaTemplate.Tipo,
                 Naturaleza = cuentaTemplate.Naturaleza,
                 EsImputable = cuentaTemplate.EsImputable,
+                EsSistema = cuentaTemplate.EsSistema,
                 Estado = cuentaTemplate.Estado
             };
 

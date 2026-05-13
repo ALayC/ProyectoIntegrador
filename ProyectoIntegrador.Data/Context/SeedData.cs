@@ -273,6 +273,7 @@ public static class SeedData
                 Tipo = "Activo",
                 Naturaleza = "Deudora",
                 EsImputable = false,
+                EsSistema = true,
                 Estado = "Activa"
             },
 
@@ -286,6 +287,7 @@ public static class SeedData
                 Tipo = "Pasivo",
                 Naturaleza = "Acreedora",
                 EsImputable = false,
+                EsSistema = true,
                 Estado = "Activa"
             },
 
@@ -299,6 +301,7 @@ public static class SeedData
                 Tipo = "Patrimonio",
                 Naturaleza = "Acreedora",
                 EsImputable = false,
+                EsSistema = true,
                 Estado = "Activa"
             },
 
@@ -312,6 +315,7 @@ public static class SeedData
                 Tipo = "Ingreso",
                 Naturaleza = "Acreedora",
                 EsImputable = false,
+                EsSistema = true,
                 Estado = "Activa"
             },
 
@@ -325,6 +329,7 @@ public static class SeedData
                 Tipo = "Egreso",
                 Naturaleza = "Deudora",
                 EsImputable = false,
+                EsSistema = true,
                 Estado = "Activa"
             },
 
@@ -339,6 +344,7 @@ public static class SeedData
                 Tipo = "Activo",
                 Naturaleza = "Deudora",
                 EsImputable = true,
+                EsSistema = false,
                 Estado = "Activa"
             },
 
@@ -352,6 +358,7 @@ public static class SeedData
                 Tipo = "Activo",
                 Naturaleza = "Deudora",
                 EsImputable = true,
+                EsSistema = false,
                 Estado = "Activa"
             }
         );

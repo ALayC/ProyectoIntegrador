@@ -1,0 +1,148 @@
+@model ProyectoIntegrador.UI.Models.CuentaContableViewModel
+@{
+    ViewData["Title"] = "Editar cuenta contable";
+    var esSistema = Model.EsSistema;
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h3 class="card-title mb-4">
+                    <i class="ti ti-edit"></i> Editar cuenta contable
+                </h3>
+
+                <div asp-validation-summary="All" class="alert alert-danger" role="alert" style="display:none;"></div>
+
+                @if (esSistema)
+                {
+                    <div class="alert alert-info">
+                        Las propiedades estructurales de cuentas del sistema no pueden modificarse.
+                    </div>
+                }
+
+                <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+                    <input type="hidden" asp-for="PlanCuentasId" />
+                    <input type="hidden" asp-for="CuentaPadreId" />
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Codigo" class="form-label"></label>
+                            <input asp-for="Codigo" class="form-control sg-readonly" readonly="@esSistema" />
+                            <span asp-validation-for="Codigo" class="text-danger"></span>
+                            @if (esSistema)
+                            {
+                                <input type="hidden" asp-for="Codigo" />
+                            }
+                        </div>
+                        <div class="col-md-8 mb-3">
+                            <label asp-for="Nombre" class="form-label"></label>
+                            <input asp-for="Nombre" class="form-control" />
+                            <span asp-validation-for="Nombre" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Tipo" class="form-label"></label>
+                            @if (esSistema)
+                            {
+                                <select asp-for="Tipo" class="form-select" disabled>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Activo">Activo</option>
+                                    <option value="Pasivo">Pasivo</option>
+                                    <option value="Patrimonio">Patrimonio</option>
+                                    <option value="Ingreso">Ingreso</option>
+                                    <option value="Egreso">Egreso</option>
+                                </select>
+                                <input type="hidden" asp-for="Tipo" />
+                            }
+                            else
+                            {
+                                <select asp-for="Tipo" class="form-select">
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Activo">Activo</option>
+                                    <option value="Pasivo">Pasivo</option>
+                                    <option value="Patrimonio">Patrimonio</option>
+                                    <option value="Ingreso">Ingreso</option>
+                                    <option value="Egreso">Egreso</option>
+                                </select>
+                            }
+                            <span asp-validation-for="Tipo" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Naturaleza" class="form-label"></label>
+                            @if (esSistema)
+                            {
+                                <select asp-for="Naturaleza" class="form-select" disabled>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Deudora">Deudora</option>
+                                    <option value="Acreedora">Acreedora</option>
+                                </select>
+                                <input type="hidden" asp-for="Naturaleza" />
+                            }
+                            else
+                            {
+                                <select asp-for="Naturaleza" class="form-select">
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="Deudora">Deudora</option>
+                                    <option value="Acreedora">Acreedora</option>
+                                </select>
+                            }
+                            <span asp-validation-for="Naturaleza" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check">
+                                @if (esSistema)
+                                {
+                                    <input asp-for="EsImputable" class="form-check-input" disabled />
+                                    <input type="hidden" asp-for="EsImputable" />
+                                }
+                                else
+                                {
+                                    <input asp-for="EsImputable" class="form-check-input" />
+                                }
+                                <label asp-for="EsImputable" class="form-check-label"></label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Estado" class="form-label"></label>
+                            <input asp-for="Estado" class="form-control sg-readonly" readonly />
+                            <span asp-validation-for="Estado" class="text-danger"></span>
+                            <input type="hidden" asp-for="Estado" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Sistema</label>
+                            <input class="form-control sg-readonly" value="@(Model.EsSistema ? "Sí" : "No")" readonly />
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-azure">
+                            <i class="ti ti-check"></i> Guardar cambios
+                        </button>
+                        <a asp-action="Details" asp-route-id="@Model.Id" asp-route-planId="@Model.PlanCuentasId" class="btn btn-outline-azure">
+                            <i class="ti ti-x"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(function () {
+            var alertDiv = $('.alert-danger');
+            alertDiv.each(function () {
+                if ($(this).text().trim().length > 0) {
+                    $(this).show();
+                }
+            });
+        });
+    </script>
+}

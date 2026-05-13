@@ -10,4 +10,5 @@ public interface ICuentaContableService
     Task<List<CuentaContableArbolDto>> ObtenerArbolDeCuentas(Guid planId);
     Task<CuentaContableDto> Actualizar(Guid id, ActualizarCuentaContableDto dto);
     Task Desactivar(Guid id);
+    Task Activar(Guid id);
 }
