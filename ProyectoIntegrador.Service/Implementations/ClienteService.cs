@@ -1,4 +1,4 @@
-using System.Text.Json;
+Ôªøusing System.Text.Json;
 using ProyectoIntegrador.Data.Context;
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
@@ -14,23 +14,26 @@ public class ClienteService : IClienteService
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IPlanDeCuentasRepository _planDeCuentasRepository;
     private readonly IAuditoriaRepository _auditoriaRepository;
+    private readonly ICuentaContableService _cuentaContableService;
 
     public ClienteService(
 IClienteRepository clienteRepository,
     IUsuarioRepository usuarioRepository,
         IPlanDeCuentasRepository planDeCuentasRepository,
-        IAuditoriaRepository auditoriaRepository)
+        IAuditoriaRepository auditoriaRepository,
+        ICuentaContableService cuentaContableService)
     {
         _clienteRepository = clienteRepository;
         _usuarioRepository = usuarioRepository;
         _planDeCuentasRepository = planDeCuentasRepository;
         _auditoriaRepository = auditoriaRepository;
+        _cuentaContableService = cuentaContableService;
     }
 
     /// <inheritdoc />
     public async Task<ClienteResponseDto> Crear(ClienteDto clienteDto, Guid contadorId)
     {
-        // Validar RUT ˙nico
+        // Validar RUT √∫nico
         var existeRut = await _clienteRepository.ExisteRut(clienteDto.Rut);
         if (existeRut)
         {
@@ -63,16 +66,18 @@ IClienteRepository clienteRepository,
 
         await _clienteRepository.Guardar(cliente);
 
-        // Crear autom·ticamente el PlanDeCuentas asociado (relaciÛn 1:1)
+        // Crear autom√°ticamente el PlanDeCuentas asociado (relaci√≥n 1:1)
         var planDeCuentas = new PlanDeCuentas
         {
             Id = Guid.NewGuid(),
-            ClienteId = cliente.Id
+            ClienteId = cliente.Id,
+            EsTemplate = false
         };
 
+        await ClonarPlanDeCuentas(planDeCuentas);
         await _planDeCuentasRepository.Guardar(planDeCuentas);
 
-        // Registrar auditorÌa
+        // Registrar auditor√≠a
         await RegistrarAuditoria(
        contadorId,
   "Cliente",
@@ -109,7 +114,7 @@ IClienteRepository clienteRepository,
         var cliente = await _clienteRepository.ObtenerPorId(id)
      ?? throw new EntidadNoEncontradaException("Cliente", id);
 
-        // Si cambiÛ el RUT, validar que no exista otro cliente con ese RUT
+        // Si cambi√≥ el RUT, validar que no exista otro cliente con ese RUT
         if (cliente.Rut != clienteDto.Rut)
         {
             var existeRut = await _clienteRepository.ExisteRut(clienteDto.Rut);
@@ -119,7 +124,7 @@ IClienteRepository clienteRepository,
             }
         }
 
-        // Capturar datos anteriores para auditorÌa
+        // Capturar datos anteriores para auditor√≠a
         var datosAnteriores = SerializarCliente(cliente);
 
         // Actualizar propiedades
@@ -133,7 +138,7 @@ IClienteRepository clienteRepository,
 
         await _clienteRepository.Actualizar(cliente);
 
-        // Registrar auditorÌa con datos anteriores y nuevos
+        // Registrar auditor√≠a con datos anteriores y nuevos
         await RegistrarAuditoria(
         usuarioId,
             "Cliente",
@@ -158,7 +163,7 @@ IClienteRepository clienteRepository,
 
         await _clienteRepository.Actualizar(cliente);
 
-        // Registrar auditorÌa
+        // Registrar auditor√≠a
         await RegistrarAuditoria(
               usuarioId,
       "Cliente",
@@ -167,8 +172,37 @@ IClienteRepository clienteRepository,
               datosNuevos: SerializarCliente(cliente));
     }
 
+    /// <inheritdoc />
+    public async Task Activar(Guid id, Guid usuarioId)
+    {
+        var cliente = await _clienteRepository.ObtenerPorId(id)
+            ?? throw new EntidadNoEncontradaException("Cliente", id);
+
+        var datosAnteriores = SerializarCliente(cliente);
+
+        cliente.Estado = "Activo";
+
+        await _clienteRepository.Actualizar(cliente);
+
+        await RegistrarAuditoria(
+            usuarioId,
+            "Cliente",
+            "Activar",
+            datosAnteriores: datosAnteriores,
+            datosNuevos: SerializarCliente(cliente));
+    }
+
+    /// <inheritdoc />
+    public async Task<List<CuentaContableArbolDto>> ObtenerPlanDeCuentas(Guid clienteId)
+    {
+        var plan = await _planDeCuentasRepository.ObtenerPorClienteId(clienteId)
+            ?? throw new EntidadNoEncontradaException("PlanDeCuentas", clienteId);
+
+        return await _cuentaContableService.ObtenerArbolDeCuentas(plan.Id);
+    }
+
     // ??????????????????????????????????????????????
-    // MÈtodos privados
+    // M√©todos privados
     // ??????????????????????????????????????????????
 
     private static ClienteResponseDto MapearAResponseDto(Cliente cliente)
@@ -224,5 +258,50 @@ IClienteRepository clienteRepository,
         };
 
         await _auditoriaRepository.Guardar(auditoria);
+    }
+
+    private async Task ClonarPlanDeCuentas(PlanDeCuentas destino)
+    {
+        var template = await _planDeCuentasRepository.ObtenerTemplate();
+        if (template is null)
+        {
+            throw new InvalidOperationException("No se encontr√≥ el plan de cuentas template. Verific√° la configuraci√≥n/seed del sistema.");
+        }
+
+        var cuentasClonadas = new List<CuentaContable>();
+        var mapping = new Dictionary<Guid, CuentaContable>();
+
+        foreach (var cuentaTemplate in template.CuentasContables)
+        {
+            var cuentaNueva = new CuentaContable
+            {
+                Id = Guid.NewGuid(),
+                PlanCuentasId = destino.Id,
+                CuentaPadreId = null,
+                Codigo = cuentaTemplate.Codigo,
+                Nombre = cuentaTemplate.Nombre,
+                Tipo = cuentaTemplate.Tipo,
+                Naturaleza = cuentaTemplate.Naturaleza,
+                EsImputable = cuentaTemplate.EsImputable,
+                EsSistema = cuentaTemplate.EsSistema,
+                Estado = cuentaTemplate.Estado
+            };
+
+            cuentasClonadas.Add(cuentaNueva);
+            mapping[cuentaTemplate.Id] = cuentaNueva;
+        }
+
+        foreach (var cuentaTemplate in template.CuentasContables)
+        {
+            if (cuentaTemplate.CuentaPadreId is null)
+            {
+                continue;
+            }
+
+            var cuentaNueva = mapping[cuentaTemplate.Id];
+            cuentaNueva.CuentaPadreId = mapping[cuentaTemplate.CuentaPadreId.Value].Id;
+        }
+
+        destino.CuentasContables = cuentasClonadas;
     }
 }

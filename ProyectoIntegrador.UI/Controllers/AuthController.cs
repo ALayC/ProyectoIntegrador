@@ -96,7 +96,7 @@ public class AuthController : Controller
             return View(model);
         }
 
-        TempData["Exito"] = "Cuenta creada exitosamente. Iniciá sesión.";
+        TempData["AuthExito"] = "Cuenta creada exitosamente. Iniciá sesión.";
         return RedirectToAction(nameof(Login));
     }
 
@@ -181,7 +181,8 @@ public class AuthController : Controller
         {
             new(ClaimTypes.Name, authData.NombreCompleto),
             new(ClaimTypes.Email, authData.Email),
-            new(ClaimTypes.Role, authData.Rol)
+            new(ClaimTypes.Role, authData.Rol),
+            new("JwtToken", authData.Token)
         };
 
         // Extraer el sub (userId) del JWT para guardarlo como claim

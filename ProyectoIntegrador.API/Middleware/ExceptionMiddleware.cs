@@ -77,6 +77,8 @@ public class ExceptionMiddleware
             AsientoNoBalanceadoException => ((int)HttpStatusCode.BadRequest, "ASIENTO_NO_BALANCEADO"),
             EjercicioCerradoException => ((int)HttpStatusCode.BadRequest, "EJERCICIO_CERRADO"),
             CuentaNoImputableException => ((int)HttpStatusCode.BadRequest, "CUENTA_NO_IMPUTABLE"),
+            CuentaJerarquiaInvalidaException => ((int)HttpStatusCode.BadRequest, "CUENTA_JERARQUIA_INVALIDA"),
+            ValidacionException => ((int)HttpStatusCode.BadRequest, "VALIDACION_INVALIDA"),
             EjercicioSolapadoException => ((int)HttpStatusCode.BadRequest, "EJERCICIO_SOLAPADO"),
             ImportacionInvalidaException => ((int)HttpStatusCode.BadRequest, "IMPORTACION_INVALIDA"),
             EntidadNoEncontradaException => ((int)HttpStatusCode.NotFound, "ENTIDAD_NO_ENCONTRADA"),

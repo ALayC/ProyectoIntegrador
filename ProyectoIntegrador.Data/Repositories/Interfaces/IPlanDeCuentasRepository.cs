@@ -6,6 +6,7 @@ public interface IPlanDeCuentasRepository
 {
     Task<PlanDeCuentas?> ObtenerPorId(Guid id);
     Task<PlanDeCuentas?> ObtenerPorClienteId(Guid clienteId);
+    Task<PlanDeCuentas?> ObtenerTemplate();
     Task Guardar(PlanDeCuentas planDeCuentas);
     Task Actualizar(PlanDeCuentas planDeCuentas);
 }

@@ -1,4 +1,4 @@
-@model RegisterViewModel
+ï»¿@model RegisterViewModel
 @{
     ViewData["Title"] = "Registrarse";
     Layout = "_AuthLayout";
@@ -11,7 +11,7 @@
         <form asp-action="Register" method="post" autocomplete="off" novalidate>
             <div class="mb-3">
                 <label asp-for="NombreCompleto" class="form-label"></label>
-                <input asp-for="NombreCompleto" class="form-control" placeholder="Juan Pérez" autofocus />
+                <input asp-for="NombreCompleto" class="form-control" placeholder="Juan PÃ©rez" autofocus />
                 <span asp-validation-for="NombreCompleto" class="text-danger small"></span>
             </div>
 
@@ -33,15 +33,24 @@
                 <span asp-validation-for="ConfirmarPassword" class="text-danger small"></span>
             </div>
 
+            @if (ViewData.ModelState.ErrorCount > 0)
+            {
+                var mensaje = ViewData.ModelState[string.Empty]?.Errors.FirstOrDefault()?.ErrorMessage;
+                if (!string.IsNullOrWhiteSpace(mensaje))
+                {
+                    <div class="text-danger small mt-2">@mensaje</div>
+                }
+            }
+
             <div class="form-footer mt-4">
                 <button type="submit" class="btn btn-azure w-100">Crear cuenta</button>
             </div>
         </form>
     </div>
 
-    <div class="hr-text">¿Ya tenés cuenta?</div>
+    <div class="hr-text">Â¿Ya tenÃ©s cuenta?</div>
     <div class="card-body">
-        <a asp-action="Login" class="btn btn-outline-azure w-100">Iniciar sesión</a>
+        <a asp-action="Login" class="btn btn-outline-azure w-100">Iniciar sesiÃ³n</a>
     </div>
 </div>
 

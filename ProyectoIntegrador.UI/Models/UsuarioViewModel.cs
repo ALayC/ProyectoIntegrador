@@ -31,16 +31,16 @@ public class CrearUsuarioViewModel
     [Required(ErrorMessage = "El email es obligatorio.")]
     [EmailAddress(ErrorMessage = "Email inválido.")]
     [Display(Name = "Email")]
-  public string Email { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "La contraseña es obligatoria.")]
     [DataType(DataType.Password)]
     [Display(Name = "Contraseña")]
     public string Contrasena { get; set; } = string.Empty;
 
-  [Required(ErrorMessage = "El nombre es obligatorio.")]
+    [Required(ErrorMessage = "El nombre es obligatorio.")]
     [Display(Name = "Nombre completo")]
- public string NombreCompleto { get; set; } = string.Empty;
+    public string NombreCompleto { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "El rol es obligatorio.")]
     [Display(Name = "Rol")]
@@ -75,7 +75,7 @@ public class EditarUsuarioViewModel
 
     public string Estado { get; set; } = string.Empty;
 
-public List<RolSelectItem> Roles { get; set; } = [];
+    public List<RolSelectItem> Roles { get; set; } = [];
     public List<ContadorSelectItem> Contadores { get; set; } = [];
 }
 

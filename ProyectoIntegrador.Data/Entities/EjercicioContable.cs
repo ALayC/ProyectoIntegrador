@@ -4,8 +4,8 @@ public class EjercicioContable
 {
     public Guid Id { get; set; }
     public Guid ClienteId { get; set; }
-    public DateTime FechaInicio { get; set; }
-    public DateTime FechaFin { get; set; }
+    public DateOnly FechaInicio { get; set; }
+    public DateOnly FechaFin { get; set; }
     public string Estado { get; set; } = string.Empty; // Abierto, Cerrado
 
     // Navegación

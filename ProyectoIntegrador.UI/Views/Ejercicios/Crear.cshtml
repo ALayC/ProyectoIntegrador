@@ -1,0 +1,51 @@
+@model EjercicioContableFormViewModel
+@{
+    ViewData["Title"] = "Nuevo ejercicio contable";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-body p-4">
+                <h3 class="card-title mb-4">
+                    <i class="ti ti-plus"></i> Nuevo ejercicio contable
+                </h3>
+
+                <div asp-validation-summary="All" class="alert alert-danger" role="alert" style="display:none;"></div>
+
+                <form asp-action="Crear" asp-route-clienteId="@Model.ClienteId" method="post">
+
+                    <div class="mb-3">
+                        <label asp-for="FechaInicio" class="form-label"></label>
+                        <input asp-for="FechaInicio" class="form-control" type="date" />
+                        <span asp-validation-for="FechaInicio" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="FechaFin" class="form-label"></label>
+                        <input asp-for="FechaFin" class="form-control" type="date" />
+                        <span asp-validation-for="FechaFin" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-azure">
+                            <i class="ti ti-check"></i> Guardar
+                        </button>
+                        <a asp-action="Index" asp-route-clienteId="@Model.ClienteId" class="btn btn-outline-azure">
+                            <i class="ti ti-x"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.querySelectorAll('.alert-danger[data-valmsg-summary]').forEach(function (el) {
+            if (el.querySelectorAll('li').length > 0) el.style.display = '';
+        });
+    </script>
+}

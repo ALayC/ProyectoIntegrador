@@ -11,7 +11,7 @@ public class PermisoRepository : IPermisoRepository
 
     public PermisoRepository(AppDbContext context)
     {
- _context = context;
+        _context = context;
     }
 
     public async Task<Permiso?> ObtenerPorId(Guid id)
@@ -45,7 +45,7 @@ public class PermisoRepository : IPermisoRepository
 
     public async Task Actualizar(Permiso permiso)
     {
-  _context.Permisos.Update(permiso);
-      await _context.SaveChangesAsync();
+        _context.Permisos.Update(permiso);
+        await _context.SaveChangesAsync();
     }
 }

@@ -14,10 +14,10 @@ public class PaginadoDto<T>
 
     public PaginadoDto(List<T> datos, int pagina, int cantidadPorPagina, int totalRegistros)
     {
-   Datos = datos;
-     Pagina = pagina;
-   CantidadPorPagina = cantidadPorPagina;
-     TotalRegistros = totalRegistros;
+        Datos = datos;
+        Pagina = pagina;
+        CantidadPorPagina = cantidadPorPagina;
+        TotalRegistros = totalRegistros;
         TotalPaginas = (int)Math.Ceiling((double)totalRegistros / cantidadPorPagina);
     }
 }

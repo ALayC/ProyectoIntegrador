@@ -6,7 +6,8 @@ public interface ICuentaContableRepository
 {
     Task<CuentaContable?> ObtenerPorId(Guid id);
     Task<CuentaContable?> ObtenerPorCodigo(Guid planCuentasId, string codigo);
-    Task<List<CuentaContable>> ObtenerPorPlanDeCuentas(Guid planCuentasId, int pagina, int cantidadPorPagina);
+    Task<List<CuentaContable>> ObtenerPorPlanPaginado(Guid planCuentasId, int pagina, int cantidadPorPagina);
+    Task<List<CuentaContable>> ObtenerTodasPorPlan(Guid planId);
     Task<int> ContarPorPlanDeCuentas(Guid planCuentasId);
     Task<List<CuentaContable>> ObtenerHijas(Guid cuentaPadreId);
     Task<List<CuentaContable>> ObtenerImputables(Guid planCuentasId);

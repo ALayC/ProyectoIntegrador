@@ -1,4 +1,4 @@
-@model ClienteViewModel
+﻿@model ClienteViewModel
 @{
     ViewData["Title"] = "Editar Cliente";
     var clienteId = ViewData["ClienteId"];
@@ -69,7 +69,7 @@
                             <select asp-for="MonedaBase" class="form-select">
                                 <option value="">-- Seleccionar --</option>
                                 <option value="UYU">UYU (Peso Uruguayo)</option>
-                                <option value="USD">USD (D�lar Estadounidense)</option>
+                                <option value="USD">USD (Dólar Estadounidense)</option>
                             </select>
                             <span asp-validation-for="MonedaBase" class="text-danger"></span>
                         </div>
@@ -90,15 +90,15 @@
 </div>
 
 @section Scripts {
- <partial name="_ValidationScriptsPartial" />
-  <script>
- $(function () {
-       var alertDiv = $('.alert-danger');
-   alertDiv.each(function () {
-        if ($(this).text().trim().length > 0) {
-       $(this).show();
-     }
-   });
-    });
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(function () {
+              var alertDiv = $('.alert-danger');
+          alertDiv.each(function () {
+               if ($(this).text().trim().length > 0) {
+              $(this).show();
+            }
+          });
+           });
     </script>
 }

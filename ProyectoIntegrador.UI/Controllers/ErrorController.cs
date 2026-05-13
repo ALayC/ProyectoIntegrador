@@ -7,8 +7,8 @@ public class ErrorController : Controller
 {
     [AllowAnonymous]
     public IActionResult Forbidden()
- {
-     Response.StatusCode = 403;
-    return View();
- }
+    {
+        Response.StatusCode = 403;
+        return View();
+    }
 }

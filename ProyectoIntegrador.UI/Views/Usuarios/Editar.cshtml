@@ -1,4 +1,4 @@
-@model EditarUsuarioViewModel
+ï»¿@model EditarUsuarioViewModel
 @{
     ViewData["Title"] = "Editar Usuario";
     var auxiliarRolId = Model.Roles.FirstOrDefault(r => r.Nombre == "Auxiliar Contable")?.Id;
@@ -6,120 +6,120 @@
 
 <div class="row justify-content-center">
     <div class="col-md-7">
-    <div class="card">
-      <div class="card-body p-4">
-       <h3 class="card-title mb-4">
-     <i class="ti ti-user-edit"></i> Editar Usuario
-          </h3>
+        <div class="card">
+            <div class="card-body p-4">
+                <h3 class="card-title mb-4">
+                    <i class="ti ti-user-edit"></i> Editar Usuario
+                </h3>
 
-        <div class="mb-3 p-2 bg-light rounded">
- <small class="text-muted"><i class="ti ti-mail"></i> Email (no editable)</small>
-     <div class="fw-semibold">@Model.Email</div>
-       </div>
+                <div class="mb-3 p-2 bg-light rounded">
+                    <small class="text-muted"><i class="ti ti-mail"></i> Email (no editable)</small>
+                    <div class="fw-semibold">@Model.Email</div>
+                </div>
 
-   <div asp-validation-summary="All" class="alert alert-danger" role="alert" style="display:none;"></div>
+                <div asp-validation-summary="All" class="alert alert-danger" role="alert" style="display:none;"></div>
 
-    <form asp-action="Editar" asp-route-id="@Model.Id" method="post">
+                <form asp-action="Editar" asp-route-id="@Model.Id" method="post">
 
-          <div class="mb-3">
-        <label asp-for="NombreCompleto" class="form-label"></label>
-   <input asp-for="NombreCompleto" class="form-control" />
-            <span asp-validation-for="NombreCompleto" class="text-danger"></span>
-         </div>
+                    <div class="mb-3">
+                        <label asp-for="NombreCompleto" class="form-label"></label>
+                        <input asp-for="NombreCompleto" class="form-control" />
+                        <span asp-validation-for="NombreCompleto" class="text-danger"></span>
+                    </div>
 
-       <div class="mb-3">
-          <label asp-for="RolId" class="form-label"></label>
-    <select asp-for="RolId" id="selectRol" class="form-select">
-          <option value="">-- Seleccionar rol --</option>
-         @foreach (var rol in Model.Roles)
-         {
-   <option value="@rol.Id" selected="@(rol.Id == Model.RolId)">@rol.Nombre</option>
-    }
-</select>
-  <span asp-validation-for="RolId" class="text-danger"></span>
-     </div>
+                    <div class="mb-3">
+                        <label asp-for="RolId" class="form-label"></label>
+                        <select asp-for="RolId" id="selectRol" class="form-select">
+                            <option value="">-- Seleccionar rol --</option>
+                            @foreach (var rol in Model.Roles)
+                            {
+                                <option value="@rol.Id" selected="@(rol.Id == Model.RolId)">@rol.Nombre</option>
+                            }
+                        </select>
+                        <span asp-validation-for="RolId" class="text-danger"></span>
+                    </div>
 
-    <div class="mb-3" id="divContador" style="display:none;">
-  <label asp-for="ContadorId" class="form-label"></label>
-      <select asp-for="ContadorId" id="selectContador" class="form-select">
-    <option value="">-- Seleccionar contador --</option>
-       @foreach (var c in Model.Contadores)
-      {
-          <option value="@c.Id" selected="@(c.Id == Model.ContadorId)">@c.NombreCompleto</option>
-        }
-     </select>
-    </div>
+                    <div class="mb-3" id="divContador" style="display:none;">
+                        <label asp-for="ContadorId" class="form-label"></label>
+                        <select asp-for="ContadorId" id="selectContador" class="form-select">
+                            <option value="">-- Seleccionar contador --</option>
+                            @foreach (var c in Model.Contadores)
+                            {
+                                <option value="@c.Id" selected="@(c.Id == Model.ContadorId)">@c.NombreCompleto</option>
+                            }
+                        </select>
+                    </div>
 
-   <div class="d-flex gap-2 mt-4 justify-content-between">
-          <div class="d-flex gap-2">
- <button type="submit" class="btn btn-azure">
-         <i class="ti ti-check"></i> Guardar cambios
-     </button>
-       <a asp-action="Index" class="btn btn-outline-azure">
-        <i class="ti ti-x"></i> Cancelar
-   </a>
-           </div>
+                    <div class="d-flex gap-2 mt-4 justify-content-between">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-azure">
+                                <i class="ti ti-check"></i> Guardar cambios
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-azure">
+                                <i class="ti ti-x"></i> Cancelar
+                            </a>
+                        </div>
 
-    @if (Model.Estado == "Activo")
-      {
-   <button type="button" class="btn btn-danger"
-data-bs-toggle="modal" data-bs-target="#confirmar-desactivar">
-<i class="ti ti-ban"></i> Desactivar usuario
-    </button>
-      }
-   </div>
-   </form>
-      </div>
-    </div>
+                        @if (Model.Estado == "Activo")
+                        {
+                            <button type="button" class="btn btn-danger"
+                                    data-bs-toggle="modal" data-bs-target="#confirmar-desactivar">
+                                <i class="ti ti-ban"></i> Desactivar usuario
+                            </button>
+                        }
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 
 @if (Model.Estado == "Activo")
 {
     <div class="modal modal-blur fade" id="confirmar-desactivar" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-    <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirmar desactivación</h5>
-             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-    </div>
-    <div class="modal-body text-secondary">
-    ¿Deseas desactivar a <strong>@Model.NombreCompleto</strong>?<br />
-    <small>Esta acción no se puede deshacer desde la interfaz.</small>
-          </div>
-  <div class="modal-footer">
- <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
-        <form asp-action="Desactivar" asp-route-id="@Model.Id" method="post" class="d-inline">
- <button type="submit" class="btn btn-danger">Desactivar</button>
-          </form>
-    </div>
-    </div>
-    </div>
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar desactivaciÃ³n</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body text-secondary">
+                    Â¿Deseas desactivar a <strong>@Model.NombreCompleto</strong>?<br />
+                    <small>Esta acciÃ³n no se puede deshacer desde la interfaz.</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
+                    <form asp-action="Desactivar" asp-route-id="@Model.Id" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-danger">Desactivar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 }
 
 @section Scripts {
-<partial name="_ValidationScriptsPartial" />
+    <partial name="_ValidationScriptsPartial" />
     <script>
-    const auxiliarNombre = "Auxiliar Contable";
+          const auxiliarNombre = "Auxiliar Contable";
 
-        function toggleContador() {
-        const selectRol = document.getElementById('selectRol');
-         const selectedOption = selectRol.options[selectRol.selectedIndex];
-   const nombre = selectedOption ? selectedOption.text : '';
-      const divContador = document.getElementById('divContador');
-       const selectContador = document.getElementById('selectContador');
-         if (nombre === auxiliarNombre) {
-  divContador.style.display = '';
-      selectContador.required = true;
-    } else {
-          divContador.style.display = 'none';
-  selectContador.required = false;
-    selectContador.value = '';
-       }
-        }
+              function toggleContador() {
+              const selectRol = document.getElementById('selectRol');
+               const selectedOption = selectRol.options[selectRol.selectedIndex];
+         const nombre = selectedOption ? selectedOption.text : '';
+            const divContador = document.getElementById('divContador');
+             const selectContador = document.getElementById('selectContador');
+               if (nombre === auxiliarNombre) {
+        divContador.style.display = '';
+            selectContador.required = true;
+          } else {
+                divContador.style.display = 'none';
+        selectContador.required = false;
+          selectContador.value = '';
+             }
+              }
 
-   document.getElementById('selectRol').addEventListener('change', toggleContador);
-  toggleContador();
+         document.getElementById('selectRol').addEventListener('change', toggleContador);
+        toggleContador();
     </script>
 }

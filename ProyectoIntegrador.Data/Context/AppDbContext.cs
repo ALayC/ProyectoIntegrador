@@ -176,11 +176,14 @@ public class AppDbContext : DbContext
             entity.HasKey(e => e.Id);
 
             // Relación 1:1 con Cliente
-            entity.HasIndex(e => e.ClienteId).IsUnique();
+            entity.HasIndex(e => e.ClienteId)
+    .IsUnique()
+    .HasFilter("[ClienteId] IS NOT NULL");
 
             entity.HasOne(e => e.Cliente)
        .WithOne(e => e.PlanDeCuentas)
       .HasForeignKey<PlanDeCuentas>(e => e.ClienteId)
+      .IsRequired(false)
        .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasMany(e => e.CuentasContables)

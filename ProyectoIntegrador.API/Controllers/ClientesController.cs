@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProyectoIntegrador.API.Filters;
@@ -20,7 +20,7 @@ public class ClientesController : ControllerBase
     }
 
     /// <summary>
-    /// Obtiene los clientes del contador autenticado con paginaci�n.
+    /// Obtiene los clientes del contador autenticado con paginación.
     /// </summary>
     [HttpGet]
     [RequierePermiso("Clientes", "Consultar")]
@@ -30,7 +30,7 @@ public class ClientesController : ControllerBase
     {
         var contadorId = ObtenerUsuarioIdDelToken();
         var resultado = await _clienteService.ObtenerPorContador(contadorId, pagina, cantidadPorPagina);
-    return Ok(resultado);
+        return Ok(resultado);
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ public class ClientesController : ControllerBase
     [HttpGet("{id:guid}")]
     [RequierePermiso("Clientes", "Consultar")]
     public async Task<IActionResult> ObtenerPorId(Guid id)
-{
+    {
         var resultado = await _clienteService.ObtenerPorId(id);
         return Ok(resultado);
     }
@@ -64,7 +64,7 @@ public class ClientesController : ControllerBase
     public async Task<IActionResult> Actualizar(Guid id, [FromBody] ClienteDto clienteDto)
     {
         var usuarioId = ObtenerUsuarioIdDelToken();
-     var resultado = await _clienteService.Actualizar(id, clienteDto, usuarioId);
+        var resultado = await _clienteService.Actualizar(id, clienteDto, usuarioId);
         return Ok(resultado);
     }
 
@@ -72,12 +72,35 @@ public class ClientesController : ControllerBase
     /// Desactiva un cliente (soft delete).
     /// </summary>
     [HttpPatch("{id:guid}/desactivar")]
-  [RequierePermiso("Clientes", "Desactivar")]
+    [RequierePermiso("Clientes", "Desactivar")]
     public async Task<IActionResult> Desactivar(Guid id)
     {
-     var usuarioId = ObtenerUsuarioIdDelToken();
+        var usuarioId = ObtenerUsuarioIdDelToken();
         await _clienteService.Desactivar(id, usuarioId);
         return Ok(new { mensaje = "Cliente desactivado exitosamente." });
+    }
+
+    /// <summary>
+    /// Activa un cliente.
+    /// </summary>
+    [HttpPatch("{id:guid}/activar")]
+    [RequierePermiso("Clientes", "Desactivar")]
+    public async Task<IActionResult> Activar(Guid id)
+    {
+        var usuarioId = ObtenerUsuarioIdDelToken();
+        await _clienteService.Activar(id, usuarioId);
+        return Ok(new { mensaje = "Cliente activado exitosamente." });
+    }
+
+    /// <summary>
+    /// Obtiene el plan de cuentas del cliente en formato árbol.
+    /// </summary>
+    [HttpGet("{id:guid}/plan-de-cuentas")]
+    [RequierePermiso("Clientes", "Consultar")]
+    public async Task<IActionResult> ObtenerPlanDeCuentas(Guid id)
+    {
+        var resultado = await _clienteService.ObtenerPlanDeCuentas(id);
+        return Ok(resultado);
     }
 
     // ??????????????????????????????????????????????

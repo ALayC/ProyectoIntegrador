@@ -2,7 +2,7 @@ namespace ProyectoIntegrador.UI.Models;
 
 public class PaginadoViewModel<T>
 {
-public List<T> Datos { get; set; } = new();
+    public List<T> Datos { get; set; } = new();
     public int Pagina { get; set; }
     public int CantidadPorPagina { get; set; }
     public int TotalRegistros { get; set; }

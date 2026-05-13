@@ -1,6 +1,27 @@
-@model PaginadoViewModel<ClienteListViewModel>
+锘緻model PaginadoViewModel<ClienteListViewModel>
 @{
-ViewData["Title"] = "Mis Clientes";
+    ViewData["Title"] = "Mis Clientes";
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            var input = document.getElementById('buscar-clientes');
+            if (!input) return;
+
+            input.addEventListener('input', function () {
+                var filtro = input.value.toLowerCase();
+                var filas = document.querySelectorAll('tbody tr');
+
+                filas.forEach(function (fila) {
+                    var rut = (fila.getAttribute('data-rut') || '').toLowerCase();
+                    var razon = (fila.getAttribute('data-razon') || '').toLowerCase();
+                    var visible = rut.includes(filtro) || razon.includes(filtro);
+                    fila.style.display = visible ? '' : 'none';
+                });
+            });
+        })();
+    </script>
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -10,120 +31,175 @@ ViewData["Title"] = "Mis Clientes";
     </a>
 </div>
 
+<div class="row mb-3">
+    <div class="col-md-3">
+        <label for="buscar-clientes" class="form-label visually-hidden">Buscar clientes por RUT o raz贸n social</label>
+        <div class="input-icon">
+            <span class="input-icon-addon">
+                <i class="ti ti-search"></i>
+            </span>
+            <input id="buscar-clientes" type="text" class="form-control" placeholder="Buscar por RUT o raz贸n social" aria-label="Buscar clientes por RUT o raz贸n social" />
+        </div>
+    </div>
+</div>
+
 @if (Model.Datos.Count == 0)
 {
     <div class="alert alert-info">
-        <i class="ti ti-info-circle"></i> No hay clientes registrados a鷑.
+        <i class="ti ti-info-circle"></i> No hay clientes registrados a煤n.
     </div>
 }
 else
 {
     <div class="table-responsive">
-    <table class="table table-striped table-hover align-middle">
-        <thead>
-            <tr>
-                <th>RUT</th>
-                <th>Raz髇 Social</th>
-                <th>Email</th>
-                <th>Estado</th>
-                <th class="text-end">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-       @foreach (var cliente in Model.Datos)
+        <table class="table table-striped table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>RUT</th>
+                    <th>Raz贸n Social</th>
+                    <th>Email</th>
+                    <th>Estado</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var cliente in Model.Datos)
                 {
-           var esInactivo = cliente.Estado == "Inactivo";
-      <tr class="@(esInactivo ? "text-muted text-decoration-line-through" : "")">
-        <td>@cliente.Rut</td>
-  <td>@cliente.RazonSocial</td>
-       <td>@cliente.Email</td>
-        <td>
-            @if (esInactivo)
-   {
-            <span class="text-danger fw-semibold">Inactivo</span>
-  }
-    else
-              {
-                    <span class="text-success fw-semibold">Activo</span>
-  }
-         </td>
-         <td class="text-end">
-             <a asp-action="Editar" asp-route-id="@cliente.Id"
-                class="btn btn-sm btn-outline-azure" title="Editar">
-                 <i class="ti ti-edit"></i>
-             </a>
-        @if (!esInactivo)
-        {
-            <button type="button"
-                    class="btn btn-sm btn-outline-danger"
-                    data-bs-toggle="modal"
-                    data-bs-target="#confirmar-desactivar-@cliente.Id"
-                    title="Desactivar">
-                <i class="ti ti-ban"></i>
-            </button>
+                    var esInactivo = cliente.Estado == "Inactivo";
+                    <tr class="@(esInactivo ? "text-muted text-decoration-line-through" : "")" data-rut="@cliente.Rut" data-razon="@cliente.RazonSocial">
+                        <td>
+                            <a asp-action="Detalles" asp-route-id="@cliente.Id" class="text-decoration-none">
+                                @cliente.Rut
+                            </a>
+                        </td>
+                        <td>
+                            <a asp-action="Detalles" asp-route-id="@cliente.Id" class="text-decoration-none">
+                                @cliente.RazonSocial
+                            </a>
+                        </td>
+                        <td>
+                            <a asp-action="Detalles" asp-route-id="@cliente.Id" class="text-decoration-none">
+                                @cliente.Email
+                            </a>
+                        </td>
+                        <td>
+                            @if (esInactivo)
+                            {
+                                <span class="text-danger fw-semibold">Inactivo</span>
+                            }
 
-            <div class="modal modal-blur fade" id="confirmar-desactivar-@cliente.Id" tabindex="-1" role="dialog" aria-hidden="true">
-                <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Confirmar desactivaci髇</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                        </div>
-                        <div class="modal-body text-secondary">
-                            緿eseas desactivar el cliente <strong>@cliente.RazonSocial</strong>?
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
-                            <form asp-action="Desactivar" asp-route-id="@cliente.Id" method="post">
-                                <button type="submit" class="btn btn-danger">Desactivar</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
-     </td>
-         </tr>
-              }
- </tbody>
-     </table>
+                            else
+                            {
+                                <span class="text-success fw-semibold">Activo</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <a asp-action="Editar" asp-route-id="@cliente.Id"
+                                   class="btn btn-sm btn-outline-azure" title="Editar">
+                                <i class="ti ti-edit"></i>
+                            </a>
+                            @if (!esInactivo)
+                            {
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#confirmar-desactivar-@cliente.Id"
+                                        title="Desactivar">
+                                    <i class="ti ti-ban"></i>
+                                </button>
+
+                                <div class="modal modal-blur fade" id="confirmar-desactivar-@cliente.Id" tabindex="-1" role="dialog" aria-hidden="true">
+                                    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Confirmar desactivaci贸n</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                            </div>
+                                            <div class="modal-body text-secondary">
+                                                驴Deseas desactivar el cliente <strong>@cliente.RazonSocial</strong>?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
+                                                <form asp-action="Desactivar" asp-route-id="@cliente.Id" method="post">
+                                                    <button type="submit" class="btn btn-danger">Desactivar</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-green"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#confirmar-activar-@cliente.Id"
+                                        title="Activar">
+                                    <i class="ti ti-circle-check"></i>
+                                </button>
+
+                                <div class="modal modal-blur fade" id="confirmar-activar-@cliente.Id" tabindex="-1" role="dialog" aria-hidden="true">
+                                    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Confirmar activaci贸n</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                            </div>
+                                            <div class="modal-body text-secondary">
+                                                驴Deseas activar el cliente <strong>@cliente.RazonSocial</strong>?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
+                                                <form asp-action="Activar" asp-route-id="@cliente.Id" method="post">
+                                                    <button type="submit" class="btn btn-success">Activar</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 
-    @* Paginaci髇 *@
+    @* Paginaci贸n *@
     @if (Model.TotalPaginas > 1)
-  {
-        <nav aria-label="Paginaci髇 de clientes">
-     <ul class="pagination justify-content-center">
-      <li class="page-item @(Model.TienePaginaAnterior ? "" : "disabled")">
-       <a class="page-link" asp-action="Index"
-       asp-route-pagina="@(Model.Pagina - 1)"
-  asp-route-cantidadPorPagina="@Model.CantidadPorPagina">
-       &laquo; Anterior
-     </a>
-  </li>
+    {
+        <nav aria-label="Paginaci贸n de clientes">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(Model.TienePaginaAnterior ? "" : "disabled")">
+                    <a class="page-link" asp-action="Index"
+                           asp-route-pagina="@(Model.Pagina - 1)"
+                           asp-route-cantidadPorPagina="@Model.CantidadPorPagina">
+                        &laquo; Anterior
+                    </a>
+                </li>
 
- @for (int i = 1; i <= Model.TotalPaginas; i++)
-          {
-  <li class="page-item @(i == Model.Pagina ? "active" : "")">
-    <a class="page-link" asp-action="Index"
-     asp-route-pagina="@i"
-              asp-route-cantidadPorPagina="@Model.CantidadPorPagina">@i</a>
-       </li>
-     }
+                @for (int i = 1; i <= Model.TotalPaginas; i++)
+                {
+                    <li class="page-item @(i == Model.Pagina ? "active" : "")">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-pagina="@i"
+                           asp-route-cantidadPorPagina="@Model.CantidadPorPagina">@i</a>
+                    </li>
+                }
 
-   <li class="page-item @(Model.TienePaginaSiguiente ? "" : "disabled")">
-    <a class="page-link" asp-action="Index"
-      asp-route-pagina="@(Model.Pagina + 1)"
-              asp-route-cantidadPorPagina="@Model.CantidadPorPagina">
-         Siguiente &raquo;
-            </a>
-    </li>
-        </ul>
+                <li class="page-item @(Model.TienePaginaSiguiente ? "" : "disabled")">
+                    <a class="page-link" asp-action="Index"
+                           asp-route-pagina="@(Model.Pagina + 1)"
+                           asp-route-cantidadPorPagina="@Model.CantidadPorPagina">
+                        Siguiente &raquo;
+                    </a>
+                </li>
+            </ul>
         </nav>
 
-  <p class="text-center text-muted">
-Mostrando p醙ina @Model.Pagina de @Model.TotalPaginas
-     (@Model.TotalRegistros registros en total)
+        <p class="text-center text-muted">
+            Mostrando p谩gina @Model.Pagina de @Model.TotalPaginas
+            (@Model.TotalRegistros registros en total)
         </p>
     }
 }
