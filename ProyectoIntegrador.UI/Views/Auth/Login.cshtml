@@ -13,6 +13,11 @@
             <div class="text-success small mb-3">@TempData["AuthExito"]</div>
         }
 
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+        }
+
         <form asp-action="Login" method="post" autocomplete="off" novalidate>
             <div class="mb-3">
                 <label asp-for="Email" class="form-label"></label>

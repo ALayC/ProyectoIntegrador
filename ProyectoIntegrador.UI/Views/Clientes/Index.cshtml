@@ -3,6 +3,16 @@
     ViewData["Title"] = "Mis Clientes";
 }
 
+<style>
+    .clickable-row {
+        cursor: pointer;
+    }
+
+    .clickable-row:hover {
+        background-color: var(--tblr-table-hover-bg, rgba(0, 0, 0, 0.02));
+    }
+</style>
+
 @section Scripts {
     <script>
         (function () {
@@ -19,6 +29,23 @@
                     var visible = rut.includes(filtro) || razon.includes(filtro);
                     fila.style.display = visible ? '' : 'none';
                 });
+            });
+        })();
+
+        (function () {
+            var table = document.querySelector('table');
+            if (!table) return;
+
+            table.addEventListener('click', function (e) {
+                if (e.target.closest('a, button, form, input, select, textarea, .dropdown, .dropdown-menu, [data-bs-toggle="dropdown"]')) {
+                    return;
+                }
+
+                var row = e.target.closest('.clickable-row');
+                if (!row) return;
+
+                var href = row.getAttribute('data-href');
+                if (href) window.location.href = href;
             });
         })();
     </script>
@@ -66,21 +93,15 @@ else
                 @foreach (var cliente in Model.Datos)
                 {
                     var esInactivo = cliente.Estado == "Inactivo";
-                    <tr class="@(esInactivo ? "text-muted text-decoration-line-through" : "")" data-rut="@cliente.Rut" data-razon="@cliente.RazonSocial">
+                    <tr class="@(esInactivo ? "text-muted text-decoration-line-through" : "") clickable-row" data-rut="@cliente.Rut" data-razon="@cliente.RazonSocial" data-href="@Url.Action("Detalles", "Clientes", new { id = cliente.Id })">
                         <td>
-                            <a asp-action="Detalles" asp-route-id="@cliente.Id" class="text-decoration-none">
-                                @cliente.Rut
-                            </a>
+                            @cliente.Rut
                         </td>
                         <td>
-                            <a asp-action="Detalles" asp-route-id="@cliente.Id" class="text-decoration-none">
-                                @cliente.RazonSocial
-                            </a>
+                            @cliente.RazonSocial
                         </td>
                         <td>
-                            <a asp-action="Detalles" asp-route-id="@cliente.Id" class="text-decoration-none">
-                                @cliente.Email
-                            </a>
+                            @cliente.Email
                         </td>
                         <td>
                             @if (esInactivo)

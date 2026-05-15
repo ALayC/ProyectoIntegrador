@@ -17,8 +17,8 @@ public class ClienteService : IClienteService
     private readonly ICuentaContableService _cuentaContableService;
 
     public ClienteService(
-IClienteRepository clienteRepository,
-    IUsuarioRepository usuarioRepository,
+        IClienteRepository clienteRepository,
+        IUsuarioRepository usuarioRepository,
         IPlanDeCuentasRepository planDeCuentasRepository,
         IAuditoriaRepository auditoriaRepository,
         ICuentaContableService cuentaContableService)
@@ -283,7 +283,6 @@ IClienteRepository clienteRepository,
                 Tipo = cuentaTemplate.Tipo,
                 Naturaleza = cuentaTemplate.Naturaleza,
                 EsImputable = cuentaTemplate.EsImputable,
-                EsSistema = cuentaTemplate.EsSistema,
                 Estado = cuentaTemplate.Estado
             };
 
