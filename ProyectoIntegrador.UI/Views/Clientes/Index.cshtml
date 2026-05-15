@@ -37,7 +37,7 @@
             if (!table) return;
 
             table.addEventListener('click', function (e) {
-                if (e.target.closest('a, button, form, input, select, textarea, .dropdown, .dropdown-menu, [data-bs-toggle="dropdown"]')) {
+                if (e.target.closest('a, button, form, input, select, textarea, .dropdown, .dropdown-menu, [data-bs-toggle="dropdown"], .modal, .modal-dialog, .modal-content')) {
                     return;
                 }
 
