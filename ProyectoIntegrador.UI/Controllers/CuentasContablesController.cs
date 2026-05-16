@@ -16,7 +16,7 @@ public class CuentasContablesController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Details(Guid id)
+    public async Task<IActionResult> Details(Guid id, Guid clienteId)
     {
         var response = await _apiClient.GetAsync<CuentaContableViewModel>($"api/cuentas-contables/{id}");
 
@@ -29,11 +29,12 @@ public class CuentasContablesController : Controller
             return RedirectToAction("Index", "Clientes");
         }
 
+        ViewData["ClienteId"] = clienteId;
         return View(response.Data);
     }
 
     [HttpGet]
-    public async Task<IActionResult> Edit(Guid id)
+    public async Task<IActionResult> Edit(Guid id, Guid clienteId)
     {
         var response = await _apiClient.GetAsync<CuentaContableViewModel>($"api/cuentas-contables/{id}");
 
@@ -46,15 +47,17 @@ public class CuentasContablesController : Controller
             return RedirectToAction("Index", "Clientes");
         }
 
+        ViewData["ClienteId"] = clienteId;
         return View(response.Data);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(Guid id, CuentaContableViewModel vm)
+    public async Task<IActionResult> Edit(Guid id, Guid clienteId, CuentaContableViewModel vm)
     {
         if (!ModelState.IsValid)
         {
+            ViewData["ClienteId"] = clienteId;
             return View(vm);
         }
 
@@ -73,11 +76,12 @@ public class CuentasContablesController : Controller
         if (!response.EsExitoso)
         {
             ModelState.AddModelError(string.Empty, response.MensajeError ?? "Error al actualizar la cuenta contable.");
+            ViewData["ClienteId"] = clienteId;
             return View(vm);
         }
 
         TempData["Exito"] = "Cuenta contable actualizada correctamente.";
-        return RedirectToAction(nameof(Details), new { id, planId = vm.PlanCuentasId });
+        return RedirectToAction(nameof(Details), new { id, clienteId });
     }
 
     [HttpGet]
@@ -228,5 +232,4 @@ public class CuentasContablesController : Controller
         TempData["Exito"] = "Cuenta contable desactivada correctamente.";
         return RedirectToAction(nameof(Details), new { id, planId });
     }
-
 }
