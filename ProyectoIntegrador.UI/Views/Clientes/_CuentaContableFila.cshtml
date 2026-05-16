@@ -3,8 +3,11 @@
     var nivel = ViewData["Nivel"] as int? ?? 0;
     var paddingLeft = nivel * 24;
     var tieneHijas = Model.Hijas?.Count > 0;
+    ViewData["Title"] = "Detalle de cuenta contable";
     var estadoClase = Model.Estado == "Activa" ? "bg-green-lt text-green" : "bg-red-lt text-red";
     var imputableClase = Model.EsImputable ? "bg-green-lt text-green" : "bg-yellow-lt text-yellow";
+    var sistemaClase = Model.EsSistema ? "bg-azure-lt text-azure" : "bg-muted-lt text-muted";
+    var clienteId = ViewData["ClienteId"] is Guid cid ? cid : Guid.Empty;
 }
 
 <div class="list-group-item">
@@ -19,7 +22,7 @@
                     </span>
                     <span class="flex-fill">
                         <span class="d-flex align-items-center justify-content-between gap-3">
-                            <a asp-controller="CuentasContables" asp-action="Details" asp-route-id="@Model.Id" class="fw-semibold text-dark text-decoration-none">
+                            <a asp-controller="CuentasContables" asp-action="Details" asp-route-id="@Model.Id" asp-route-clienteId="@ViewData["ClienteId"]" class="fw-semibold text-dark text-decoration-none">
                                 @Model.Nombre
                             </a>
                             <span class="d-flex align-items-center gap-2">
@@ -43,7 +46,7 @@
         }
         else
         {
-            <a asp-controller="CuentasContables" asp-action="Details" asp-route-id="@Model.Id" class="d-flex align-items-center gap-3 w-100 text-decoration-none">
+            <a asp-controller="CuentasContables" asp-action="Details" asp-route-id="@Model.Id" asp-route-clienteId="@ViewData["ClienteId"]" class="d-flex align-items-center gap-3 w-100 text-decoration-none">
                 <span class="text-secondary"><i class="ti ti-file"></i></span>
                 <div class="flex-fill">
                     <div class="d-flex align-items-center justify-content-between gap-3">

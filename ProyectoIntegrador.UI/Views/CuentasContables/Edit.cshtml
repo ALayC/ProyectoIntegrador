@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Editar cuenta contable";
     var esSistema = Model.EsSistema;
+    var clienteId = ViewData["ClienteId"] is Guid cid ? cid : Guid.Empty;
 }
 
 <div class="row justify-content-center">
@@ -21,9 +22,10 @@
                     </div>
                 }
 
-                <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+                <form asp-action="Edit" asp-route-id="@Model.Id" asp-route-clienteId="@clienteId" method="post">
                     <input type="hidden" asp-for="PlanCuentasId" />
                     <input type="hidden" asp-for="CuentaPadreId" />
+                    <input type="hidden" name="clienteId" value="@clienteId" />
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label asp-for="Codigo" class="form-label"></label>
@@ -123,7 +125,7 @@
                         <button type="submit" class="btn btn-azure">
                             <i class="ti ti-check"></i> Guardar cambios
                         </button>
-                        <a asp-action="Details" asp-route-id="@Model.Id" asp-route-planId="@Model.PlanCuentasId" class="btn btn-outline-azure">
+                        <a asp-action="Details" asp-route-id="@Model.Id" asp-route-clienteId="@clienteId" class="btn btn-outline-azure">
                             <i class="ti ti-x"></i> Cancelar
                         </a>
                     </div>
