@@ -17,8 +17,8 @@ public class ClienteService : IClienteService
     private readonly ICuentaContableService _cuentaContableService;
 
     public ClienteService(
-IClienteRepository clienteRepository,
-    IUsuarioRepository usuarioRepository,
+        IClienteRepository clienteRepository,
+        IUsuarioRepository usuarioRepository,
         IPlanDeCuentasRepository planDeCuentasRepository,
         IAuditoriaRepository auditoriaRepository,
         ICuentaContableService cuentaContableService)
