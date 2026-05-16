@@ -4,6 +4,7 @@
     var estadoClase = Model.Estado == "Activa" ? "bg-green-lt text-green" : "bg-red-lt text-red";
     var imputableClase = Model.EsImputable ? "bg-green-lt text-green" : "bg-yellow-lt text-yellow";
     var sistemaClase = Model.EsSistema ? "bg-azure-lt text-azure" : "bg-muted-lt text-muted";
+    var clienteId = ViewData["ClienteId"] is Guid cid ? cid : Guid.Empty;
 }
 
 <div class="page-header d-print-none">
@@ -14,9 +15,9 @@
                 <div class="text-secondary">Detalle de la cuenta seleccionada</div>
             </div>
             <div class="col-auto ms-auto">
-                <button type="button" class="btn btn-outline-azure" onclick="history.back()">
+                <a asp-controller="Clientes" asp-action="PlanDeCuentas" asp-route-id="@clienteId" class="btn btn-outline-azure">
                     <i class="ti ti-arrow-left"></i> Volver al plan
-                </button>
+                </a>
             </div>
         </div>
     </div>
@@ -55,7 +56,7 @@
                 </div>
 
                 <div class="d-flex gap-2 flex-wrap">
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-azure">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" asp-route-clienteId="@clienteId" class="btn btn-azure">
                         <i class="ti ti-edit"></i> Editar
                     </a>
                     @if (Model.Estado == "Activa")

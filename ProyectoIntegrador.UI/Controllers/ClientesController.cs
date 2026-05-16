@@ -125,7 +125,8 @@ public class ClientesController : Controller
     [HttpGet]
     public async Task<IActionResult> PlanDeCuentas(Guid id)
     {
-        var response = await _apiClient.GetAsync<List<CuentaContableArbolViewModel>>($"api/clientes/{id}/plan-de-cuentas");
+        var response = await _apiClient.GetAsync<List<CuentaContableArbolViewModel>>(
+            $"api/clientes/{id}/plan-de-cuentas");
 
         if (response.EsNoAutorizado) return RedirectToAction("Login", "Auth");
 
@@ -135,6 +136,7 @@ public class ClientesController : Controller
             return RedirectToAction(nameof(Detalles), new { id });
         }
 
+        ViewData["ClienteId"] = id;   // ? agregar esto
         return View(response.Data ?? new List<CuentaContableArbolViewModel>());
     }
 
