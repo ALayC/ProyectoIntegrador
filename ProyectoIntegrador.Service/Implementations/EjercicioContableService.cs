@@ -1,5 +1,6 @@
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
+using ProyectoIntegrador.Service.Constants;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Exceptions;
 using ProyectoIntegrador.Service.Interfaces;
@@ -10,13 +11,16 @@ public class EjercicioContableService : IEjercicioContableService
 {
     private readonly IEjercicioContableRepository _ejercicioRepository;
     private readonly IClienteRepository _clienteRepository;
+    private readonly IAuditoriaService _auditoriaService;
 
     public EjercicioContableService(
         IEjercicioContableRepository ejercicioRepository,
-        IClienteRepository clienteRepository)
+        IClienteRepository clienteRepository,
+        IAuditoriaService auditoriaService)
     {
         _ejercicioRepository = ejercicioRepository;
         _clienteRepository = clienteRepository;
+        _auditoriaService = auditoriaService;
     }
 
     public async Task<EjercicioContableDto> Crear(CrearEjercicioContableDto dto)
@@ -129,8 +133,17 @@ public class EjercicioContableService : IEjercicioContableService
             throw new EjercicioCerradoException(id);
         }
 
+        var datosAnteriores = ConstruirDatosAuditoria(ejercicio);
+
         ejercicio.Estado = "Cerrado";
         await _ejercicioRepository.Actualizar(ejercicio);
+
+        await _auditoriaService.Registrar(
+            usuarioId,
+            AuditoriaConstantes.Entidades.EjercicioContable,
+            AuditoriaConstantes.Acciones.Cerrar,
+            datosAnteriores: datosAnteriores,
+            datosNuevos: ConstruirDatosAuditoria(ejercicio));
     }
 
     private static EjercicioContableDto Mapear(EjercicioContable ejercicio) => new()
@@ -148,6 +161,21 @@ public class EjercicioContableService : IEjercicioContableService
         {
             throw new ValidacionException("La fecha de inicio debe ser anterior a la fecha de fin.");
         }
+    }
+
+    /// <summary>
+    /// Construye el objeto base para auditar cambios de ejercicio contable.
+    /// </summary>
+    private static object ConstruirDatosAuditoria(EjercicioContable ejercicio)
+    {
+        return new
+        {
+            ejercicio.Id,
+            ejercicio.ClienteId,
+            ejercicio.FechaInicio,
+            ejercicio.FechaFin,
+            ejercicio.Estado
+        };
     }
 
     private async Task ValidarClienteExistente(Guid clienteId)

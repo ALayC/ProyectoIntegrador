@@ -1,7 +1,6 @@
-﻿using System.Text.Json;
-using ProyectoIntegrador.Data.Context;
-using ProyectoIntegrador.Data.Entities;
+﻿using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
+using ProyectoIntegrador.Service.Constants;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Exceptions;
 using ProyectoIntegrador.Service.Interfaces;
@@ -13,20 +12,20 @@ public class ClienteService : IClienteService
     private readonly IClienteRepository _clienteRepository;
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IPlanDeCuentasRepository _planDeCuentasRepository;
-    private readonly IAuditoriaRepository _auditoriaRepository;
+    private readonly IAuditoriaService _auditoriaService;
     private readonly ICuentaContableService _cuentaContableService;
 
     public ClienteService(
         IClienteRepository clienteRepository,
         IUsuarioRepository usuarioRepository,
         IPlanDeCuentasRepository planDeCuentasRepository,
-        IAuditoriaRepository auditoriaRepository,
+        IAuditoriaService auditoriaService,
         ICuentaContableService cuentaContableService)
     {
         _clienteRepository = clienteRepository;
         _usuarioRepository = usuarioRepository;
         _planDeCuentasRepository = planDeCuentasRepository;
-        _auditoriaRepository = auditoriaRepository;
+        _auditoriaService = auditoriaService;
         _cuentaContableService = cuentaContableService;
     }
 
@@ -77,13 +76,13 @@ public class ClienteService : IClienteService
         await ClonarPlanDeCuentas(planDeCuentas);
         await _planDeCuentasRepository.Guardar(planDeCuentas);
 
-        // Registrar auditoría
-        await RegistrarAuditoria(
-       contadorId,
-  "Cliente",
-            "Crear",
-        datosAnteriores: null,
-  datosNuevos: SerializarCliente(cliente));
+        // Registrar auditoría usando el servicio centralizado.
+        await _auditoriaService.Registrar(
+            contadorId,
+            AuditoriaConstantes.Entidades.Cliente,
+            AuditoriaConstantes.Acciones.Crear,
+            datosAnteriores: null,
+            datosNuevos: ConstruirDatosAuditoria(cliente));
 
         return MapearAResponseDto(cliente);
     }
@@ -125,7 +124,7 @@ public class ClienteService : IClienteService
         }
 
         // Capturar datos anteriores para auditoría
-        var datosAnteriores = SerializarCliente(cliente);
+        var datosAnteriores = ConstruirDatosAuditoria(cliente);
 
         // Actualizar propiedades
         cliente.Rut = clienteDto.Rut;
@@ -139,12 +138,12 @@ public class ClienteService : IClienteService
         await _clienteRepository.Actualizar(cliente);
 
         // Registrar auditoría con datos anteriores y nuevos
-        await RegistrarAuditoria(
-        usuarioId,
-            "Cliente",
-     "Editar",
-     datosAnteriores: datosAnteriores,
-  datosNuevos: SerializarCliente(cliente));
+        await _auditoriaService.Registrar(
+            usuarioId,
+            AuditoriaConstantes.Entidades.Cliente,
+            AuditoriaConstantes.Acciones.Editar,
+            datosAnteriores: datosAnteriores,
+            datosNuevos: ConstruirDatosAuditoria(cliente));
 
         return MapearAResponseDto(cliente);
     }
@@ -156,7 +155,7 @@ public class ClienteService : IClienteService
    ?? throw new EntidadNoEncontradaException("Cliente", id);
 
         // Capturar datos anteriores
-        var datosAnteriores = SerializarCliente(cliente);
+        var datosAnteriores = ConstruirDatosAuditoria(cliente);
 
         // Soft delete: cambiar estado a Inactivo
         cliente.Estado = "Inactivo";
@@ -164,12 +163,12 @@ public class ClienteService : IClienteService
         await _clienteRepository.Actualizar(cliente);
 
         // Registrar auditoría
-        await RegistrarAuditoria(
-              usuarioId,
-      "Cliente",
-            "Desactivar",
-  datosAnteriores: datosAnteriores,
-              datosNuevos: SerializarCliente(cliente));
+        await _auditoriaService.Registrar(
+            usuarioId,
+            AuditoriaConstantes.Entidades.Cliente,
+            AuditoriaConstantes.Acciones.Desactivar,
+            datosAnteriores: datosAnteriores,
+            datosNuevos: ConstruirDatosAuditoria(cliente));
     }
 
     /// <inheritdoc />
@@ -178,18 +177,18 @@ public class ClienteService : IClienteService
         var cliente = await _clienteRepository.ObtenerPorId(id)
             ?? throw new EntidadNoEncontradaException("Cliente", id);
 
-        var datosAnteriores = SerializarCliente(cliente);
+        var datosAnteriores = ConstruirDatosAuditoria(cliente);
 
         cliente.Estado = "Activo";
 
         await _clienteRepository.Actualizar(cliente);
 
-        await RegistrarAuditoria(
+        await _auditoriaService.Registrar(
             usuarioId,
-            "Cliente",
-            "Activar",
+            AuditoriaConstantes.Entidades.Cliente,
+            AuditoriaConstantes.Acciones.Activar,
             datosAnteriores: datosAnteriores,
-            datosNuevos: SerializarCliente(cliente));
+            datosNuevos: ConstruirDatosAuditoria(cliente));
     }
 
     /// <inheritdoc />
@@ -222,9 +221,12 @@ public class ClienteService : IClienteService
         };
     }
 
-    private static string SerializarCliente(Cliente cliente)
+    /// <summary>
+    /// Construye el objeto base para auditar cambios de cliente.
+    /// </summary>
+    private static object ConstruirDatosAuditoria(Cliente cliente)
     {
-        return JsonSerializer.Serialize(new
+        return new
         {
             cliente.Id,
             cliente.ContadorId,
@@ -236,28 +238,7 @@ public class ClienteService : IClienteService
             cliente.TipoContribuyente,
             cliente.MonedaBase,
             cliente.Estado
-        });
-    }
-
-    private async Task RegistrarAuditoria(
-        Guid usuarioId,
-    string entidad,
-        string accion,
-        string? datosAnteriores,
-        string? datosNuevos)
-    {
-        var auditoria = new Auditoria
-        {
-            Id = Guid.NewGuid(),
-            UsuarioId = usuarioId,
-            Entidad = entidad,
-            Accion = accion,
-            FechaHora = DateTime.UtcNow,
-            DatosAnteriores = datosAnteriores,
-            DatosNuevos = datosNuevos
         };
-
-        await _auditoriaRepository.Guardar(auditoria);
     }
 
     private async Task ClonarPlanDeCuentas(PlanDeCuentas destino)
