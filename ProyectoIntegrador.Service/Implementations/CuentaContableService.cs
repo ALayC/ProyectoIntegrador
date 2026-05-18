@@ -1,5 +1,6 @@
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
+using ProyectoIntegrador.Service.Constants;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Exceptions;
 using ProyectoIntegrador.Service.Interfaces;
@@ -10,14 +11,19 @@ public class CuentaContableService : ICuentaContableService
 {
     private readonly ICuentaContableRepository _cuentaRepository;
     private readonly IPlanDeCuentasRepository _planDeCuentasRepository;
+    private readonly IAuditoriaService _auditoriaService;
 
-    public CuentaContableService(ICuentaContableRepository cuentaRepository, IPlanDeCuentasRepository planDeCuentasRepository)
+    public CuentaContableService(
+        ICuentaContableRepository cuentaRepository,
+        IPlanDeCuentasRepository planDeCuentasRepository,
+        IAuditoriaService auditoriaService)
     {
         _cuentaRepository = cuentaRepository;
         _planDeCuentasRepository = planDeCuentasRepository;
+        _auditoriaService = auditoriaService;
     }
 
-    public async Task<CuentaContableDto> Crear(Guid planCuentasId, CrearCuentaContableDto dto)
+    public async Task<CuentaContableDto> Crear(Guid planCuentasId, CrearCuentaContableDto dto, Guid usuarioId)
     {
         await ObtenerPlanExistente(planCuentasId);
 
@@ -65,6 +71,14 @@ public class CuentaContableService : ICuentaContableService
         };
 
         await _cuentaRepository.Guardar(cuenta);
+
+        await _auditoriaService.Registrar(
+            usuarioId,
+            AuditoriaConstantes.Entidades.CuentaContable,
+            AuditoriaConstantes.Acciones.Crear,
+            datosAnteriores: null,
+            datosNuevos: ConstruirDatosAuditoria(cuenta));
+
         return Mapear(cuenta);
     }
 
@@ -123,7 +137,7 @@ public class CuentaContableService : ICuentaContableService
         return raiz;
     }
 
-    public async Task<CuentaContableDto> Actualizar(Guid id, ActualizarCuentaContableDto dto)
+    public async Task<CuentaContableDto> Actualizar(Guid id, ActualizarCuentaContableDto dto, Guid usuarioId)
     {
         var cuenta = await _cuentaRepository.ObtenerPorId(id)
             ?? throw new EntidadNoEncontradaException("CuentaContable", id);
@@ -152,18 +166,27 @@ public class CuentaContableService : ICuentaContableService
             }
         }
 
+        var datosAnteriores = ConstruirDatosAuditoria(cuenta);
+
         cuenta.Codigo = dto.Codigo;
         cuenta.Nombre = dto.Nombre;
         cuenta.Tipo = dto.Tipo;
         cuenta.Naturaleza = dto.Naturaleza;
         cuenta.EsImputable = dto.EsImputable;
-        // Estado no se modifica desde Actualizar; se gestiona en Activar/Desactivar.
 
         await _cuentaRepository.Actualizar(cuenta);
+
+        await _auditoriaService.Registrar(
+            usuarioId,
+            AuditoriaConstantes.Entidades.CuentaContable,
+            AuditoriaConstantes.Acciones.Editar,
+            datosAnteriores: datosAnteriores,
+            datosNuevos: ConstruirDatosAuditoria(cuenta));
+
         return Mapear(cuenta);
     }
 
-    public async Task Desactivar(Guid id)
+    public async Task Desactivar(Guid id, Guid usuarioId)
     {
         var cuenta = await _cuentaRepository.ObtenerPorId(id)
             ?? throw new EntidadNoEncontradaException("CuentaContable", id);
@@ -184,8 +207,17 @@ public class CuentaContableService : ICuentaContableService
             throw new CuentaConMovimientosException(id);
         }
 
+        var datosAnteriores = ConstruirDatosAuditoria(cuenta);
+
         cuenta.Estado = "Inactiva";
         await _cuentaRepository.Actualizar(cuenta);
+
+        await _auditoriaService.Registrar(
+            usuarioId,
+            AuditoriaConstantes.Entidades.CuentaContable,
+            AuditoriaConstantes.Acciones.Desactivar,
+            datosAnteriores: datosAnteriores,
+            datosNuevos: ConstruirDatosAuditoria(cuenta));
     }
 
     public async Task Activar(Guid id)
@@ -213,6 +245,10 @@ public class CuentaContableService : ICuentaContableService
         await _cuentaRepository.Actualizar(cuenta);
     }
 
+    // ??????????????????????????????????????????????
+    // Métodos privados
+    // ??????????????????????????????????????????????
+
     private static CuentaContableDto Mapear(CuentaContable cuenta) => new()
     {
         Id = cuenta.Id,
@@ -227,6 +263,23 @@ public class CuentaContableService : ICuentaContableService
         CuentaPadreId = cuenta.CuentaPadreId
     };
 
+    private static object ConstruirDatosAuditoria(CuentaContable cuenta)
+    {
+        return new
+        {
+            cuenta.Id,
+            cuenta.PlanCuentasId,
+            cuenta.CuentaPadreId,
+            cuenta.Codigo,
+            cuenta.Nombre,
+            cuenta.Tipo,
+            cuenta.Naturaleza,
+            cuenta.EsImputable,
+            cuenta.EsSistema,
+            cuenta.Estado
+        };
+    }
+
     private async Task ObtenerPlanExistente(Guid planCuentasId)
     {
         if (await _planDeCuentasRepository.ObtenerPorId(planCuentasId) is null)
@@ -234,6 +287,4 @@ public class CuentaContableService : ICuentaContableService
             throw new EntidadNoEncontradaException("PlanDeCuentas", planCuentasId);
         }
     }
-
-
 }

@@ -17,18 +17,18 @@ public class AuditoriaRepository : IAuditoriaRepository
     public async Task<Auditoria?> ObtenerPorId(Guid id)
     {
         return await _context.Auditorias
-         .Include(a => a.Usuario)
+            .Include(a => a.Usuario)
             .FirstOrDefaultAsync(a => a.Id == id);
     }
 
     public async Task<List<Auditoria>> ObtenerPorUsuario(Guid usuarioId, int pagina, int cantidadPorPagina)
     {
         return await _context.Auditorias
-             .Where(a => a.UsuarioId == usuarioId)
-                    .OrderByDescending(a => a.FechaHora)
-                    .Skip((pagina - 1) * cantidadPorPagina)
-                    .Take(cantidadPorPagina)
-           .ToListAsync();
+            .Where(a => a.UsuarioId == usuarioId)
+            .OrderByDescending(a => a.FechaHora)
+            .Skip((pagina - 1) * cantidadPorPagina)
+            .Take(cantidadPorPagina)
+            .ToListAsync();
     }
 
     public async Task<int> ContarPorUsuario(Guid usuarioId)
@@ -39,11 +39,11 @@ public class AuditoriaRepository : IAuditoriaRepository
     public async Task<List<Auditoria>> ObtenerPorEntidad(string entidad, int pagina, int cantidadPorPagina)
     {
         return await _context.Auditorias
-           .Where(a => a.Entidad == entidad)
-       .OrderByDescending(a => a.FechaHora)
-       .Skip((pagina - 1) * cantidadPorPagina)
-                  .Take(cantidadPorPagina)
-             .ToListAsync();
+            .Where(a => a.Entidad == entidad)
+            .OrderByDescending(a => a.FechaHora)
+            .Skip((pagina - 1) * cantidadPorPagina)
+            .Take(cantidadPorPagina)
+            .ToListAsync();
     }
 
     public async Task<int> ContarPorEntidad(string entidad)
@@ -54,22 +54,84 @@ public class AuditoriaRepository : IAuditoriaRepository
     public async Task<List<Auditoria>> ObtenerPorRangoFecha(DateTime fechaDesde, DateTime fechaHasta, int pagina, int cantidadPorPagina)
     {
         return await _context.Auditorias
-        .Where(a => a.FechaHora >= fechaDesde && a.FechaHora <= fechaHasta)
-           .OrderByDescending(a => a.FechaHora)
-           .Skip((pagina - 1) * cantidadPorPagina)
-               .Take(cantidadPorPagina)
-          .ToListAsync();
+            .Where(a => a.FechaHora >= fechaDesde && a.FechaHora <= fechaHasta)
+            .OrderByDescending(a => a.FechaHora)
+            .Skip((pagina - 1) * cantidadPorPagina)
+            .Take(cantidadPorPagina)
+            .ToListAsync();
     }
 
     public async Task<int> ContarPorRangoFecha(DateTime fechaDesde, DateTime fechaHasta)
     {
         return await _context.Auditorias
-   .CountAsync(a => a.FechaHora >= fechaDesde && a.FechaHora <= fechaHasta);
+            .CountAsync(a => a.FechaHora >= fechaDesde && a.FechaHora <= fechaHasta);
     }
 
     public async Task Guardar(Auditoria auditoria)
     {
         await _context.Auditorias.AddAsync(auditoria);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<Auditoria>> ObtenerFiltrado(
+        Guid? usuarioId,
+        string? entidad,
+        string? accion,
+        DateTime? fechaDesde,
+        DateTime? fechaHasta,
+        int pagina,
+        int cantidadPorPagina)
+    {
+        var query = ConstruirQuery(usuarioId, entidad, accion, fechaDesde, fechaHasta);
+
+        return await query
+            .OrderByDescending(a => a.FechaHora)
+            .Skip((pagina - 1) * cantidadPorPagina)
+            .Take(cantidadPorPagina)
+            .ToListAsync();
+    }
+
+    public async Task<int> ContarFiltrado(
+        Guid? usuarioId,
+        string? entidad,
+        string? accion,
+        DateTime? fechaDesde,
+        DateTime? fechaHasta)
+    {
+        var query = ConstruirQuery(usuarioId, entidad, accion, fechaDesde, fechaHasta);
+        return await query.CountAsync();
+    }
+
+    // ??????????????????????????????????????????????
+    // Métodos privados
+    // ??????????????????????????????????????????????
+
+    private IQueryable<Auditoria> ConstruirQuery(
+        Guid? usuarioId,
+        string? entidad,
+        string? accion,
+        DateTime? fechaDesde,
+        DateTime? fechaHasta)
+    {
+        var query = _context.Auditorias
+            .Include(a => a.Usuario)
+            .AsQueryable();
+
+        if (usuarioId.HasValue)
+            query = query.Where(a => a.UsuarioId == usuarioId.Value);
+
+        if (!string.IsNullOrWhiteSpace(entidad))
+            query = query.Where(a => a.Entidad == entidad);
+
+        if (!string.IsNullOrWhiteSpace(accion))
+            query = query.Where(a => a.Accion == accion);
+
+        if (fechaDesde.HasValue)
+            query = query.Where(a => a.FechaHora >= fechaDesde.Value);
+
+        if (fechaHasta.HasValue)
+            query = query.Where(a => a.FechaHora <= fechaHasta.Value);
+
+        return query;
     }
 }

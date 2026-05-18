@@ -12,4 +12,23 @@ public interface IAuditoriaRepository
     Task<List<Auditoria>> ObtenerPorRangoFecha(DateTime fechaDesde, DateTime fechaHasta, int pagina, int cantidadPorPagina);
     Task<int> ContarPorRangoFecha(DateTime fechaDesde, DateTime fechaHasta);
     Task Guardar(Auditoria auditoria);
+
+    /// <summary>
+    /// Consulta combinada con todos los filtros opcionales y paginación.
+    /// </summary>
+    Task<List<Auditoria>> ObtenerFiltrado(
+        Guid? usuarioId,
+        string? entidad,
+        string? accion,
+        DateTime? fechaDesde,
+        DateTime? fechaHasta,
+        int pagina,
+        int cantidadPorPagina);
+
+    Task<int> ContarFiltrado(
+        Guid? usuarioId,
+        string? entidad,
+        string? accion,
+        DateTime? fechaDesde,
+        DateTime? fechaHasta);
 }

@@ -186,6 +186,7 @@ builder.Services.AddScoped<IPermisoService, PermisoService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<ICuentaContableService, CuentaContableService>();
 builder.Services.AddScoped<IEjercicioContableService, EjercicioContableService>();
+builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
 
 // ── Filtro global de permisos ─────────────────
 builder.Services.AddScoped<PermisosActionFilter>();

@@ -1,5 +1,6 @@
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
+using ProyectoIntegrador.Service.Constants;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Exceptions;
 using ProyectoIntegrador.Service.Interfaces;
@@ -10,11 +11,16 @@ public class RolService : IRolService
 {
     private readonly IRolRepository _rolRepository;
     private readonly IPermisoRepository _permisoRepository;
+    private readonly IAuditoriaService _auditoriaService;
 
-    public RolService(IRolRepository rolRepository, IPermisoRepository permisoRepository)
+    public RolService(
+        IRolRepository rolRepository,
+        IPermisoRepository permisoRepository,
+        IAuditoriaService auditoriaService)
     {
         _rolRepository = rolRepository;
         _permisoRepository = permisoRepository;
+        _auditoriaService = auditoriaService;
     }
 
     public async Task<List<RolResponseDto>> ObtenerTodos()
@@ -58,7 +64,7 @@ public class RolService : IRolService
     public async Task<RolResponseDto> Actualizar(Guid id, CrearRolDto dto)
     {
         var rol = await _rolRepository.ObtenerPorId(id)
-       ?? throw new EntidadNoEncontradaException("Rol", id);
+            ?? throw new EntidadNoEncontradaException("Rol", id);
 
         if (rol.EsPredefinido)
             throw new AccesoNoAutorizadoException("Los roles predefinidos no pueden modificarse.");
@@ -74,30 +80,60 @@ public class RolService : IRolService
         return MapearRol(rol, permisos);
     }
 
-    public async Task AsignarPermiso(Guid rolId, Guid permisoId)
+    public async Task AsignarPermiso(Guid rolId, Guid permisoId, Guid usuarioId)
     {
         var rol = await _rolRepository.ObtenerPorId(rolId)
             ?? throw new EntidadNoEncontradaException("Rol", rolId);
 
         var permiso = await _permisoRepository.ObtenerPorId(permisoId)
-       ?? throw new EntidadNoEncontradaException("Permiso", permisoId);
+            ?? throw new EntidadNoEncontradaException("Permiso", permisoId);
 
         await _rolRepository.AsignarPermiso(rolId, permisoId);
+
+        await _auditoriaService.Registrar(
+            usuarioId,
+            AuditoriaConstantes.Entidades.RolPermiso,
+            AuditoriaConstantes.Acciones.AsignarPermiso,
+            datosAnteriores: null,
+            datosNuevos: ConstruirDatosAuditoria(rol, permiso));
     }
 
-    public async Task RemoverPermiso(Guid rolId, Guid permisoId)
+    public async Task RemoverPermiso(Guid rolId, Guid permisoId, Guid usuarioId)
     {
         var rol = await _rolRepository.ObtenerPorId(rolId)
             ?? throw new EntidadNoEncontradaException("Rol", rolId);
 
         var permiso = await _permisoRepository.ObtenerPorId(permisoId)
-   ?? throw new EntidadNoEncontradaException("Permiso", permisoId);
+            ?? throw new EntidadNoEncontradaException("Permiso", permisoId);
 
         await _rolRepository.RemoverPermiso(rolId, permisoId);
+
+        await _auditoriaService.Registrar(
+            usuarioId,
+            AuditoriaConstantes.Entidades.RolPermiso,
+            AuditoriaConstantes.Acciones.RemoverPermiso,
+            datosAnteriores: ConstruirDatosAuditoria(rol, permiso),
+            datosNuevos: null);
     }
 
-    // ?????????????????????????????????????????????
-    private static RolResponseDto MapearRol(Rol rol, IEnumerable<Data.Entities.Permiso> permisos)
+    // ??????????????????????????????????????????????
+    // Métodos privados
+    // ??????????????????????????????????????????????
+
+    private static object ConstruirDatosAuditoria(Rol rol, Permiso permiso)
+    {
+        return new
+        {
+            RolId = rol.Id,
+            RolNombre = rol.Nombre,
+            PermisoId = permiso.Id,
+            PermisoNombre = permiso.Nombre,
+            permiso.Modulo,
+            permiso.Accion
+        };
+    }
+
+    private static RolResponseDto MapearRol(Rol rol, IEnumerable<Permiso> permisos)
         => new()
         {
             Id = rol.Id,
