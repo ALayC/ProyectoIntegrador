@@ -39,19 +39,13 @@ public class CuentaContableService : ICuentaContableService
                 ?? throw new EntidadNoEncontradaException("CuentaPadre", dto.CuentaPadreId.Value);
 
             if (cuentaPadre.PlanCuentasId != planCuentasId)
-            {
                 throw new AccesoNoAutorizadoException("La cuenta padre no pertenece al mismo plan de cuentas.");
-            }
 
             if (cuentaPadre.Estado == "Inactiva")
-            {
                 throw new ValidacionException("No se pueden crear subcuentas bajo una cuenta inactiva.");
-            }
 
             if (cuentaPadre.EsImputable)
-            {
                 throw new CuentaJerarquiaInvalidaException("La cuenta padre debe ser no imputable.");
-            }
 
             cuentaPadreId = cuentaPadre.Id;
         }
@@ -125,19 +119,23 @@ public class CuentaContableService : ICuentaContableService
         foreach (var cuenta in cuentas)
         {
             if (cuenta.CuentaPadreId == null || !dict.ContainsKey(cuenta.CuentaPadreId.Value))
-            {
                 raiz.Add(dict[cuenta.Id]);
-            }
             else
-            {
                 dict[cuenta.CuentaPadreId.Value].Hijas.Add(dict[cuenta.Id]);
-            }
         }
 
         return raiz;
     }
 
-    public async Task<CuentaContableDto> Actualizar(Guid id, ActualizarCuentaContableDto dto, Guid usuarioId)
+    public async Task<List<CuentaContableDto>> ObtenerImputables(Guid planCuentasId)
+    {
+        await ObtenerPlanExistente(planCuentasId);
+
+        var cuentas = await _cuentaRepository.ObtenerImputables(planCuentasId);
+        return cuentas.Select(Mapear).ToList();
+    }
+
+        public async Task<CuentaContableDto> Actualizar(Guid id, ActualizarCuentaContableDto dto, Guid usuarioId)
     {
         var cuenta = await _cuentaRepository.ObtenerPorId(id)
             ?? throw new EntidadNoEncontradaException("CuentaContable", id);
@@ -153,17 +151,13 @@ public class CuentaContableService : ICuentaContableService
         var existente = await _cuentaRepository.ObtenerPorCodigo(cuenta.PlanCuentasId, dto.Codigo);
 
         if (existente is not null && existente.Id != id)
-        {
             throw new CuentaDuplicadaException(cuenta.PlanCuentasId, dto.Codigo);
-        }
 
         if (!cuenta.EsImputable && dto.EsImputable)
         {
             var hijas = await _cuentaRepository.ObtenerHijas(id);
             if (hijas.Count > 0)
-            {
                 throw new CuentaJerarquiaInvalidaException("No se puede marcar como imputable una cuenta con subcuentas.");
-            }
         }
 
         var datosAnteriores = ConstruirDatosAuditoria(cuenta);
@@ -192,20 +186,14 @@ public class CuentaContableService : ICuentaContableService
             ?? throw new EntidadNoEncontradaException("CuentaContable", id);
 
         if (cuenta.EsSistema)
-        {
             throw new ValidacionException("No se pueden desactivar cuentas del sistema.");
-        }
 
         var hijas = await _cuentaRepository.ObtenerHijas(id);
         if (hijas.Any(hija => hija.Estado == "Activa"))
-        {
             throw new CuentaJerarquiaInvalidaException("No se puede desactivar una cuenta con subcuentas activas.");
-        }
 
         if (await _cuentaRepository.TieneMovimientos(id))
-        {
             throw new CuentaConMovimientosException(id);
-        }
 
         var datosAnteriores = ConstruirDatosAuditoria(cuenta);
 
@@ -226,9 +214,7 @@ public class CuentaContableService : ICuentaContableService
             ?? throw new EntidadNoEncontradaException("CuentaContable", id);
 
         if (cuenta.EsSistema)
-        {
             throw new ValidacionException("No se pueden activar cuentas del sistema.");
-        }
 
         if (cuenta.CuentaPadreId.HasValue)
         {
@@ -236,18 +222,16 @@ public class CuentaContableService : ICuentaContableService
                 ?? throw new EntidadNoEncontradaException("CuentaPadre", cuenta.CuentaPadreId.Value);
 
             if (cuentaPadre.Estado == "Inactiva")
-            {
                 throw new ValidacionException("No se puede activar una cuenta cuyo padre está inactivo.");
-            }
         }
 
         cuenta.Estado = "Activa";
         await _cuentaRepository.Actualizar(cuenta);
     }
 
-    // ??????????????????????????????????????????????
+    // ──────────────────────────────────────────────
     // Métodos privados
-    // ??????????????????????????????????????????????
+    // ──────────────────────────────────────────────
 
     private static CuentaContableDto Mapear(CuentaContable cuenta) => new()
     {
@@ -263,28 +247,23 @@ public class CuentaContableService : ICuentaContableService
         CuentaPadreId = cuenta.CuentaPadreId
     };
 
-    private static object ConstruirDatosAuditoria(CuentaContable cuenta)
+    private static object ConstruirDatosAuditoria(CuentaContable cuenta) => new
     {
-        return new
-        {
-            cuenta.Id,
-            cuenta.PlanCuentasId,
-            cuenta.CuentaPadreId,
-            cuenta.Codigo,
-            cuenta.Nombre,
-            cuenta.Tipo,
-            cuenta.Naturaleza,
-            cuenta.EsImputable,
-            cuenta.EsSistema,
-            cuenta.Estado
-        };
-    }
+        cuenta.Id,
+        cuenta.PlanCuentasId,
+        cuenta.CuentaPadreId,
+        cuenta.Codigo,
+        cuenta.Nombre,
+        cuenta.Tipo,
+        cuenta.Naturaleza,
+        cuenta.EsImputable,
+        cuenta.EsSistema,
+        cuenta.Estado
+    };
 
     private async Task ObtenerPlanExistente(Guid planCuentasId)
     {
         if (await _planDeCuentasRepository.ObtenerPorId(planCuentasId) is null)
-        {
             throw new EntidadNoEncontradaException("PlanDeCuentas", planCuentasId);
-        }
     }
 }

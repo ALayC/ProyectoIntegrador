@@ -8,6 +8,7 @@ public interface ICuentaContableService
     Task<CuentaContableDto> ObtenerPorId(Guid id);
     Task<PaginadoDto<CuentaContableDto>> ObtenerPorPlanPaginado(Guid planCuentasId, int pagina, int cantidadPorPagina);
     Task<List<CuentaContableArbolDto>> ObtenerArbolDeCuentas(Guid planId);
+    Task<List<CuentaContableDto>> ObtenerImputables(Guid planCuentasId);
     Task<CuentaContableDto> Actualizar(Guid id, ActualizarCuentaContableDto dto, Guid usuarioId);
     Task Desactivar(Guid id, Guid usuarioId);
     Task Activar(Guid id);

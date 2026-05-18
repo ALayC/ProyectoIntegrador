@@ -4,16 +4,14 @@ using ProyectoIntegrador.Service.Exceptions;
 
 namespace ProyectoIntegrador.API.Middleware;
 
+/// <summary>
+/// Intercepta todas las excepciones no controladas y las traduce
+/// a respuestas HTTP con código y mensaje apropiados.
+/// </summary>
 public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
-
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-    };
 
     public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
     {
@@ -29,69 +27,53 @@ public class ExceptionMiddleware
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Excepción no controlada: {Mensaje}", ex.Message);
             await ManejarExcepcionAsync(context, ex);
         }
     }
 
-    private async Task ManejarExcepcionAsync(HttpContext context, Exception exception)
+    private static async Task ManejarExcepcionAsync(HttpContext context, Exception ex)
     {
-        var (statusCode, codigoError) = MapearExcepcion(exception);
+        var (statusCode, mensaje) = ex switch
+        {
+            // 400 – Bad Request
+            AsientoDesbalanceadoException e    => (HttpStatusCode.BadRequest, e.Message),
+            AsientoNoBalanceadoException e     => (HttpStatusCode.BadRequest, e.Message),
+            EjercicioCerradoException e        => (HttpStatusCode.BadRequest, e.Message),
+            EjercicioSolapadoException e       => (HttpStatusCode.BadRequest, e.Message),
+            CuentaNoImputableException e       => (HttpStatusCode.BadRequest, e.Message),
+            ImportacionInvalidaException e     => (HttpStatusCode.BadRequest, e.Message),
+            ValidacionException e              => (HttpStatusCode.BadRequest, e.Message),
 
-        if (statusCode == (int)HttpStatusCode.InternalServerError)
-        {
-            _logger.LogError(exception,
-             "Error interno no controlado en {Method} {Path}",
-                context.Request.Method,
-                       context.Request.Path);
-        }
-        else
-        {
-            _logger.LogWarning(exception,
-        "Excepción de dominio ({CodigoError}) en {Method} {Path}: {Mensaje}",
-               codigoError,
-             context.Request.Method,
-          context.Request.Path,
-         exception.Message);
-        }
+            // 403 – Forbidden
+            AccesoNoAutorizadoException e      => (HttpStatusCode.Forbidden, e.Message),
 
-        var respuesta = new ErrorResponse
-        {
-            Error = statusCode == (int)HttpStatusCode.InternalServerError
-                  ? "Ocurrió un error interno en el servidor."
-                   : exception.Message,
-            Codigo = codigoError,
-            Detalles = Array.Empty<string>()
+            // 404 – Not Found
+            EntidadNoEncontradaException e     => (HttpStatusCode.NotFound, e.Message),
+
+            // 409 – Conflict
+            AsientoYaRevertidoException e      => (HttpStatusCode.Conflict, e.Message),
+            DuplicadoException e               => (HttpStatusCode.Conflict, e.Message),
+            CuentaDuplicadaException e         => (HttpStatusCode.Conflict, e.Message),
+
+            // 500 – fallback genérico (no expone detalles internos)
+            _ => (HttpStatusCode.InternalServerError, "Ocurrió un error interno. Por favor intente nuevamente.")
         };
 
         context.Response.ContentType = "application/json";
-        context.Response.StatusCode = statusCode;
+        context.Response.StatusCode = (int)statusCode;
 
-        var json = JsonSerializer.Serialize(respuesta, JsonOptions);
-        await context.Response.WriteAsync(json);
-    }
-
-    private static (int StatusCode, string CodigoError) MapearExcepcion(Exception exception)
-    {
-        return exception switch
+        var respuesta = new
         {
-            AsientoNoBalanceadoException => ((int)HttpStatusCode.BadRequest, "ASIENTO_NO_BALANCEADO"),
-            EjercicioCerradoException => ((int)HttpStatusCode.BadRequest, "EJERCICIO_CERRADO"),
-            CuentaNoImputableException => ((int)HttpStatusCode.BadRequest, "CUENTA_NO_IMPUTABLE"),
-            CuentaJerarquiaInvalidaException => ((int)HttpStatusCode.BadRequest, "CUENTA_JERARQUIA_INVALIDA"),
-            ValidacionException => ((int)HttpStatusCode.BadRequest, "VALIDACION_INVALIDA"),
-            EjercicioSolapadoException => ((int)HttpStatusCode.BadRequest, "EJERCICIO_SOLAPADO"),
-            ImportacionInvalidaException => ((int)HttpStatusCode.BadRequest, "IMPORTACION_INVALIDA"),
-            EntidadNoEncontradaException => ((int)HttpStatusCode.NotFound, "ENTIDAD_NO_ENCONTRADA"),
-            AccesoNoAutorizadoException => ((int)HttpStatusCode.Forbidden, "ACCESO_NO_AUTORIZADO"),
-            DuplicadoException => ((int)HttpStatusCode.Conflict, "DUPLICADO"),
-            _ => ((int)HttpStatusCode.InternalServerError, "ERROR_INTERNO")
+            status = (int)statusCode,
+            error = mensaje
         };
-    }
 
-    private sealed class ErrorResponse
-    {
-        public string Error { get; set; } = string.Empty;
-        public string Codigo { get; set; } = string.Empty;
-        public string[] Detalles { get; set; } = Array.Empty<string>();
+        var json = JsonSerializer.Serialize(respuesta, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
+
+        await context.Response.WriteAsync(json);
     }
 }
