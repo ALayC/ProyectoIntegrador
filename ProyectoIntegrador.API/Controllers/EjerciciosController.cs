@@ -43,6 +43,7 @@ public class EjerciciosController : ControllerBase
     [RequierePermiso("Ejercicios", "Crear")]
     public async Task<IActionResult> Crear([FromBody] CrearEjercicioContableDto dto)
     {
+        dto.UsuarioId = ObtenerUsuarioIdDelToken();
         var resultado = await _ejercicioService.Crear(dto);
         return CreatedAtAction(nameof(ObtenerPorId), new { id = resultado.Id }, resultado);
     }

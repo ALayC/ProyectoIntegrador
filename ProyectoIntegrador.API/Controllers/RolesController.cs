@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProyectoIntegrador.API.Filters;
 using ProyectoIntegrador.Service.DTOs;
+using ProyectoIntegrador.Service.Exceptions;
 using ProyectoIntegrador.Service.Interfaces;
 
 namespace ProyectoIntegrador.API.Controllers;
@@ -43,14 +45,15 @@ public class RolesController : ControllerBase
     [HttpPut("{id:guid}")]
     [RequierePermiso("Usuarios", "Editar")]
     public async Task<IActionResult> Actualizar(Guid id, [FromBody] CrearRolDto dto)
-  => Ok(await _rolService.Actualizar(id, dto));
+        => Ok(await _rolService.Actualizar(id, dto));
 
     /// <summary>Asigna un permiso a un rol.</summary>
     [HttpPost("{id:guid}/permisos")]
     [RequierePermiso("Usuarios", "Editar")]
     public async Task<IActionResult> AsignarPermiso(Guid id, [FromBody] AsignarPermisoDto dto)
     {
-        await _rolService.AsignarPermiso(id, dto.PermisoId);
+        var usuarioId = ObtenerUsuarioIdDelToken();
+        await _rolService.AsignarPermiso(id, dto.PermisoId, usuarioId);
         return Ok(new { mensaje = "Permiso asignado correctamente." });
     }
 
@@ -59,7 +62,17 @@ public class RolesController : ControllerBase
     [RequierePermiso("Usuarios", "Editar")]
     public async Task<IActionResult> RemoverPermiso(Guid id, Guid permisoId)
     {
-        await _rolService.RemoverPermiso(id, permisoId);
+        var usuarioId = ObtenerUsuarioIdDelToken();
+        await _rolService.RemoverPermiso(id, permisoId, usuarioId);
         return Ok(new { mensaje = "Permiso removido correctamente." });
+    }
+
+    // ??????????????????????????????????????????????
+    private Guid ObtenerUsuarioIdDelToken()
+    {
+        var claim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("sub");
+        if (claim is null || !Guid.TryParse(claim.Value, out var id))
+            throw new AccesoNoAutorizadoException("No se pudo obtener el ID del usuario del token.");
+        return id;
     }
 }

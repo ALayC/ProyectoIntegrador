@@ -2,6 +2,7 @@
 using ProyectoIntegrador.Data.Context;
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
+using ProyectoIntegrador.Service.Constants;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Exceptions;
 using ProyectoIntegrador.Service.Implementations;
@@ -14,7 +15,7 @@ public class ClienteServiceTests
     private readonly Mock<IClienteRepository> _mockClienteRepo;
     private readonly Mock<IUsuarioRepository> _mockUsuarioRepo;
     private readonly Mock<IPlanDeCuentasRepository> _mockPlanRepo;
-    private readonly Mock<IAuditoriaRepository> _mockAuditoriaRepo;
+    private readonly Mock<IAuditoriaService> _mockAuditoriaService;
     private readonly Mock<ICuentaContableService> _mockCuentaService;
     private readonly ClienteService _clienteService;
 
@@ -23,14 +24,14 @@ public class ClienteServiceTests
         _mockClienteRepo = new Mock<IClienteRepository>();
         _mockUsuarioRepo = new Mock<IUsuarioRepository>();
         _mockPlanRepo = new Mock<IPlanDeCuentasRepository>();
-        _mockAuditoriaRepo = new Mock<IAuditoriaRepository>();
+        _mockAuditoriaService = new Mock<IAuditoriaService>();
         _mockCuentaService = new Mock<ICuentaContableService>();
 
         _clienteService = new ClienteService(
        _mockClienteRepo.Object,
    _mockUsuarioRepo.Object,
        _mockPlanRepo.Object,
-        _mockAuditoriaRepo.Object,
+         _mockAuditoriaService.Object,
         _mockCuentaService.Object);
     }
 
@@ -110,10 +111,6 @@ public class ClienteServiceTests
           .Setup(r => r.Guardar(It.IsAny<PlanDeCuentas>()))
         .Returns(Task.CompletedTask);
 
-        _mockAuditoriaRepo
-            .Setup(r => r.Guardar(It.IsAny<Auditoria>()))
-       .Returns(Task.CompletedTask);
-
         // Act
         var resultado = await _clienteService.Crear(clienteDto, contadorId);
 
@@ -142,13 +139,12 @@ public class ClienteServiceTests
        )), Times.Once);
 
         // Verificar que se registró auditoría
-        _mockAuditoriaRepo.Verify(r => r.Guardar(It.Is<Auditoria>(a =>
-            a.Entidad == "Cliente" &&
-           a.Accion == "Crear" &&
-       a.UsuarioId == contadorId &&
-                 a.DatosAnteriores == null &&
-                 a.DatosNuevos != null
-             )), Times.Once);
+        _mockAuditoriaService.Verify(r => r.Registrar(
+            contadorId,
+            AuditoriaConstantes.Entidades.Cliente,
+            AuditoriaConstantes.Acciones.Crear,
+            null,
+            It.IsNotNull<object>()), Times.Once);
     }
 
     [Fact]
@@ -180,6 +176,11 @@ public class ClienteServiceTests
         _mockClienteRepo.Verify(r => r.Guardar(It.IsAny<Cliente>()), Times.Never);
         _mockPlanRepo.Verify(r => r.Guardar(It.IsAny<PlanDeCuentas>()), Times.Never);
         _mockPlanRepo.Verify(r => r.ObtenerTemplate(), Times.Never);
-        _mockAuditoriaRepo.Verify(r => r.Guardar(It.IsAny<Auditoria>()), Times.Never);
+        _mockAuditoriaService.Verify(r => r.Registrar(
+            It.IsAny<Guid>(),
+            It.IsAny<string>(),
+            It.IsAny<string>(),
+            It.IsAny<object?>(),
+            It.IsAny<object?>()), Times.Never);
     }
 }
