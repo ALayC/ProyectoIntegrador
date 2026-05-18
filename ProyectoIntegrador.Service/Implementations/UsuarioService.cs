@@ -1,6 +1,7 @@
 using ProyectoIntegrador.Data.Context;
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
+using ProyectoIntegrador.Service.Constants;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Exceptions;
 using ProyectoIntegrador.Service.Interfaces;
@@ -11,11 +12,16 @@ public class UsuarioService : IUsuarioService
 {
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IRolRepository _rolRepository;
+    private readonly IAuditoriaService _auditoriaService;
 
-    public UsuarioService(IUsuarioRepository usuarioRepository, IRolRepository rolRepository)
+    public UsuarioService(
+        IUsuarioRepository usuarioRepository,
+        IRolRepository rolRepository,
+        IAuditoriaService auditoriaService)
     {
         _usuarioRepository = usuarioRepository;
         _rolRepository = rolRepository;
+        _auditoriaService = auditoriaService;
     }
 
     public async Task<List<UsuarioResponseDto>> ObtenerTodos()
@@ -27,11 +33,11 @@ public class UsuarioService : IUsuarioService
     public async Task<UsuarioResponseDto> ObtenerPorId(Guid id)
     {
         var usuario = await _usuarioRepository.ObtenerPorId(id)
-   ?? throw new EntidadNoEncontradaException("Usuario", id);
+            ?? throw new EntidadNoEncontradaException("Usuario", id);
         return Mapear(usuario);
     }
 
-    public async Task<UsuarioResponseDto> Crear(CrearUsuarioDto dto)
+    public async Task<UsuarioResponseDto> Crear(CrearUsuarioDto dto, Guid adminId)
     {
         // Validar email único
         if (await _usuarioRepository.ExisteEmail(dto.Email))
@@ -39,7 +45,7 @@ public class UsuarioService : IUsuarioService
 
         // Validar que el rol exista
         var rol = await _rolRepository.ObtenerPorId(dto.RolId)
-    ?? throw new EntidadNoEncontradaException("Rol", dto.RolId);
+            ?? throw new EntidadNoEncontradaException("Rol", dto.RolId);
 
         // Validar regla de negocio: ContadorId solo para Auxiliar Contable
         await ValidarContadorId(dto.RolId, dto.ContadorId);
@@ -66,6 +72,13 @@ public class UsuarioService : IUsuarioService
             usuario.Contador = await _usuarioRepository.ObtenerPorId(dto.ContadorId.Value);
         }
 
+        await _auditoriaService.Registrar(
+            adminId,
+            AuditoriaConstantes.Entidades.Usuario,
+            AuditoriaConstantes.Acciones.Crear,
+            datosAnteriores: null,
+            datosNuevos: ConstruirDatosAuditoria(usuario));
+
         return Mapear(usuario);
     }
 
@@ -75,7 +88,7 @@ public class UsuarioService : IUsuarioService
             throw new AccesoNoAutorizadoException("El administrador no puede editarse a sí mismo.");
 
         var usuario = await _usuarioRepository.ObtenerPorId(id)
-         ?? throw new EntidadNoEncontradaException("Usuario", id);
+            ?? throw new EntidadNoEncontradaException("Usuario", id);
 
         // Validar rol
         var rol = await _rolRepository.ObtenerPorId(dto.RolId)
@@ -84,62 +97,91 @@ public class UsuarioService : IUsuarioService
         // Validar regla de negocio: ContadorId solo para Auxiliar Contable
         await ValidarContadorId(dto.RolId, dto.ContadorId);
 
+        var datosAnteriores = ConstruirDatosAuditoria(usuario);
+
         usuario.NombreCompleto = dto.NombreCompleto;
         usuario.RolId = dto.RolId;
         usuario.ContadorId = dto.ContadorId;
 
         await _usuarioRepository.Actualizar(usuario);
+
         usuario.Rol = rol;
-        if (dto.ContadorId.HasValue)
-            usuario.Contador = await _usuarioRepository.ObtenerPorId(dto.ContadorId.Value);
-        else
-            usuario.Contador = null;
+        usuario.Contador = dto.ContadorId.HasValue
+            ? await _usuarioRepository.ObtenerPorId(dto.ContadorId.Value)
+            : null;
+
+        await _auditoriaService.Registrar(
+            adminId,
+            AuditoriaConstantes.Entidades.Usuario,
+            AuditoriaConstantes.Acciones.Editar,
+            datosAnteriores: datosAnteriores,
+            datosNuevos: ConstruirDatosAuditoria(usuario));
 
         return Mapear(usuario);
     }
 
     public async Task Desactivar(Guid id, Guid adminId)
     {
-        // No puede desactivarse a sí mismo
         if (id == adminId)
             throw new AccesoNoAutorizadoException("El administrador no puede desactivarse a sí mismo.");
 
         var usuario = await _usuarioRepository.ObtenerPorId(id)
- ?? throw new EntidadNoEncontradaException("Usuario", id);
+            ?? throw new EntidadNoEncontradaException("Usuario", id);
+
+        var datosAnteriores = ConstruirDatosAuditoria(usuario);
 
         usuario.Estado = "Inactivo";
         await _usuarioRepository.Actualizar(usuario);
+
+        await _auditoriaService.Registrar(
+            adminId,
+            AuditoriaConstantes.Entidades.Usuario,
+            AuditoriaConstantes.Acciones.Desactivar,
+            datosAnteriores: datosAnteriores,
+            datosNuevos: ConstruirDatosAuditoria(usuario));
     }
 
-    // ?????????????????????????????????????????????
+    // ??????????????????????????????????????????????
     // Validaciones privadas
-    // ?????????????????????????????????????????????
+    // ??????????????????????????????????????????????
 
     private async Task ValidarContadorId(Guid rolId, Guid? contadorId)
     {
         if (rolId == SeedData.RolAuxiliarId)
         {
-            // Auxiliar: ContadorId es obligatorio y debe ser un Contador activo
             if (!contadorId.HasValue)
                 throw new ValidacionException("ContadorId es obligatorio para el rol Auxiliar Contable.");
 
             var contador = await _usuarioRepository.ObtenerPorId(contadorId.Value)
-    ?? throw new EntidadNoEncontradaException("Contador", contadorId.Value);
+                ?? throw new EntidadNoEncontradaException("Contador", contadorId.Value);
 
             if (contador.RolId != SeedData.RolContadorId)
                 throw new AccesoNoAutorizadoException("El ContadorId proporcionado no corresponde a un usuario con rol Contador.");
         }
         else
         {
-            // Cualquier otro rol: ContadorId debe ser null
             if (contadorId.HasValue)
                 throw new AccesoNoAutorizadoException("El campo ContadorId solo aplica para el rol Auxiliar Contable.");
         }
     }
 
-    // ?????????????????????????????????????????????
+    // ??????????????????????????????????????????????
     // Mapeo
-    // ?????????????????????????????????????????????
+    // ??????????????????????????????????????????????
+
+    private static object ConstruirDatosAuditoria(Usuario u)
+    {
+        return new
+        {
+            u.Id,
+            u.Email,
+            u.NombreCompleto,
+            RolId = u.RolId,
+            Rol = u.Rol?.Nombre,
+            u.ContadorId,
+            u.Estado
+        };
+    }
 
     private static UsuarioResponseDto Mapear(Usuario u) => new()
     {

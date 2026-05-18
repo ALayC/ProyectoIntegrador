@@ -15,4 +15,9 @@ public class CrearEjercicioContableDto
 
     [Required(ErrorMessage = "La fecha de fin es obligatoria.")]
     public DateOnly? FechaFin { get; set; }
+
+    /// <summary>
+    /// Id del usuario que realiza la operación. Lo asigna el controller desde el JWT.
+    /// </summary>
+    public Guid UsuarioId { get; set; }
 }

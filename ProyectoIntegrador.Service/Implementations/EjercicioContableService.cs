@@ -58,6 +58,14 @@ public class EjercicioContableService : IEjercicioContableService
         };
 
         await _ejercicioRepository.Guardar(ejercicio);
+
+        await _auditoriaService.Registrar(
+            dto.UsuarioId,
+            AuditoriaConstantes.Entidades.EjercicioContable,
+            AuditoriaConstantes.Acciones.Crear,
+            datosAnteriores: null,
+            datosNuevos: ConstruirDatosAuditoria(ejercicio));
+
         return Mapear(ejercicio);
     }
 
@@ -146,6 +154,10 @@ public class EjercicioContableService : IEjercicioContableService
             datosNuevos: ConstruirDatosAuditoria(ejercicio));
     }
 
+    // ??????????????????????????????????????????????
+    // Métodos privados
+    // ??????????????????????????????????????????????
+
     private static EjercicioContableDto Mapear(EjercicioContable ejercicio) => new()
     {
         Id = ejercicio.Id,
@@ -163,9 +175,6 @@ public class EjercicioContableService : IEjercicioContableService
         }
     }
 
-    /// <summary>
-    /// Construye el objeto base para auditar cambios de ejercicio contable.
-    /// </summary>
     private static object ConstruirDatosAuditoria(EjercicioContable ejercicio)
     {
         return new

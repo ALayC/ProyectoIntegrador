@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProyectoIntegrador.API.Filters;
 using ProyectoIntegrador.Service.DTOs;
+using ProyectoIntegrador.Service.Exceptions;
 using ProyectoIntegrador.Service.Interfaces;
 
 namespace ProyectoIntegrador.API.Controllers;
@@ -33,6 +35,7 @@ public class CuentasContablesController : ControllerBase
         return Ok(resultado);
     }
 
+    /// <summary>Lista cuentas contables en forma de árbol.</summary>
     [HttpGet("arbol")]
     [RequierePermiso("Cuentas", "Consultar")]
     public async Task<IActionResult> ObtenerArbol([FromQuery] Guid planId)
@@ -46,7 +49,8 @@ public class CuentasContablesController : ControllerBase
     [RequierePermiso("Cuentas", "Crear")]
     public async Task<IActionResult> Crear([FromQuery] Guid planId, [FromBody] CrearCuentaContableDto dto)
     {
-        var resultado = await _cuentaContableService.Crear(planId, dto);
+        var usuarioId = ObtenerUsuarioIdDelToken();
+        var resultado = await _cuentaContableService.Crear(planId, dto, usuarioId);
         return CreatedAtAction(nameof(ObtenerPorId), new { id = resultado.Id }, resultado);
     }
 
@@ -54,14 +58,18 @@ public class CuentasContablesController : ControllerBase
     [HttpPut("{id:guid}")]
     [RequierePermiso("Cuentas", "Editar")]
     public async Task<IActionResult> Actualizar(Guid id, [FromBody] ActualizarCuentaContableDto dto)
-        => Ok(await _cuentaContableService.Actualizar(id, dto));
+    {
+        var usuarioId = ObtenerUsuarioIdDelToken();
+        return Ok(await _cuentaContableService.Actualizar(id, dto, usuarioId));
+    }
 
     /// <summary>Desactiva una cuenta contable (soft delete).</summary>
     [HttpDelete("{id:guid}")]
     [RequierePermiso("Cuentas", "Desactivar")]
     public async Task<IActionResult> Desactivar(Guid id)
     {
-        await _cuentaContableService.Desactivar(id);
+        var usuarioId = ObtenerUsuarioIdDelToken();
+        await _cuentaContableService.Desactivar(id, usuarioId);
         return Ok(new { mensaje = "Cuenta contable desactivada correctamente." });
     }
 
@@ -72,5 +80,14 @@ public class CuentasContablesController : ControllerBase
     {
         await _cuentaContableService.Activar(id);
         return Ok(new { mensaje = "Cuenta contable activada correctamente." });
+    }
+
+    // ??????????????????????????????????????????????
+    private Guid ObtenerUsuarioIdDelToken()
+    {
+        var claim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("sub");
+        if (claim is null || !Guid.TryParse(claim.Value, out var id))
+            throw new AccesoNoAutorizadoException("No se pudo obtener el ID del usuario del token.");
+        return id;
     }
 }

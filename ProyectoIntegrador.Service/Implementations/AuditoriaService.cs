@@ -1,6 +1,7 @@
 using System.Text.Json;
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
+using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Interfaces;
 
 namespace ProyectoIntegrador.Service.Implementations;
@@ -40,15 +41,49 @@ public class AuditoriaService : IAuditoriaService
     }
 
     /// <summary>
-    /// Serializa a JSON usando la convención definida para auditoría.
+    /// Consulta registros de auditoría con filtros opcionales y paginación.
     /// </summary>
+    public async Task<PaginadoDto<AuditoriaResponseDto>> Consultar(
+        Guid? usuarioId,
+        string? entidad,
+        string? accion,
+        DateTime? fechaDesde,
+        DateTime? fechaHasta,
+        int pagina,
+        int cantidadPorPagina)
+    {
+        var registros = await _auditoriaRepository.ObtenerFiltrado(
+            usuarioId, entidad, accion, fechaDesde, fechaHasta, pagina, cantidadPorPagina);
+
+        var total = await _auditoriaRepository.ContarFiltrado(
+            usuarioId, entidad, accion, fechaDesde, fechaHasta);
+
+        var datos = registros.Select(Mapear).ToList();
+
+        return new PaginadoDto<AuditoriaResponseDto>(datos, pagina, cantidadPorPagina, total);
+    }
+
+    // ??????????????????????????????????????????????
+    // Métodos privados
+    // ??????????????????????????????????????????????
+
     private static string? Serializar(object? datos)
     {
         if (datos is null)
-        {
             return null;
-        }
 
         return JsonSerializer.Serialize(datos, JsonOptions);
     }
+
+    private static AuditoriaResponseDto Mapear(Auditoria a) => new()
+    {
+        Id = a.Id,
+        UsuarioId = a.UsuarioId,
+        UsuarioNombre = a.Usuario?.NombreCompleto ?? string.Empty,
+        Entidad = a.Entidad,
+        Accion = a.Accion,
+        FechaHora = a.FechaHora,
+        DatosAnteriores = a.DatosAnteriores,
+        DatosNuevos = a.DatosNuevos
+    };
 }

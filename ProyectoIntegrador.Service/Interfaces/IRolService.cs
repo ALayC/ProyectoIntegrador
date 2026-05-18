@@ -8,6 +8,6 @@ public interface IRolService
     Task<RolResponseDto> ObtenerPorId(Guid id);
     Task<RolResponseDto> Crear(CrearRolDto dto);
     Task<RolResponseDto> Actualizar(Guid id, CrearRolDto dto);
-    Task AsignarPermiso(Guid rolId, Guid permisoId);
-    Task RemoverPermiso(Guid rolId, Guid permisoId);
+    Task AsignarPermiso(Guid rolId, Guid permisoId, Guid usuarioId);
+    Task RemoverPermiso(Guid rolId, Guid permisoId, Guid usuarioId);
 }
