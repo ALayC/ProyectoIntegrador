@@ -138,6 +138,46 @@ public class AsientosContablesController : Controller
         return View(vm);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> Detalles(Guid id, Guid clienteId)
+    {
+        var asientoResponse = await _apiClient.GetAsync<AsientoContableViewModel>($"api/asientos-contables/{id}");
+        if (asientoResponse.EsNoAutorizado) return RedirectToAction("Login", "Auth");
+        
+        if (!asientoResponse.EsExitoso || asientoResponse.Data is null)
+        {
+            TempData["Error"] = "No se pudo cargar el asiento contable.";
+            return RedirectToAction(nameof(Index), new { clienteId });
+        }
+
+        var clienteResponse = await _apiClient.GetAsync<ClienteListViewModel>($"api/clientes/{clienteId}");
+        
+        ViewBag.ClienteId = clienteId;
+        ViewBag.ClienteNombre = clienteResponse.Data?.RazonSocial ?? string.Empty;
+
+        return View(asientoResponse.Data);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Revertir(Guid id, Guid clienteId)
+    {
+        var response = await _apiClient.PostAsync<AsientoContableViewModel>(
+            $"api/asientos-contables/{id}/revertir", 
+            new { });
+
+        if (response.EsNoAutorizado) return RedirectToAction("Login", "Auth");
+
+        if (!response.EsExitoso)
+        {
+            TempData["Error"] = response.MensajeError ?? "No se pudo revertir el asiento.";
+            return RedirectToAction(nameof(Detalles), new { id, clienteId });
+        }
+
+        TempData["Exito"] = $"Asiento N° {response.Data!.Numero} (reversión) creado correctamente.";
+        return RedirectToAction(nameof(Index), new { clienteId });
+    }
+
     // ──────────────────────────────────────────────
     private async Task RecargarSelectsAsync(CrearAsientoViewModel model)
     {
