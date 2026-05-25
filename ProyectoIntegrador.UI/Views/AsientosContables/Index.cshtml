@@ -40,6 +40,7 @@
 <div class="card mb-3">
     <div class="card-body">
         <form method="get" asp-action="Index" asp-route-clienteId="@Model.ClienteId" class="row g-3 align-items-end">
+            <input type="hidden" name="clienteId" value="@Model.ClienteId" />
             <div class="col-md-4">
                 <label class="form-label">Ejercicio</label>
                 <select name="ejercicioId" class="form-select">

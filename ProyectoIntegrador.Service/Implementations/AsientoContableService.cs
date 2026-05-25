@@ -12,17 +12,20 @@ public class AsientoContableService : IAsientoContableService
 {
     private readonly IAsientoContableRepository _asientoRepository;
     private readonly ICuentaContableRepository _cuentaRepository;
+    private readonly IEjercicioContableRepository _ejercicioRepository;
     private readonly ISaldoCuentaRepository _saldoRepository;
     private readonly AppDbContext _context;
 
     public AsientoContableService(
         IAsientoContableRepository asientoRepository,
         ICuentaContableRepository cuentaRepository,
+        IEjercicioContableRepository ejercicioRepository,
         ISaldoCuentaRepository saldoRepository,
         AppDbContext context)
     {
         _asientoRepository = asientoRepository;
         _cuentaRepository = cuentaRepository;
+        _ejercicioRepository = ejercicioRepository;
         _saldoRepository = saldoRepository;
         _context = context;
     }
@@ -31,6 +34,21 @@ public class AsientoContableService : IAsientoContableService
     {
         if (dto.Lineas == null || dto.Lineas.Count < 2)
             throw new ValidacionException("Un asiento debe tener al menos dos líneas.");
+
+        if (dto.Lineas.Select(l => l.CuentaContableId).Distinct().Count() != dto.Lineas.Count)
+            throw new ValidacionException("Las líneas del asiento deben pertenecer a cuentas contables distintas.");
+
+        var ejercicio = await _ejercicioRepository.ObtenerPorId(dto.EjercicioId)
+            ?? throw new EntidadNoEncontradaException("EjercicioContable", dto.EjercicioId);
+
+        if (ejercicio.Estado == "Cerrado")
+            throw new EjercicioCerradoException($"No se puede operar sobre el ejercicio contable del {ejercicio.FechaInicio:dd/MM/yyyy} al {ejercicio.FechaFin:dd/MM/yyyy} porque ya está cerrado.");
+
+        if (ejercicio.ClienteId != dto.ClienteId)
+            throw new AccesoNoAutorizadoException("El ejercicio contable no pertenece al cliente indicado.");
+
+        if (dto.Fecha < ejercicio.FechaInicio || dto.Fecha > ejercicio.FechaFin)
+            throw new ValidacionException("La fecha del asiento está fuera del rango del ejercicio contable.");
 
         var totalDebe = dto.Lineas.Sum(l => l.Debe);
         var totalHaber = dto.Lineas.Sum(l => l.Haber);
