@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using ProyectoIntegrador.UI.Models;
 using ProyectoIntegrador.UI.Services;
 
@@ -85,7 +86,7 @@ public class CuentasContablesController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> CreateSubcuenta(Guid parentId)
+    public async Task<IActionResult> CreateSubcuenta(Guid parentId, Guid clienteId)
     {
         var response = await _apiClient.GetAsync<CuentaContableViewModel>($"api/cuentas-contables/{parentId}");
 
@@ -118,12 +119,14 @@ public class CuentasContablesController : Controller
             }
         };
 
+        ViewData["ClienteId"] = clienteId;
+
         return View(viewModel);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateSubcuenta(CuentaContableFormViewModel form)
+    public async Task<IActionResult> CreateSubcuenta(Guid clienteId, CuentaContableFormViewModel form)
     {
         if (!ModelState.IsValid)
         {
@@ -145,6 +148,7 @@ public class CuentasContablesController : Controller
                 }
             }
 
+            ViewData["ClienteId"] = clienteId;
             return View(form);
         }
 
@@ -188,16 +192,17 @@ public class CuentasContablesController : Controller
                 Codigo = parent.Codigo,
                 Nombre = parent.Nombre
             };
+            ViewData["ClienteId"] = clienteId;
             return View(form);
         }
 
         TempData["Exito"] = "Subcuenta creada correctamente.";
-        return RedirectToAction(nameof(Details), new { id = response.Data?.Id, planId = form.Cuenta.PlanCuentasId });
+        return RedirectToAction(nameof(Details), new { id = response.Data?.Id, planId = form.Cuenta.PlanCuentasId, clienteId });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Activar(Guid id, Guid planId)
+    public async Task<IActionResult> Activar(Guid id, Guid planId, Guid clienteId)
     {
         var response = await _apiClient.PostAsync<object>($"api/cuentas-contables/{id}/activar", new { });
 
@@ -207,16 +212,16 @@ public class CuentasContablesController : Controller
         if (!response.EsExitoso)
         {
             TempData["Error"] = response.MensajeError ?? "Error al activar la cuenta contable.";
-            return RedirectToAction(nameof(Details), new { id, planId });
+            return RedirectToAction(nameof(Details), new { id, planId, clienteId });
         }
 
         TempData["Exito"] = "Cuenta contable activada correctamente.";
-        return RedirectToAction(nameof(Details), new { id, planId });
+        return RedirectToAction(nameof(Details), new { id, planId, clienteId });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Desactivar(Guid id, Guid planId)
+    public async Task<IActionResult> Desactivar(Guid id, Guid planId, Guid clienteId)
     {
         var response = await _apiClient.DeleteAsync($"api/cuentas-contables/{id}");
 
@@ -226,10 +231,10 @@ public class CuentasContablesController : Controller
         if (!response.EsExitoso)
         {
             TempData["Error"] = response.MensajeError ?? "Error al desactivar la cuenta contable.";
-            return RedirectToAction(nameof(Details), new { id, planId });
+            return RedirectToAction(nameof(Details), new { id, planId, clienteId });
         }
 
         TempData["Exito"] = "Cuenta contable desactivada correctamente.";
-        return RedirectToAction(nameof(Details), new { id, planId });
+        return RedirectToAction(nameof(Details), new { id, planId, clienteId });
     }
 }
