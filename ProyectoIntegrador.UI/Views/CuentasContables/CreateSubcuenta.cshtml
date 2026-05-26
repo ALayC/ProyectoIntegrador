@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Crear subcuenta";
     var cuentaPadre = Model.CuentaPadre;
+    var clienteId = ViewData["ClienteId"] as Guid? ?? Guid.Empty;
 }
 
 <div class="row justify-content-center">
@@ -23,9 +24,10 @@
                     <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
                 }
 
-                <form asp-action="CreateSubcuenta" method="post">
+                <form asp-action="CreateSubcuenta" asp-route-clienteId="@clienteId" method="post">
                     <input type="hidden" asp-for="Cuenta.PlanCuentasId" />
                     <input type="hidden" asp-for="Cuenta.CuentaPadreId" />
+                    <input type="hidden" name="clienteId" value="@clienteId" />
 
                     <div class="row">
                         <div class="col-md-4 mb-3">
@@ -81,7 +83,7 @@
                         <button type="submit" class="btn btn-azure">
                             <i class="ti ti-check"></i> Crear subcuenta
                         </button>
-                        <a asp-action="Details" asp-route-id="@Model.Cuenta.CuentaPadreId" asp-route-planId="@Model.Cuenta.PlanCuentasId" class="btn btn-outline-azure">
+                        <a asp-action="Details" asp-route-id="@Model.Cuenta.CuentaPadreId" asp-route-planId="@Model.Cuenta.PlanCuentasId" asp-route-clienteId="@clienteId" class="btn btn-outline-azure">
                             <i class="ti ti-x"></i> Cancelar
                         </a>
                     </div>

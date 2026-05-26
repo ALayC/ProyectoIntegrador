@@ -20,7 +20,7 @@ public class CuentaConMovimientosException : Exception
     }
 
     public CuentaConMovimientosException(Guid cuentaId)
-        : base($"La cuenta '{cuentaId}' tiene movimientos registrados y no puede desactivarse.")
+        : base(MensajePorDefecto)
     {
     }
 }

@@ -42,6 +42,8 @@ public class ExceptionMiddleware
             EjercicioCerradoException e        => (HttpStatusCode.BadRequest, e.Message),
             EjercicioSolapadoException e       => (HttpStatusCode.BadRequest, e.Message),
             CuentaNoImputableException e       => (HttpStatusCode.BadRequest, e.Message),
+            CuentaJerarquiaInvalidaException e => (HttpStatusCode.BadRequest, e.Message),
+            CuentaConMovimientosException e    => (HttpStatusCode.BadRequest, e.Message),
             ImportacionInvalidaException e     => (HttpStatusCode.BadRequest, e.Message),
             ValidacionException e              => (HttpStatusCode.BadRequest, e.Message),
 

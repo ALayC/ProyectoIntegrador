@@ -5,15 +5,15 @@
     var clienteNombre = ViewBag.ClienteNombre as string ?? string.Empty;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <div>
-        <h2><i class="ti ti-file-invoice"></i> Asiento N° @Model.Numero</h2>
+        <h2 class="mb-1"><i class="ti ti-file-invoice"></i> Asiento N° @Model.Numero</h2>
         @if (!string.IsNullOrWhiteSpace(clienteNombre))
         {
             <div class="text-secondary">@clienteNombre</div>
         }
     </div>
-    <a asp-action="Index" asp-route-clienteId="@clienteId" class="btn btn-ghost-secondary">
+    <a asp-action="Index" asp-route-clienteId="@clienteId" class="btn btn-outline-azure">
         <i class="ti ti-arrow-left"></i> Volver al Libro Diario
     </a>
 </div>
@@ -33,60 +33,61 @@
     </div>
 }
 
-<div class="row g-3">
-    {{!-- Información General --}}
+<div class="row g-3 align-items-stretch">
+    @* Información General *@
     <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title"><i class="ti ti-info-circle"></i> Información General</h3>
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h3 class="card-title mb-0"><i class="ti ti-info-circle"></i> Información general</h3>
+                @if (Model.Estado == "Confirmado")
+                {
+                    <span class="badge bg-success-lt text-success">
+                        <i class="ti ti-circle-check"></i> Confirmado
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-red-lt text-danger">
+                        <i class="ti ti-circle-x"></i> Revertido
+                    </span>
+                }
             </div>
             <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label text-secondary small">Número</label>
-                    <div class="fw-bold fs-3 text-azure">@Model.Numero</div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label text-secondary small">Fecha</label>
-                    <div class="fw-semibold">@Model.Fecha.ToString("dd/MM/yyyy")</div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label text-secondary small">Estado</label>
-                    <div>
-                        @if (Model.Estado == "Confirmado")
-                        {
-                            <span class="badge bg-success-lt text-success fs-4">
-                                <i class="ti ti-circle-check"></i> Confirmado
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-red-lt text-danger fs-4">
-                                <i class="ti ti-circle-x"></i> Revertido
-                            </span>
-                        }
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="text-secondary small">Número</div>
+                        <div class="fw-bold fs-3 text-azure">@Model.Numero</div>
                     </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label text-secondary small">Glosa</label>
-                    <div class="text-wrap">@Model.Glosa</div>
+                    <div class="col-6">
+                        <div class="text-secondary small">Fecha</div>
+                        <div class="fw-semibold">@Model.Fecha.ToString("dd/MM/yyyy")</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="text-secondary small">Glosa</div>
+                        <div class="text-wrap">@Model.Glosa</div>
+                    </div>
                 </div>
                 @if (Model.AsientoOrigenId.HasValue)
                 {
-                    <div class="alert alert-info">
+                    <div class="alert alert-azure mt-3 mb-0">
                         <i class="ti ti-info-circle"></i>
-                        <strong>Reversión</strong><br />
-                        Este asiento es una reversión de otro asiento.
+                        <strong>Reversión:</strong> este asiento se generó como inverso de un asiento anterior.
                     </div>
                 }
             </div>
         </div>
     </div>
 
-    {{!-- Líneas del Asiento --}}
+    @* Líneas del Asiento *@
     <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title"><i class="ti ti-list-details"></i> Líneas del Asiento</h3>
+        <div class="card h-100">
+            <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <h3 class="card-title mb-0"><i class="ti ti-list-details"></i> Líneas del asiento</h3>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-secondary small">Totales</span>
+                    <span class="badge bg-success-lt text-success">Debe: @Model.TotalDebe.ToString("N2")</span>
+                    <span class="badge bg-danger-lt text-danger">Haber: @Model.TotalHaber.ToString("N2")</span>
+                </div>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -136,51 +137,47 @@
                         <tfoot class="table-light">
                             <tr>
                                 <th>TOTALES</th>
-                                <th class="text-end">
-                                    <span class="badge bg-success fs-5">@Model.TotalDebe.ToString("N2")</span>
-                                </th>
-                                <th class="text-end">
-                                    <span class="badge bg-danger fs-5">@Model.TotalHaber.ToString("N2")</span>
-                                </th>
+                                <th class="text-end">@Model.TotalDebe.ToString("N2")</th>
+                                <th class="text-end">@Model.TotalHaber.ToString("N2")</th>
                                 <th></th>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
             </div>
+            @if (Model.Estado == "Confirmado")
+            {
+                <div class="card-footer bg-warning-lt">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div>
+                            <div class="text-warning fw-semibold">
+                                <i class="ti ti-alert-triangle"></i> Reversión del asiento
+                            </div>
+                            <div class="text-secondary">
+                                Esta acción crea un asiento inverso (Debe ↔ Haber) y marca el asiento actual como
+                                <strong>Revertido</strong>. No se puede deshacer.
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalRevertir">
+                            <i class="ti ti-arrows-exchange"></i> Revertir asiento
+                        </button>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card-footer bg-azure-lt">
+                    <div class="text-azure">
+                        <i class="ti ti-info-circle"></i>
+                        Este asiento ya ha sido revertido y no puede ser modificado.
+                    </div>
+                </div>
+            }
         </div>
-
-        {{!-- Acciones --}}
-        @if (Model.Estado == "Confirmado")
-        {
-            <div class="card mt-3 border-warning">
-                <div class="card-header bg-warning-lt">
-                    <h3 class="card-title text-warning">
-                        <i class="ti ti-alert-triangle"></i> Zona de Peligro
-                    </h3>
-                </div>
-                <div class="card-body">
-                    <p class="text-secondary mb-3">
-                        La reversión generará un asiento contable inverso (invirtiendo Debe ↔ Haber) 
-                        y marcará este asiento como <strong>Revertido</strong>. Esta acción no se puede deshacer.
-                    </p>
-                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalRevertir">
-                        <i class="ti ti-arrows-exchange"></i> Revertir Asiento
-                    </button>
-                </div>
-            </div>
-        }
-        else
-        {
-            <div class="alert alert-info mt-3">
-                <i class="ti ti-info-circle"></i>
-                Este asiento ya ha sido revertido y no puede ser modificado.
-            </div>
-        }
     </div>
 </div>
 
-{{!-- Modal de Confirmación de Reversión --}}
+@* Modal de Confirmación de Reversión *@
 <div class="modal fade" id="modalRevertir" tabindex="-1" aria-labelledby="modalRevertirLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
