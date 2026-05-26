@@ -57,6 +57,7 @@ public class AsientoContableDto
 public class AsientoContableResumenDto
 {
     public Guid Id { get; set; }
+    public Guid EjercicioId { get; set; }
     public int Numero { get; set; }
     public DateOnly Fecha { get; set; }
     public string Glosa { get; set; } = string.Empty;
