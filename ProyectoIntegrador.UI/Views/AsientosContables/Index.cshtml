@@ -117,7 +117,7 @@
                     @foreach (var ej in Model.Ejercicios)
                     {
                         <option value="@ej.Id" selected="@(Model.EjercicioId == ej.Id)">
-                            @ej.FechaInicio.Year – @ej.FechaFin.Year (@ej.Estado)
+                            @ej.FechaInicio.Year â€“ @ej.FechaFin.Year (@ej.Estado)
                         </option>
                     }
                 </select>
@@ -154,7 +154,7 @@
                 </div>
                 <p class="empty-title">No hay asientos registrados</p>
                 <p class="empty-subtitle text-secondary">
-                    Registrá el primer asiento contable con el botón "Nuevo asiento".
+                    RegistrÃ¡ el primer asiento contable con el botÃ³n "Nuevo asiento".
                 </p>
                 <a asp-action="Crear" asp-route-clienteId="@Model.ClienteId" class="btn btn-azure">
                     <i class="ti ti-plus"></i> Nuevo asiento
@@ -173,7 +173,7 @@ else
                         <tr>
                             <th style="width:80px">
                                 <button type="button" class="btn btn-link p-0 text-reset text-decoration-none table-sort" data-key="numero">
-                                    N° <i class="ti ti-selector ms-1"></i>
+                                    NÂ° <i class="ti ti-selector ms-1"></i>
                                 </button>
                             </th>
                             <th style="width:140px">
@@ -222,18 +222,18 @@ else
                                     @if (ejercicio is not null)
                                     {
                                         <span class="text-secondary">
-                                            @ejercicio.FechaInicio.Year–@ejercicio.FechaFin.Year
+                                            @ejercicio.FechaInicio.Yearâ€“@ejercicio.FechaFin.Year
                                         </span>
                                     }
                                     else
                                     {
-                                        <span class="text-muted">—</span>
+                                        <span class="text-muted">â€”</span>
                                     }
                                 </td>
                                 <td data-value="@asiento.Fecha.ToString("yyyyMMdd")">@asiento.Fecha.ToString("dd/MM/yyyy")</td>
                                 <td data-value="@asiento.Glosa">@asiento.Glosa</td>
-                                <td class="text-end" data-value="@asiento.TotalDebe">@asiento.TotalDebe.ToString("N2")</td>
-                                <td class="text-end" data-value="@asiento.TotalHaber">@asiento.TotalHaber.ToString("N2")</td>
+                                <td class="text-end" data-value="@asiento.TotalDebe.ToString(System.Globalization.CultureInfo.InvariantCulture)">@asiento.TotalDebe.ToString("N2")</td>
+                                <td class="text-end" data-value="@asiento.TotalHaber.ToString(System.Globalization.CultureInfo.InvariantCulture)">@asiento.TotalHaber.ToString("N2")</td>
                                 <td>
                                     @if (asiento.Estado == "Confirmado")
                                     {
@@ -262,7 +262,7 @@ else
         {
             <div class="card-footer d-flex align-items-center justify-content-between">
                 <div class="text-secondary">
-                    Mostrando @((Model.Pagina - 1) * Model.CantidadPorPagina + 1)–@Math.Min(Model.Pagina * Model.CantidadPorPagina, Model.Total)
+                    Mostrando @((Model.Pagina - 1) * Model.CantidadPorPagina + 1)â€“@Math.Min(Model.Pagina * Model.CantidadPorPagina, Model.Total)
                     de @Model.Total asientos
                 </div>
                 <ul class="pagination m-0">

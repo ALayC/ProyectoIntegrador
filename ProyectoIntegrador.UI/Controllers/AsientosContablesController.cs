@@ -151,14 +151,16 @@ public class AsientosContablesController : Controller
         }
 
         var clienteResponse = await _apiClient.GetAsync<ClienteListViewModel>($"api/clientes/{clienteId}");
-        var ejerciciosResponse = await _apiClient.GetAsync<PaginadoViewModel<EjercicioContableViewModel>>(
-            $"api/ejercicios?clienteId={clienteId}&pagina=1&cantidadPorPagina=200");
+        var ejercicioResponse = await _apiClient.GetAsync<EjercicioContableViewModel>(
+            $"api/ejercicios/{asientoResponse.Data.EjercicioId}");
         
+        if (clienteResponse.EsNoAutorizado || ejercicioResponse.EsNoAutorizado)
+            return RedirectToAction("Login", "Auth");
+
         ViewBag.ClienteId = clienteId;
         ViewBag.ClienteNombre = clienteResponse.Data?.RazonSocial ?? string.Empty;
-        ViewBag.EjercicioDescripcion = ejerciciosResponse.Data?.Datos
-            .FirstOrDefault(e => e.Id == asientoResponse.Data.EjercicioId) is { } ejercicio
-            ? $"{ejercicio.FechaInicio:dd/MM/yyyy} – {ejercicio.FechaFin:dd/MM/yyyy} ({ejercicio.Estado})"
+        ViewBag.EjercicioDescripcion = ejercicioResponse.EsExitoso && ejercicioResponse.Data is not null
+            ? $"{ejercicioResponse.Data.FechaInicio:dd/MM/yyyy} – {ejercicioResponse.Data.FechaFin:dd/MM/yyyy} ({ejercicioResponse.Data.Estado})"
             : string.Empty;
 
         return View(asientoResponse.Data);
