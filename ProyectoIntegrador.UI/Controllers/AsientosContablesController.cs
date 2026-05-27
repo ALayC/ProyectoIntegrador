@@ -151,9 +151,17 @@ public class AsientosContablesController : Controller
         }
 
         var clienteResponse = await _apiClient.GetAsync<ClienteListViewModel>($"api/clientes/{clienteId}");
+        var ejercicioResponse = await _apiClient.GetAsync<EjercicioContableViewModel>(
+            $"api/ejercicios/{asientoResponse.Data.EjercicioId}");
         
+        if (clienteResponse.EsNoAutorizado || ejercicioResponse.EsNoAutorizado)
+            return RedirectToAction("Login", "Auth");
+
         ViewBag.ClienteId = clienteId;
         ViewBag.ClienteNombre = clienteResponse.Data?.RazonSocial ?? string.Empty;
+        ViewBag.EjercicioDescripcion = ejercicioResponse.EsExitoso && ejercicioResponse.Data is not null
+            ? $"{ejercicioResponse.Data.FechaInicio:dd/MM/yyyy} – {ejercicioResponse.Data.FechaFin:dd/MM/yyyy} ({ejercicioResponse.Data.Estado})"
+            : string.Empty;
 
         return View(asientoResponse.Data);
     }

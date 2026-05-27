@@ -75,7 +75,25 @@
         tdSelect.appendChild(buildSelect('', index));
 
         tbody.appendChild(tr);
-        tr.querySelectorAll('input[type=number]').forEach(i => i.addEventListener('input', actualizarTotales));
+        tr.querySelectorAll('input[type=number]').forEach(i => {
+            i.addEventListener('input', actualizarTotales);
+            i.addEventListener('focus', manejarFocusImporte);
+            i.addEventListener('blur', manejarBlurImporte);
+        });
+        actualizarTotales();
+    }
+
+    function manejarFocusImporte(e) {
+        const value = e.target.value.trim();
+        if (value === '0' || value === '0.00') {
+            e.target.value = '';
+        }
+    }
+
+    function manejarBlurImporte(e) {
+        if (e.target.value.trim() === '') {
+            e.target.value = '0';
+        }
         actualizarTotales();
     }
 
@@ -96,8 +114,11 @@
         actualizarTotales();
     });
 
-    document.querySelectorAll('.linea-fila input[type=number]').forEach(i =>
-        i.addEventListener('input', actualizarTotales));
+    document.querySelectorAll('.linea-fila input[type=number]').forEach(i => {
+        i.addEventListener('input', actualizarTotales);
+        i.addEventListener('focus', manejarFocusImporte);
+        i.addEventListener('blur', manejarBlurImporte);
+    });
 
     actualizarTotales();
 })();

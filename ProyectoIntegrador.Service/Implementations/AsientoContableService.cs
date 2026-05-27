@@ -157,6 +157,7 @@ public class AsientoContableService : IAsientoContableService
         var resumenes = items.Select(a => new AsientoContableResumenDto
         {
             Id = a.Id,
+            EjercicioId = a.EjercicioId,
             Numero = a.Numero,
             Fecha = a.Fecha,
             Glosa = a.Glosa,

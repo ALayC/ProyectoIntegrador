@@ -3,6 +3,7 @@
     ViewData["Title"] = $"Asiento N° {Model.Numero}";
     var clienteId = ViewBag.ClienteId as Guid? ?? Guid.Empty;
     var clienteNombre = ViewBag.ClienteNombre as string ?? string.Empty;
+    var ejercicioDescripcion = ViewBag.EjercicioDescripcion as string ?? string.Empty;
 }
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
@@ -61,6 +62,17 @@
                     <div class="col-6">
                         <div class="text-secondary small">Fecha</div>
                         <div class="fw-semibold">@Model.Fecha.ToString("dd/MM/yyyy")</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="text-secondary small">Ejercicio contable</div>
+                        @if (!string.IsNullOrWhiteSpace(ejercicioDescripcion))
+                        {
+                            <div class="fw-semibold">@ejercicioDescripcion</div>
+                        }
+                        else
+                        {
+                            <div class="text-muted">—</div>
+                        }
                     </div>
                     <div class="col-12">
                         <div class="text-secondary small">Glosa</div>
