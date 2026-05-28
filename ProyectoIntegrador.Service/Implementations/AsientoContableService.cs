@@ -66,6 +66,12 @@ public class AsientoContableService : IAsientoContableService
 
             if (cuenta.Estado != "Activa")
                 throw new ValidacionException($"La cuenta '{cuenta.Codigo}' no está activa.");
+
+            if ((linea.Debe <= 0 && linea.Haber <= 0) || (linea.Debe > 0 && linea.Haber > 0))
+            {
+                throw new ValidacionException(
+                    "La línea debe tener importe en Debe o Haber, pero no en ambos.");
+            }
         }
 
         AsientoContable asiento;
