@@ -4,6 +4,9 @@
     var clienteId = ViewBag.ClienteId as Guid? ?? Guid.Empty;
     var clienteNombre = ViewBag.ClienteNombre as string ?? string.Empty;
     var ejercicioDescripcion = ViewBag.EjercicioDescripcion as string ?? string.Empty;
+    var puedeRevertirse = Model.Estado == "Confirmado" && !Model.AsientoOrigenId.HasValue;
+    var esAsientoReversion = Model.AsientoOrigenId.HasValue;
+    var yaRevertido = Model.Estado == "Revertido";
 }
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
@@ -83,7 +86,7 @@
                 {
                     <div class="alert alert-azure mt-3 mb-0">
                         <i class="ti ti-info-circle"></i>
-                        <strong>Reversión:</strong> este asiento se generó como inverso de un asiento anterior.
+                        <strong>Reversión:</strong> Este asiento se generó como inverso de un asiento anterior.
                     </div>
                 }
             </div>
@@ -157,7 +160,7 @@
                     </table>
                 </div>
             </div>
-            @if (Model.Estado == "Confirmado")
+            @if (puedeRevertirse)
             {
                 <div class="card-footer bg-warning-lt">
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
@@ -176,12 +179,21 @@
                     </div>
                 </div>
             }
-            else
+            else if (esAsientoReversion)
             {
                 <div class="card-footer bg-azure-lt">
                     <div class="text-azure">
                         <i class="ti ti-info-circle"></i>
-                        Este asiento ya ha sido revertido y no puede ser modificado.
+                        Este asiento se generó como inverso de un asiento anterior, por lo tanto no se puede revertir.
+                    </div>
+                </div>
+            }
+            else if (yaRevertido)
+            {
+                <div class="card-footer bg-azure-lt">
+                    <div class="text-azure">
+                        <i class="ti ti-info-circle"></i>
+                        Este asiento ya ha sido revertido.
                     </div>
                 </div>
             }
@@ -208,7 +220,7 @@
                     </div>
                     <p>¿Está seguro que desea revertir el <strong>Asiento N° @Model.Numero</strong>?</p>
                     <p class="text-secondary small mb-0">
-                        Se creará un nuevo asiento con las líneas invertidas (Debe ↔ Haber) 
+                        Se creará un nuevo asiento con las líneas invertidas (Debe ↔ Haber)
                         y este asiento quedará marcado como "Revertido".
                     </p>
                 </div>
