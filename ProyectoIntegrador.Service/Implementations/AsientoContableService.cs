@@ -177,6 +177,9 @@ public class AsientoContableService : IAsientoContableService
         if (original.Estado == "Revertido")
             throw new AsientoYaRevertidoException(asientoId);
 
+        if (original.AsientoOrigenId != null)
+            throw new ValidacionException("No se puede revertir un asiento de reversión");
+
         AsientoContable asientoInverso;
 
         await using var transaction = await _context.Database.BeginTransactionAsync(
