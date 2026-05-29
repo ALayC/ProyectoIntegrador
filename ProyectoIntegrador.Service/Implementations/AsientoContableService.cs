@@ -67,7 +67,13 @@ public class AsientoContableService : IAsientoContableService
             if (cuenta.Estado != "Activa")
                 throw new ValidacionException($"La cuenta '{cuenta.Codigo}' no está activa.");
 
-            if ((linea.Debe <= 0 && linea.Haber <= 0) || (linea.Debe > 0 && linea.Haber > 0))
+            if (linea.Debe < 0 || linea.Haber < 0)
+            {
+                throw new ValidacionException(
+                    "La línea no admite importes negativos en Debe o Haber.");
+            }
+
+            if ((linea.Debe == 0 && linea.Haber == 0) || (linea.Debe > 0 && linea.Haber > 0))
             {
                 throw new ValidacionException(
                     "La línea debe tener importe en Debe o Haber, pero no en ambos.");
@@ -184,7 +190,7 @@ public class AsientoContableService : IAsientoContableService
             throw new AsientoYaRevertidoException(asientoId);
 
         if (original.AsientoOrigenId != null)
-            throw new ValidacionException("No se puede revertir un asiento de reversión");
+            throw new ValidacionException("No se puede revertir un asiento de reversión.");
 
         AsientoContable asientoInverso;
 
