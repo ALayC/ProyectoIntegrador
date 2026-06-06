@@ -84,6 +84,45 @@ public class AsientoContableRepository : IAsientoContableRepository
             .CountAsync(a => a.ClienteId == clienteId && a.Fecha >= fechaDesde && a.Fecha <= fechaHasta);
     }
 
+    public async Task<List<LineaAsiento>> ObtenerMovimientosMayor(
+        Guid clienteId,
+        IEnumerable<Guid> cuentaIds,
+        DateOnly? fechaDesde,
+        DateOnly? fechaHasta,
+        Guid? ejercicioId)
+    {
+        var query = _context.LineasAsiento
+            .Include(l => l.Asiento)
+            .Include(l => l.CuentaContable)
+            .Where(l => l.Asiento.ClienteId == clienteId && l.Asiento.Estado == "Confirmado");
+
+        if (cuentaIds.Any())
+        {
+            query = query.Where(l => cuentaIds.Contains(l.CuentaContableId));
+        }
+
+        if (ejercicioId.HasValue)
+        {
+            query = query.Where(l => l.Asiento.EjercicioId == ejercicioId.Value);
+        }
+
+        if (fechaDesde.HasValue)
+        {
+            query = query.Where(l => l.Asiento.Fecha >= fechaDesde.Value);
+        }
+
+        if (fechaHasta.HasValue)
+        {
+            query = query.Where(l => l.Asiento.Fecha <= fechaHasta.Value);
+        }
+
+        return await query
+            .OrderBy(l => l.Asiento.Fecha)
+            .ThenBy(l => l.Asiento.Numero)
+            .ThenBy(l => l.Id)
+            .ToListAsync();
+    }
+
     public async Task<int> ObtenerUltimoNumero(Guid clienteId, Guid ejercicioId)
     {
         return await _context.AsientosContables
