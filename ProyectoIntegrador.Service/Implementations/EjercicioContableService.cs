@@ -23,7 +23,7 @@ public class EjercicioContableService : IEjercicioContableService
         _auditoriaService = auditoriaService;
     }
 
-    public async Task<EjercicioContableDto> Crear(CrearEjercicioContableDto dto)
+    public async Task<EjercicioContableResponseDto> Crear(CrearEjercicioContableDto dto)
     {
         if (!dto.ClienteId.HasValue || !dto.FechaInicio.HasValue || !dto.FechaFin.HasValue)
         {
@@ -69,7 +69,7 @@ public class EjercicioContableService : IEjercicioContableService
         return Mapear(ejercicio);
     }
 
-    public async Task<EjercicioContableDto> ObtenerPorId(Guid id)
+    public async Task<EjercicioContableResponseDto> ObtenerPorId(Guid id)
     {
         var ejercicio = await _ejercicioRepository.ObtenerPorId(id)
             ?? throw new EntidadNoEncontradaException("EjercicioContable", id);
@@ -77,7 +77,7 @@ public class EjercicioContableService : IEjercicioContableService
         return Mapear(ejercicio);
     }
 
-    public async Task<PaginadoDto<EjercicioContableDto>> ObtenerPorCliente(Guid clienteId, int pagina, int cantidadPorPagina)
+    public async Task<PaginadoDto<EjercicioContableResponseDto>> ObtenerPorCliente(Guid clienteId, int pagina, int cantidadPorPagina)
     {
         if (pagina < 1 || cantidadPorPagina <= 0)
         {
@@ -90,10 +90,10 @@ public class EjercicioContableService : IEjercicioContableService
         var total = await _ejercicioRepository.ContarPorCliente(clienteId);
 
         var ejerciciosDto = ejercicios.Select(Mapear).ToList();
-        return new PaginadoDto<EjercicioContableDto>(ejerciciosDto, pagina, cantidadPorPagina, total);
+        return new PaginadoDto<EjercicioContableResponseDto>(ejerciciosDto, pagina, cantidadPorPagina, total);
     }
 
-    public async Task<EjercicioContableDto> Actualizar(Guid id, ActualizarEjercicioContableDto dto)
+    public async Task<EjercicioContableResponseDto> Actualizar(Guid id, ActualizarEjercicioContableDto dto)
     {
         var ejercicio = await _ejercicioRepository.ObtenerPorId(id)
             ?? throw new EntidadNoEncontradaException("EjercicioContable", id);
@@ -158,7 +158,7 @@ public class EjercicioContableService : IEjercicioContableService
     // Métodos privados
     // ??????????????????????????????????????????????
 
-    private static EjercicioContableDto Mapear(EjercicioContable ejercicio) => new()
+    private static EjercicioContableResponseDto Mapear(EjercicioContable ejercicio) => new()
     {
         Id = ejercicio.Id,
         ClienteId = ejercicio.ClienteId,
