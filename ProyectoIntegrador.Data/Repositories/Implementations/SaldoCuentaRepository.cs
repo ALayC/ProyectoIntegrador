@@ -9,10 +9,7 @@ public class SaldoCuentaRepository : ISaldoCuentaRepository
 {
     private readonly AppDbContext _context;
 
-    public SaldoCuentaRepository(AppDbContext context)
-    {
-        _context = context;
-    }
+    public SaldoCuentaRepository(AppDbContext context) => _context = context;
 
     public async Task<SaldoCuenta?> ObtenerPorPeriodo(Guid clienteId, Guid cuentaContableId, Guid ejercicioId, DateOnly periodo)
     {
