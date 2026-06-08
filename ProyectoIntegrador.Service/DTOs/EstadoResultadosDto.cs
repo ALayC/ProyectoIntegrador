@@ -26,7 +26,7 @@ public class EstadoResultadoNodoDto
 
     public decimal Importe { get; set; }
 
-    public List<EstadoResultadoNodoDto> Hijos { get; set; } = new();
+    public List<EstadoResultadoNodoDto> Hijas { get; set; } = new();
 }
 
 /// <summary>

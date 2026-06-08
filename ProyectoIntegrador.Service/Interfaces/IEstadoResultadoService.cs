@@ -4,6 +4,6 @@ namespace ProyectoIntegrador.Service.Interfaces
 {
     public interface IEstadoResultadoService
     {
-        Task<EstadoResultadosResponseDto> GenerarEstadoResultados(EstadoResultadosFiltroDto filtro);
+        Task<EstadoResultadosResponseDto> Generar(EstadoResultadosFiltroDto filtro);
     }
 }
