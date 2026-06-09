@@ -10,10 +10,7 @@ public class AsientosContablesController : Controller
 {
     private readonly ApiClient _apiClient;
 
-    public AsientosContablesController(ApiClient apiClient)
-    {
-        _apiClient = apiClient;
-    }
+    public AsientosContablesController(ApiClient apiClient) => _apiClient = apiClient;
 
     [HttpGet]
     public async Task<IActionResult> Crear(Guid clienteId)
@@ -115,9 +112,9 @@ public class AsientosContablesController : Controller
             $"api/ejercicios?clienteId={clienteId}&pagina=1&cantidadPorPagina=100");
 
         var url = $"api/asientos-contables?clienteId={clienteId}&pagina={pagina}&cantidadPorPagina={cantidadPorPagina}";
-        if (ejercicioId.HasValue)   url += $"&ejercicioId={ejercicioId}";
-        if (fechaDesde.HasValue)    url += $"&fechaDesde={fechaDesde:yyyy-MM-dd}";
-        if (fechaHasta.HasValue)    url += $"&fechaHasta={fechaHasta:yyyy-MM-dd}";
+        if (ejercicioId.HasValue) url += $"&ejercicioId={ejercicioId}";
+        if (fechaDesde.HasValue) url += $"&fechaDesde={fechaDesde:yyyy-MM-dd}";
+        if (fechaHasta.HasValue) url += $"&fechaHasta={fechaHasta:yyyy-MM-dd}";
 
         var response = await _apiClient.GetAsync<LibroDiarioPaginadoResponse>(url);
 
@@ -143,7 +140,7 @@ public class AsientosContablesController : Controller
     {
         var asientoResponse = await _apiClient.GetAsync<AsientoContableViewModel>($"api/asientos-contables/{id}");
         if (asientoResponse.EsNoAutorizado) return RedirectToAction("Login", "Auth");
-        
+
         if (!asientoResponse.EsExitoso || asientoResponse.Data is null)
         {
             TempData["Error"] = "No se pudo cargar el asiento contable.";
@@ -153,7 +150,7 @@ public class AsientosContablesController : Controller
         var clienteResponse = await _apiClient.GetAsync<ClienteListViewModel>($"api/clientes/{clienteId}");
         var ejercicioResponse = await _apiClient.GetAsync<EjercicioContableViewModel>(
             $"api/ejercicios/{asientoResponse.Data.EjercicioId}");
-        
+
         if (clienteResponse.EsNoAutorizado || ejercicioResponse.EsNoAutorizado)
             return RedirectToAction("Login", "Auth");
 
@@ -171,7 +168,7 @@ public class AsientosContablesController : Controller
     public async Task<IActionResult> Revertir(Guid id, Guid clienteId)
     {
         var response = await _apiClient.PostAsync<AsientoContableViewModel>(
-            $"api/asientos-contables/{id}/revertir", 
+            $"api/asientos-contables/{id}/revertir",
             new { });
 
         if (response.EsNoAutorizado) return RedirectToAction("Login", "Auth");

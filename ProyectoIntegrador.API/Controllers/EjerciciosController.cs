@@ -15,10 +15,7 @@ public class EjerciciosController : ControllerBase
 {
     private readonly IEjercicioContableService _ejercicioService;
 
-    public EjerciciosController(IEjercicioContableService ejercicioService)
-    {
-        _ejercicioService = ejercicioService;
-    }
+    public EjerciciosController(IEjercicioContableService ejercicioService) => _ejercicioService = ejercicioService;
 
     /// <summary>Lista ejercicios contables por cliente con paginación.</summary>
     [HttpGet]

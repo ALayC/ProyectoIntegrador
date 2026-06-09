@@ -15,10 +15,7 @@ public class UsuariosController : ControllerBase
 {
     private readonly IUsuarioService _usuarioService;
 
-    public UsuariosController(IUsuarioService usuarioService)
-    {
-        _usuarioService = usuarioService;
-    }
+    public UsuariosController(IUsuarioService usuarioService) => _usuarioService = usuarioService;
 
     /// <summary>Lista todos los usuarios del sistema.</summary>
     [HttpGet]

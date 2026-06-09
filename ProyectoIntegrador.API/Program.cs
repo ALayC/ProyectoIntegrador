@@ -189,6 +189,7 @@ builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
 builder.Services.AddScoped<IAsientoContableService, AsientoContableService>();
 builder.Services.AddScoped<ILibroMayorService, LibroMayorService>();
 builder.Services.AddScoped<ILineaAsientoRepository, LineaAsientoRepository>();
+builder.Services.AddScoped<IEstadoResultadosService, EstadoResultadosService>();
 
 // ── Filtro global de permisos ─────────────────
 builder.Services.AddScoped<PermisosActionFilter>();

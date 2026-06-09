@@ -13,10 +13,7 @@ public class LibroMayorController : ControllerBase
 {
     private readonly ILibroMayorService _libroMayorService;
 
-    public LibroMayorController(ILibroMayorService libroMayorService)
-    {
-        _libroMayorService = libroMayorService;
-    }
+    public LibroMayorController(ILibroMayorService libroMayorService) => _libroMayorService = libroMayorService;
 
     /// <summary>Consulta el libro mayor por cliente, cuentas y período.</summary>
     [HttpGet]

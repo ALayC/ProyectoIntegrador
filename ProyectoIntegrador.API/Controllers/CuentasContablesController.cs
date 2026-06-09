@@ -15,10 +15,7 @@ public class CuentasContablesController : ControllerBase
 {
     private readonly ICuentaContableService _cuentaContableService;
 
-    public CuentasContablesController(ICuentaContableService cuentaContableService)
-    {
-        _cuentaContableService = cuentaContableService;
-    }
+    public CuentasContablesController(ICuentaContableService cuentaContableService) => _cuentaContableService = cuentaContableService;
 
     /// <summary>Obtiene una cuenta contable por Id.</summary>
     [HttpGet("{id:guid}")]

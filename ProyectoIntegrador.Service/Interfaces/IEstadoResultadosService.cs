@@ -2,7 +2,7 @@
 
 namespace ProyectoIntegrador.Service.Interfaces
 {
-    public interface IEstadoResultadoService
+    public interface IEstadoResultadosService
     {
         Task<EstadoResultadosResponseDto> Generar(EstadoResultadosFiltroDto filtro);
     }

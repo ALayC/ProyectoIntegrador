@@ -1,17 +1,11 @@
-﻿using Azure;
-using ProyectoIntegrador.Data.Repositories.Interfaces;
+﻿using ProyectoIntegrador.Data.Repositories.Interfaces;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Exceptions;
 using ProyectoIntegrador.Service.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProyectoIntegrador.Service.Implementations;
 
-public class EstadoResultadosService : IEstadoResultadoService
+public class EstadoResultadosService : IEstadoResultadosService
 {
     private readonly ILineaAsientoRepository _lineaAsientoRepository;
     private readonly IPlanDeCuentasRepository _planDeCuentasRepository;

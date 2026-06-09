@@ -12,10 +12,7 @@ public class PermisosController : ControllerBase
 {
     private readonly IPermisoService _permisoService;
 
-    public PermisosController(IPermisoService permisoService)
-    {
-        _permisoService = permisoService;
-    }
+    public PermisosController(IPermisoService permisoService) => _permisoService = permisoService;
 
     /// <summary>Lista todos los permisos del sistema.</summary>
     [HttpGet]

@@ -13,10 +13,7 @@ public class AuthController : Controller
 {
     private readonly ApiClient _apiClient;
 
-    public AuthController(ApiClient apiClient)
-    {
-        _apiClient = apiClient;
-    }
+    public AuthController(ApiClient apiClient) => _apiClient = apiClient;
 
     // ?? GET /Auth/Login ???????????????????????????
     [HttpGet]

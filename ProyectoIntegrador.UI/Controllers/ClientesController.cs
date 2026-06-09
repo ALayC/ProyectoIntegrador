@@ -10,10 +10,7 @@ public class ClientesController : Controller
 {
     private readonly ApiClient _apiClient;
 
-    public ClientesController(ApiClient apiClient)
-    {
-        _apiClient = apiClient;
-    }
+    public ClientesController(ApiClient apiClient) => _apiClient = apiClient;
 
     // ?? GET /Clientes ?????????????????????????????
     [HttpGet]
