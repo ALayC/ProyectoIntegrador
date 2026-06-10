@@ -23,7 +23,7 @@ public class CuentaContableService : ICuentaContableService
         _auditoriaService = auditoriaService;
     }
 
-    public async Task<CuentaContableDto> Crear(Guid planCuentasId, CrearCuentaContableDto dto, Guid usuarioId)
+    public async Task<CuentaContableResponseDto> Crear(Guid planCuentasId, CrearCuentaContableDto dto, Guid usuarioId)
     {
         await ObtenerPlanExistente(planCuentasId);
 
@@ -76,7 +76,7 @@ public class CuentaContableService : ICuentaContableService
         return Mapear(cuenta);
     }
 
-    public async Task<CuentaContableDto> ObtenerPorId(Guid id)
+    public async Task<CuentaContableResponseDto> ObtenerPorId(Guid id)
     {
         var cuenta = await _cuentaRepository.ObtenerPorId(id)
             ?? throw new EntidadNoEncontradaException("CuentaContable", id);
@@ -84,7 +84,7 @@ public class CuentaContableService : ICuentaContableService
         return Mapear(cuenta);
     }
 
-    public async Task<PaginadoDto<CuentaContableDto>> ObtenerPorPlanPaginado(Guid planCuentasId, int pagina, int cantidadPorPagina)
+    public async Task<PaginadoDto<CuentaContableResponseDto>> ObtenerPorPlanPaginado(Guid planCuentasId, int pagina, int cantidadPorPagina)
     {
         await ObtenerPlanExistente(planCuentasId);
 
@@ -92,7 +92,7 @@ public class CuentaContableService : ICuentaContableService
         var total = await _cuentaRepository.ContarPorPlanDeCuentas(planCuentasId);
 
         var cuentasDto = cuentas.Select(Mapear).ToList();
-        return new PaginadoDto<CuentaContableDto>(cuentasDto, pagina, cantidadPorPagina, total);
+        return new PaginadoDto<CuentaContableResponseDto>(cuentasDto, pagina, cantidadPorPagina, total);
     }
 
     public async Task<List<CuentaContableArbolDto>> ObtenerArbolDeCuentas(Guid planId)
@@ -127,7 +127,7 @@ public class CuentaContableService : ICuentaContableService
         return raiz;
     }
 
-    public async Task<List<CuentaContableDto>> ObtenerImputables(Guid planCuentasId)
+    public async Task<List<CuentaContableResponseDto>> ObtenerImputables(Guid planCuentasId)
     {
         await ObtenerPlanExistente(planCuentasId);
 
@@ -135,7 +135,7 @@ public class CuentaContableService : ICuentaContableService
         return cuentas.Select(Mapear).ToList();
     }
 
-        public async Task<CuentaContableDto> Actualizar(Guid id, ActualizarCuentaContableDto dto, Guid usuarioId)
+        public async Task<CuentaContableResponseDto> Actualizar(Guid id, ActualizarCuentaContableDto dto, Guid usuarioId)
     {
         var cuenta = await _cuentaRepository.ObtenerPorId(id)
             ?? throw new EntidadNoEncontradaException("CuentaContable", id);
@@ -233,7 +233,7 @@ public class CuentaContableService : ICuentaContableService
     // Métodos privados
     // ──────────────────────────────────────────────
 
-    private static CuentaContableDto Mapear(CuentaContable cuenta) => new()
+    private static CuentaContableResponseDto Mapear(CuentaContable cuenta) => new()
     {
         Id = cuenta.Id,
         PlanCuentasId = cuenta.PlanCuentasId,

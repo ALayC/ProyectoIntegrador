@@ -13,10 +13,7 @@ public class AuditoriaController : ControllerBase
 {
     private readonly IAuditoriaService _auditoriaService;
 
-    public AuditoriaController(IAuditoriaService auditoriaService)
-    {
-        _auditoriaService = auditoriaService;
-    }
+    public AuditoriaController(IAuditoriaService auditoriaService) => _auditoriaService = auditoriaService;
 
     /// <summary>
     /// Consulta registros de auditoría con filtros opcionales y paginación.

@@ -4,12 +4,12 @@ namespace ProyectoIntegrador.Service.Interfaces;
 
 public interface ICuentaContableService
 {
-    Task<CuentaContableDto> Crear(Guid planCuentasId, CrearCuentaContableDto dto, Guid usuarioId);
-    Task<CuentaContableDto> ObtenerPorId(Guid id);
-    Task<PaginadoDto<CuentaContableDto>> ObtenerPorPlanPaginado(Guid planCuentasId, int pagina, int cantidadPorPagina);
+    Task<CuentaContableResponseDto> Crear(Guid planCuentasId, CrearCuentaContableDto dto, Guid usuarioId);
+    Task<CuentaContableResponseDto> ObtenerPorId(Guid id);
+    Task<PaginadoDto<CuentaContableResponseDto>> ObtenerPorPlanPaginado(Guid planCuentasId, int pagina, int cantidadPorPagina);
     Task<List<CuentaContableArbolDto>> ObtenerArbolDeCuentas(Guid planId);
-    Task<List<CuentaContableDto>> ObtenerImputables(Guid planCuentasId);
-    Task<CuentaContableDto> Actualizar(Guid id, ActualizarCuentaContableDto dto, Guid usuarioId);
+    Task<List<CuentaContableResponseDto>> ObtenerImputables(Guid planCuentasId);
+    Task<CuentaContableResponseDto> Actualizar(Guid id, ActualizarCuentaContableDto dto, Guid usuarioId);
     Task Desactivar(Guid id, Guid usuarioId);
     Task Activar(Guid id);
 }

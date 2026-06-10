@@ -201,7 +201,7 @@ public class ClienteService : IClienteService
     }
 
     /// <inheritdoc />
-    public async Task<List<CuentaContableDto>> ObtenerCuentasImputables(Guid clienteId)
+    public async Task<List<CuentaContableResponseDto>> ObtenerCuentasImputables(Guid clienteId)
     {
         var plan = await _planDeCuentasRepository.ObtenerPorClienteId(clienteId)
             ?? throw new EntidadNoEncontradaException("PlanDeCuentas", clienteId);

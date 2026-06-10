@@ -9,10 +9,7 @@ public class UsuarioRepository : IUsuarioRepository
 {
     private readonly AppDbContext _context;
 
-    public UsuarioRepository(AppDbContext context)
-    {
-        _context = context;
-    }
+    public UsuarioRepository(AppDbContext context) => _context = context;
 
     public async Task<Usuario?> ObtenerPorId(Guid id)
     {

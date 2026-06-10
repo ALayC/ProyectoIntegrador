@@ -10,10 +10,7 @@ public class UsuariosController : Controller
 {
     private readonly ApiClient _apiClient;
 
-    public UsuariosController(ApiClient apiClient)
-    {
-        _apiClient = apiClient;
-    }
+    public UsuariosController(ApiClient apiClient) => _apiClient = apiClient;
 
     // ── GET /Usuarios ─────────────────────────────────────────────────────────
     [HttpGet]

@@ -9,10 +9,7 @@ public class EjercicioContableRepository : IEjercicioContableRepository
 {
     private readonly AppDbContext _context;
 
-    public EjercicioContableRepository(AppDbContext context)
-    {
-        _context = context;
-    }
+    public EjercicioContableRepository(AppDbContext context) => _context = context;
 
     public async Task<EjercicioContable?> ObtenerPorId(Guid id)
     {

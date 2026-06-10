@@ -9,10 +9,7 @@ public class RolRepository : IRolRepository
 {
     private readonly AppDbContext _context;
 
-    public RolRepository(AppDbContext context)
-    {
-        _context = context;
-    }
+    public RolRepository(AppDbContext context) => _context = context;
 
     public async Task<Rol?> ObtenerPorId(Guid id)
     {

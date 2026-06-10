@@ -9,10 +9,7 @@ public class TokenRevocadoRepository : ITokenRevocadoRepository
 {
     private readonly AppDbContext _context;
 
-    public TokenRevocadoRepository(AppDbContext context)
-    {
-        _context = context;
-    }
+    public TokenRevocadoRepository(AppDbContext context) => _context = context;
 
     public async Task<TokenRevocado?> ObtenerPorId(Guid id)
     {

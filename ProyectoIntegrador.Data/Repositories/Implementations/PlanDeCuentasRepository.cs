@@ -9,10 +9,7 @@ public class PlanDeCuentasRepository : IPlanDeCuentasRepository
 {
     private readonly AppDbContext _context;
 
-    public PlanDeCuentasRepository(AppDbContext context)
-    {
-        _context = context;
-    }
+    public PlanDeCuentasRepository(AppDbContext context) => _context = context;
 
     public async Task<PlanDeCuentas?> ObtenerPorId(Guid id)
     {

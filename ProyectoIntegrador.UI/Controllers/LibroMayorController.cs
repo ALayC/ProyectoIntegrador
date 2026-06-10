@@ -11,10 +11,7 @@ public class LibroMayorController : Controller
 {
     private readonly ApiClient _apiClient;
 
-    public LibroMayorController(ApiClient apiClient)
-    {
-        _apiClient = apiClient;
-    }
+    public LibroMayorController(ApiClient apiClient) => _apiClient = apiClient;
 
     [HttpGet]
     public async Task<IActionResult> Index(
@@ -90,14 +87,5 @@ public class LibroMayorController : Controller
         }
 
         return url;
-    }
-
-    private class LibroMayorResponseViewModel
-    {
-        public Guid ClienteId { get; set; }
-        public DateOnly? FechaDesde { get; set; }
-        public DateOnly? FechaHasta { get; set; }
-        public Guid? EjercicioId { get; set; }
-        public List<LibroMayorCuentaViewModel> Cuentas { get; set; } = new();
     }
 }

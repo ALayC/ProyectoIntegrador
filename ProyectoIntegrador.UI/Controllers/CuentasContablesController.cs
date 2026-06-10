@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
 using ProyectoIntegrador.UI.Models;
 using ProyectoIntegrador.UI.Services;
 

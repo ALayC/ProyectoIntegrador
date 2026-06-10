@@ -26,5 +26,5 @@ public interface IClienteService
     Task<List<CuentaContableArbolDto>> ObtenerPlanDeCuentas(Guid clienteId);
 
     /// <summary>Obtiene solo las cuentas imputables del plan de cuentas del cliente.</summary>
-    Task<List<CuentaContableDto>> ObtenerCuentasImputables(Guid clienteId);
+    Task<List<CuentaContableResponseDto>> ObtenerCuentasImputables(Guid clienteId);
 }
