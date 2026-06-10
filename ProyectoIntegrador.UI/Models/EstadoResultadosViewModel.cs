@@ -1,15 +1,16 @@
-﻿namespace ProyectoIntegrador.UI.Models
+﻿namespace ProyectoIntegrador.UI.Models;
+
+public class EstadoResultadosViewModel
 {
-    public class EstadoResultadosViewModel
-    {
-        public Guid ClienteId { get; set; }
+    public Guid ClienteId { get; set; }
 
-        public DateOnly? FechaDesde { get; set; }
+    public string ClienteNombre { get; set; } = string.Empty;
 
-        public DateOnly? FechaHasta { get; set; }
+    public DateOnly? FechaDesde { get; set; }
 
-        public EstadoResultadosResponseViewModel? Resultado { get; set; }
-    }
+    public DateOnly? FechaHasta { get; set; }
+
+    public EstadoResultadosResponseViewModel? Resultado { get; set; }
 }
 
 public class EstadoResultadosResponseViewModel
