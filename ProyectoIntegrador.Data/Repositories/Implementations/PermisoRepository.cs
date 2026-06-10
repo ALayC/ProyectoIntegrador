@@ -9,10 +9,7 @@ public class PermisoRepository : IPermisoRepository
 {
     private readonly AppDbContext _context;
 
-    public PermisoRepository(AppDbContext context)
-    {
-        _context = context;
-    }
+    public PermisoRepository(AppDbContext context) => _context = context;
 
     public async Task<Permiso?> ObtenerPorId(Guid id)
    => await _context.Permisos.FindAsync(id);

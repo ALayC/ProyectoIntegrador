@@ -15,10 +15,7 @@ public class AsientosContablesController : ControllerBase
 {
     private readonly IAsientoContableService _asientoService;
 
-    public AsientosContablesController(IAsientoContableService asientoService)
-    {
-        _asientoService = asientoService;
-    }
+    public AsientosContablesController(IAsientoContableService asientoService) => _asientoService = asientoService;
 
     /// <summary>Obtiene un asiento contable completo con sus líneas.</summary>
     [HttpGet("{id:guid}")]

@@ -9,10 +9,7 @@ public class CuentaContableRepository : ICuentaContableRepository
 {
     private readonly AppDbContext _context;
 
-    public CuentaContableRepository(AppDbContext context)
-    {
-        _context = context;
-    }
+    public CuentaContableRepository(AppDbContext context) => _context = context;
 
     public async Task<CuentaContable?> ObtenerPorId(Guid id)
     {

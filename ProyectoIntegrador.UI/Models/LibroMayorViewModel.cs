@@ -1,5 +1,14 @@
 namespace ProyectoIntegrador.UI.Models;
 
+public class LibroMayorResponseViewModel
+{
+    public Guid ClienteId { get; set; }
+    public DateOnly? FechaDesde { get; set; }
+    public DateOnly? FechaHasta { get; set; }
+    public Guid? EjercicioId { get; set; }
+    public List<LibroMayorCuentaViewModel> Cuentas { get; set; } = new();
+}
+
 public class LibroMayorMovimientoViewModel
 {
     public Guid AsientoId { get; set; }

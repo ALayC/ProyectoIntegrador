@@ -13,10 +13,7 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
 
-    public AuthController(IAuthService authService)
-    {
-        _authService = authService;
-    }
+    public AuthController(IAuthService authService) => _authService = authService;
 
     /// <summary>
     /// Registra un nuevo usuario con rol Contador por defecto.

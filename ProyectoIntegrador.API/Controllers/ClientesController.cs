@@ -14,10 +14,7 @@ public class ClientesController : ControllerBase
 {
     private readonly IClienteService _clienteService;
 
-    public ClientesController(IClienteService clienteService)
-    {
-        _clienteService = clienteService;
-    }
+    public ClientesController(IClienteService clienteService) => _clienteService = clienteService;
 
     /// <summary>
     /// Obtiene los clientes del contador autenticado con paginación.

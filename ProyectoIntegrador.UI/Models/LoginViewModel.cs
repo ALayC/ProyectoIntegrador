@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-
 namespace ProyectoIntegrador.UI.Models;
 
 public class LoginViewModel

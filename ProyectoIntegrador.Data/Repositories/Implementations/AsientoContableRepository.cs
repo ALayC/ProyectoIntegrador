@@ -9,10 +9,7 @@ public class AsientoContableRepository : IAsientoContableRepository
 {
     private readonly AppDbContext _context;
 
-    public AsientoContableRepository(AppDbContext context)
-    {
-        _context = context;
-    }
+    public AsientoContableRepository(AppDbContext context) => _context = context;
 
     public async Task<AsientoContable?> ObtenerPorId(Guid id)
     {

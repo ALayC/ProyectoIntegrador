@@ -4,9 +4,9 @@ namespace ProyectoIntegrador.Service.Interfaces;
 
 public interface IEjercicioContableService
 {
-    Task<EjercicioContableDto> Crear(CrearEjercicioContableDto dto);
-    Task<EjercicioContableDto> ObtenerPorId(Guid id);
-    Task<PaginadoDto<EjercicioContableDto>> ObtenerPorCliente(Guid clienteId, int pagina, int cantidadPorPagina);
-    Task<EjercicioContableDto> Actualizar(Guid id, ActualizarEjercicioContableDto dto);
+    Task<EjercicioContableResponseDto> Crear(CrearEjercicioContableDto dto);
+    Task<EjercicioContableResponseDto> ObtenerPorId(Guid id);
+    Task<PaginadoDto<EjercicioContableResponseDto>> ObtenerPorCliente(Guid clienteId, int pagina, int cantidadPorPagina);
+    Task<EjercicioContableResponseDto> Actualizar(Guid id, ActualizarEjercicioContableDto dto);
     Task Cerrar(Guid id, Guid usuarioId);
 }

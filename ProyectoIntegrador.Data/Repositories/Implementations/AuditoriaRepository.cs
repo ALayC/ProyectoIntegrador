@@ -9,10 +9,7 @@ public class AuditoriaRepository : IAuditoriaRepository
 {
     private readonly AppDbContext _context;
 
-    public AuditoriaRepository(AppDbContext context)
-    {
-        _context = context;
-    }
+    public AuditoriaRepository(AppDbContext context) => _context = context;
 
     public async Task<Auditoria?> ObtenerPorId(Guid id)
     {

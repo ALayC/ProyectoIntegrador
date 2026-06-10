@@ -10,10 +10,7 @@ public class EjerciciosController : Controller
 {
     private readonly ApiClient _apiClient;
 
-    public EjerciciosController(ApiClient apiClient)
-    {
-        _apiClient = apiClient;
-    }
+    public EjerciciosController(ApiClient apiClient) => _apiClient = apiClient;
 
     [HttpGet]
     public async Task<IActionResult> Index(Guid clienteId, int pagina = 1, int cantidadPorPagina = 10)

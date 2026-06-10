@@ -10,10 +10,7 @@ public class RolesController : Controller
 {
     private readonly ApiClient _apiClient;
 
-    public RolesController(ApiClient apiClient)
-    {
-        _apiClient = apiClient;
-    }
+    public RolesController(ApiClient apiClient) => _apiClient = apiClient;
 
     // ── GET /Roles ────────────────────────────────────────────────────────────
     [HttpGet]
