@@ -42,11 +42,26 @@ public class LibroMayorExcelService : ILibroMayorExcelService
                 .Font.SetItalic(true);
 
             // ── Resumen ──────────────────────────────────────────────
-            var resumenLabels = new[] { "Saldo inicial", "Débitos", "Créditos", "Saldo final" };
-            var resumenValores = new[] { cuenta.SaldoInicial, cuenta.Debitos, cuenta.Creditos, cuenta.SaldoFinal };
+            var resumenLabels = new[] { "Saldo inicial", "Débitos", "Créditos" };
+            var resumenValores = new[] { cuenta.SaldoInicial, cuenta.Debitos, cuenta.Creditos };
+
+            // etiqueta y valor para saldo final (según Debitos vs Creditos)
+            string saldoFinalLabel;
+            decimal saldoFinalValor;
+            if (cuenta.Debitos > cuenta.Creditos) {
+                saldoFinalLabel = "Saldo deudor";
+                saldoFinalValor = cuenta.Debitos - cuenta.Creditos;
+            } else if (cuenta.Creditos > cuenta.Debitos) {
+                saldoFinalLabel = "Saldo acreedor";
+                saldoFinalValor = cuenta.Creditos - cuenta.Debitos;
+            } else {
+                saldoFinalLabel = "Saldo deudor";
+                saldoFinalValor = 0m;
+            }
+
             var resumenColores = new[] { XLColor.SteelBlue, XLColor.SeaGreen, XLColor.IndianRed, XLColor.RoyalBlue };
 
-            for (int col = 0; col < 4; col++)
+            for (int col = 0; col < 3; col++)
             {
                 var labelCell = hoja.Cell(4, col * 2 + 1);
                 var valorCell = hoja.Cell(5, col * 2 + 1);
@@ -67,6 +82,26 @@ public class LibroMayorExcelService : ILibroMayorExcelService
                     .Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center)
                     .Font.SetBold(true);
             }
+
+            // Saldo final (columna 4)
+            var labelCellFinal = hoja.Cell(4, 3 * 2 + 1);
+            var valorCellFinal = hoja.Cell(5, 3 * 2 + 1);
+
+            hoja.Range(4, 3 * 2 + 1, 4, 3 * 2 + 2).Merge();
+            hoja.Range(5, 3 * 2 + 1, 5, 3 * 2 + 2).Merge();
+
+            labelCellFinal.Value = saldoFinalLabel;
+            labelCellFinal.Style
+                .Font.SetBold(true)
+                .Font.SetFontColor(XLColor.White)
+                .Fill.SetBackgroundColor(resumenColores[3])
+                .Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+
+            valorCellFinal.Value = saldoFinalValor;
+            valorCellFinal.Style
+                .NumberFormat.SetFormat("#,##0.00")
+                .Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center)
+                .Font.SetBold(true);
 
             // ── Header tabla ─────────────────────────────────────────
             var headers = new[] { "Fecha", "Asiento", "Glosa", "Debe", "Haber", "Saldo", "Moneda", "Saldo base" };

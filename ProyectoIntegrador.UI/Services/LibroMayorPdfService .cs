@@ -66,7 +66,21 @@ public class LibroMayorPdfService : ILibroMayorPdfService
                             resumen.ConstantItem(8);
                             AgregarTarjetaResumen(resumen, "Créditos", cuenta.Creditos, ColorCreditos);
                             resumen.ConstantItem(8);
-                            AgregarTarjetaResumen(resumen, "Saldo final", cuenta.SaldoFinal, ColorSaldoFinal);
+
+                            string saldoFinalLabel;
+                            decimal saldoFinalValor;
+                            if (cuenta.Debitos > cuenta.Creditos) {
+                                saldoFinalLabel = "Saldo deudor";
+                                saldoFinalValor = cuenta.Debitos - cuenta.Creditos;
+                            } else if (cuenta.Creditos > cuenta.Debitos) {
+                                saldoFinalLabel = "Saldo acreedor";
+                                saldoFinalValor = cuenta.Creditos - cuenta.Debitos;
+                            } else {
+                                saldoFinalLabel = "Saldo deudor";
+                                saldoFinalValor = 0m;
+                            }
+
+                            AgregarTarjetaResumen(resumen, saldoFinalLabel, saldoFinalValor, ColorSaldoFinal);
                         });
 
                         // Tabla movimientos
