@@ -1,8 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.CookiePolicy;
+using ProyectoIntegrador.UI.Services;
+using QuestPDF.Infrastructure;
 using System.Net;
 using System.Net.Sockets;
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -101,6 +105,11 @@ builder.Services.AddHttpContextAccessor();
 
 // 🔹 ApiClient (servicio auxiliar) ─────────────
 builder.Services.AddScoped<ProyectoIntegrador.UI.Services.ApiClient>();
+builder.Services.AddScoped<ProyectoIntegrador.UI.Services.ILibroMayorExcelService,
+                            ProyectoIntegrador.UI.Services.LibroMayorExcelService>();
+builder.Services.AddScoped<ILibroMayorPdfService, LibroMayorPdfService>();
+builder.Services.AddScoped<IEstadoResultadosExcelService, EstadoResultadosExcelService>();
+builder.Services.AddScoped<IEstadoResultadosPdfService, EstadoResultadosPdfService>();
 
 var app = builder.Build();
 

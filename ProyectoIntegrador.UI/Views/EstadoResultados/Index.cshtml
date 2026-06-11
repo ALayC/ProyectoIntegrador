@@ -19,7 +19,26 @@
                 <a asp-controller="Clientes" asp-action="Detalles" asp-route-id="@Model.ClienteId" class="btn btn-outline-azure">
                     <i class="ti ti-arrow-left"></i> Volver
                 </a>
+                @if (Model.Resultado is not null)
+                {
+                    <a asp-action="ExportarExcel"
+                       asp-route-clienteId="@Model.ClienteId"
+                       asp-route-fechaDesde="@(Model.FechaDesde?.ToString("yyyy-MM-dd"))"
+                       asp-route-fechaHasta="@(Model.FechaHasta?.ToString("yyyy-MM-dd"))"
+                       class="btn btn-outline-success">
+                        <i class="ti ti-file-spreadsheet"></i> Exportar Excel
+                    </a>
+
+                    <a asp-action="ExportarPdf"
+                       asp-route-clienteId="@Model.ClienteId"
+                       asp-route-fechaDesde="@(Model.FechaDesde?.ToString("yyyy-MM-dd"))"
+                       asp-route-fechaHasta="@(Model.FechaHasta?.ToString("yyyy-MM-dd"))"
+                       class="btn btn-outline-danger">
+                        <i class="ti ti-file-type-pdf"></i> Exportar PDF
+                    </a>
+                }
             </div>
+
         </div>
     </div>
 </div>
