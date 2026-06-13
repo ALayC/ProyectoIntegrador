@@ -18,6 +18,7 @@ public class AsientoContableServiceTests : IDisposable
 {
     private readonly Mock<IAsientoContableRepository> _mockAsientoRepo;
     private readonly Mock<ICuentaContableRepository> _mockCuentaRepo;
+    private readonly Mock<IEjercicioContableRepository> _mockEjercicioRepo;
     private readonly Mock<ISaldoCuentaRepository> _mockSaldoRepo;
     private readonly AppDbContext _context;
     private readonly AsientoContableService _service;
@@ -27,8 +28,8 @@ public class AsientoContableServiceTests : IDisposable
         // Configurar DbContext con InMemory Database
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(databaseName: $"TestDb_{Guid.NewGuid()}")
-            .ConfigureWarnings(warnings => 
-                warnings.Ignore(InMemoryEventId.TransactionIgnoredWarning)) 
+            .ConfigureWarnings(warnings =>
+                warnings.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .Options;
 
         _context = new AppDbContext(options);
@@ -36,11 +37,13 @@ public class AsientoContableServiceTests : IDisposable
         // Mockear repositorios
         _mockAsientoRepo = new Mock<IAsientoContableRepository>();
         _mockCuentaRepo = new Mock<ICuentaContableRepository>();
+        _mockEjercicioRepo = new Mock<IEjercicioContableRepository>();
         _mockSaldoRepo = new Mock<ISaldoCuentaRepository>();
 
         _service = new AsientoContableService(
             _mockAsientoRepo.Object,
             _mockCuentaRepo.Object,
+            _mockEjercicioRepo.Object,
             _mockSaldoRepo.Object,
             _context);
     }
@@ -94,6 +97,17 @@ public class AsientoContableServiceTests : IDisposable
                 }
             }
         };
+
+        _mockEjercicioRepo
+            .Setup(r => r.ObtenerPorId(ejercicioId))
+            .ReturnsAsync(new EjercicioContable
+            {
+                Id = ejercicioId,
+                ClienteId = clienteId,
+                FechaInicio = new DateOnly(DateTime.Today.Year, 1, 1),
+                FechaFin = new DateOnly(DateTime.Today.Year, 12, 31),
+                Estado = "Abierto"
+            });
 
         // Mock: Cuentas existen y son imputables
         _mockCuentaRepo
@@ -263,6 +277,17 @@ public class AsientoContableServiceTests : IDisposable
             }
         };
 
+        _mockEjercicioRepo
+            .Setup(r => r.ObtenerPorId(ejercicioId))
+            .ReturnsAsync(new EjercicioContable
+            {
+                Id = ejercicioId,
+                ClienteId = clienteId,
+                FechaInicio = new DateOnly(DateTime.Today.Year, 1, 1),
+                FechaFin = new DateOnly(DateTime.Today.Year, 12, 31),
+                Estado = "Abierto"
+            });
+
         // Act & Assert
         var excepcion = await Assert.ThrowsAsync<AsientoDesbalanceadoException>(
             () => _service.Crear(dto, usuarioId));
@@ -322,6 +347,17 @@ public class AsientoContableServiceTests : IDisposable
                 }
             }
         };
+
+        _mockEjercicioRepo
+            .Setup(r => r.ObtenerPorId(ejercicioId))
+            .ReturnsAsync(new EjercicioContable
+            {
+                Id = ejercicioId,
+                ClienteId = clienteId,
+                FechaInicio = new DateOnly(DateTime.Today.Year, 1, 1),
+                FechaFin = new DateOnly(DateTime.Today.Year, 12, 31),
+                Estado = "Abierto"
+            });
 
         // Mock: Primera cuenta NO es imputable
         _mockCuentaRepo

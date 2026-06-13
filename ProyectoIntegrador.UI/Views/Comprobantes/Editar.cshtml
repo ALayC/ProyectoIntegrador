@@ -1,0 +1,133 @@
+@model ComprobanteEditarViewModel
+@{
+    ViewData["Title"] = "Editar Comprobante";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="mb-1"><i class="ti ti-edit"></i> Editar Comprobante</h2>
+        <div class="text-secondary">@Model.ClienteNombre</div>
+    </div>
+    <a asp-action="Detalles" asp-route-id="@Model.Id" asp-route-clienteId="@Model.ClienteId" class="btn btn-outline-azure">
+        <i class="ti ti-arrow-left"></i> Volver
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="Editar" asp-route-id="@Model.Id" asp-route-clienteId="@Model.ClienteId" method="post" class="row g-3">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="col-md-3">
+                <label asp-for="Tipo" class="form-label"></label>
+                <select asp-for="Tipo" class="form-select">
+                    <option value="Factura">Factura</option>
+                    <option value="Boleta">Boleta</option>
+                    <option value="NotaDebito">Nota de Débito</option>
+                    <option value="NotaCredito">Nota de Crédito</option>
+                </select>
+                <span asp-validation-for="Tipo" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label asp-for="Numero" class="form-label"></label>
+                <input asp-for="Numero" class="form-control" />
+                <span asp-validation-for="Numero" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label asp-for="RUT" class="form-label"></label>
+                <input asp-for="RUT" class="form-control" />
+                <span asp-validation-for="RUT" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label asp-for="Fecha" class="form-label"></label>
+                <input asp-for="Fecha" type="date" class="form-control" />
+                <span asp-validation-for="Fecha" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label asp-for="ImporteNeto" class="form-label"></label>
+                <input asp-for="ImporteNeto" class="form-control" type="number" step="0.01" min="0" id="importeNetoInput" />
+                <span asp-validation-for="ImporteNeto" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label" asp-for="TasaIVA">Tasa IVA (%)</label>
+                <div class="input-group">
+                    <input asp-for="TasaIVA" class="form-control" type="number" step="0.01" min="0" id="tasaIvaInput" />
+                    <span class="input-group-text">%</span>
+                </div>
+                <span asp-validation-for="TasaIVA" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label asp-for="ImporteIVA" class="form-label"></label>
+                <input asp-for="ImporteIVA" class="form-control" type="text" inputmode="decimal" id="importeIvaInput" />
+                <div class="form-hint">Se autocompleta con Importe total y Tasa IVA, pero puedes editarlo manualmente.</div>
+                <span asp-validation-for="ImporteIVA" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+                <label asp-for="ImporteTotal" class="form-label"></label>
+                <input asp-for="ImporteTotal" class="form-control" type="number" step="0.01" min="0" id="importeTotalInput" />
+                <span asp-validation-for="ImporteTotal" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-azure">
+                    <i class="ti ti-device-floppy"></i> Guardar cambios
+                </button>
+                <a asp-action="Detalles" asp-route-id="@Model.Id" asp-route-clienteId="@Model.ClienteId" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const netoInput = document.getElementById('importeNetoInput');
+            const tasaInput = document.getElementById('tasaIvaInput');
+            const ivaInput = document.getElementById('importeIvaInput');
+            const totalInput = document.getElementById('importeTotalInput');
+
+            if (!netoInput || !tasaInput || !ivaInput || !totalInput) return;
+
+            const parseNumber = (value) => {
+                const n = parseFloat((value || '').toString().replace(',', '.'));
+                return Number.isFinite(n) ? n : 0;
+            };
+
+            const formatDecimalDisplay = (value) =>
+                value.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: false });
+
+            const formatDecimalNumberInput = (value) => value.toFixed(2);
+
+            const recalcularDesdeNetoYTasa = () => {
+                const neto = parseNumber(netoInput.value);
+                const tasa = parseNumber(tasaInput.value);
+
+                if (neto < 0 || tasa < 0) return;
+
+                const iva = neto * (tasa / 100);
+                const total = neto + iva;
+
+                if (document.activeElement !== ivaInput) {
+                    ivaInput.value = formatDecimalDisplay(iva);
+                }
+
+                if (document.activeElement !== totalInput) {
+                    totalInput.value = formatDecimalNumberInput(total);
+                }
+            };
+
+            netoInput.addEventListener('input', recalcularDesdeNetoYTasa);
+            tasaInput.addEventListener('input', recalcularDesdeNetoYTasa);
+            recalcularDesdeNetoYTasa();
+        })();
+    </script>
+}

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProyectoIntegrador.Data.Context;
 
@@ -11,9 +12,11 @@ using ProyectoIntegrador.Data.Context;
 namespace ProyectoIntegrador.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260613144548_RF09_Comprobantes_Paso1")]
+    partial class RF09_Comprobantes_Paso1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -646,13 +649,6 @@ namespace ProyectoIntegrador.Data.Migrations
                         },
                         new
                         {
-                            Id = new Guid("b0000000-0005-0001-0001-000000000004"),
-                            Accion = "Anular",
-                            Modulo = "Comprobantes",
-                            Nombre = "Anular Comprobantes"
-                        },
-                        new
-                        {
                             Id = new Guid("b0000000-0006-0001-0001-000000000001"),
                             Accion = "Crear",
                             Modulo = "Importaciones",
@@ -907,11 +903,6 @@ namespace ProyectoIntegrador.Data.Migrations
                         {
                             RolId = new Guid("a1b2c3d4-0001-0001-0001-000000000002"),
                             PermisoId = new Guid("b0000000-0005-0001-0001-000000000003")
-                        },
-                        new
-                        {
-                            RolId = new Guid("a1b2c3d4-0001-0001-0001-000000000002"),
-                            PermisoId = new Guid("b0000000-0005-0001-0001-000000000004")
                         },
                         new
                         {
