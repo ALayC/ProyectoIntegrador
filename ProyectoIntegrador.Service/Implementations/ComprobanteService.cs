@@ -333,7 +333,7 @@ public class ComprobanteService : IComprobanteService
 
     private static void ValidarFecha(DateOnly fecha)
     {
-        if (fecha == default || fecha > DateOnly.FromDateTime(DateTime.Today))
+        if (fecha == default)
             throw new FechaFueraDeRangoException(fecha);
     }
 

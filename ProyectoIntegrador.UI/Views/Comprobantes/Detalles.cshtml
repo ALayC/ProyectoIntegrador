@@ -84,7 +84,9 @@
                         <div class="text-secondary">Asiento asociado</div>
                         @if (Model.TieneAsiento)
                         {
-                            <span class="badge bg-azure-lt text-azure">@Model.AsientoId</span>
+                            <a asp-controller="AsientosContables" asp-action="Detalles" asp-route-id="@Model.AsientoId" asp-route-clienteId="@clienteId" class="btn btn-sm btn-azure">
+                                <i class="ti ti-eye"></i> Ver
+                            </a>
                         }
                         else
                         {
