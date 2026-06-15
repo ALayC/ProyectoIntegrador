@@ -296,18 +296,34 @@ public class AppDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
 
-            // Precisión decimal (18,2) para importes
+            entity.Property(e => e.Tipo)
+                .HasConversion<string>()
+                .HasMaxLength(50);
+
+            entity.Property(e => e.Estado)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+
+            entity.Property(e => e.Numero).HasMaxLength(50);
+            entity.Property(e => e.RUT).HasMaxLength(20);
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+
+            // Índice para búsquedas paginadas por cliente/fecha
+            entity.HasIndex(e => new { e.ClienteId, e.Fecha });
+
+            // Índice único para validación de duplicados en BD
+            entity.HasIndex(e => new { e.ClienteId, e.Numero, e.RUT, e.Fecha })
+                .IsUnique();
+
+            // Precisión decimal para importes
             entity.Property(e => e.ImporteNeto).HasPrecision(18, 2);
-            entity.Property(e => e.ImporteIva).HasPrecision(18, 2);
+            entity.Property(e => e.ImporteIVA).HasPrecision(18, 2);
+            entity.Property(e => e.ImporteTotal).HasPrecision(18, 2);
 
-            // Precisión decimal (5,2) para tasa IVA
-            entity.Property(e => e.TasaIva).HasPrecision(5, 2);
-
-            // FK opcional a Importacion
-            entity.HasOne(e => e.Importacion)
-   .WithMany(e => e.Comprobantes)
-         .HasForeignKey(e => e.ImportacionId)
-       .OnDelete(DeleteBehavior.Restrict);
+            // Precisión decimal para tasa IVA
+            entity.Property(e => e.TasaIVA).HasPrecision(5, 2);
         });
 
         // ??????????????????????????????????????????????

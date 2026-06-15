@@ -1,0 +1,140 @@
+@model ComprobanteIndexViewModel
+@{
+    ViewData["Title"] = "Comprobantes";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div>
+        <h2 class="mb-1"><i class="ti ti-receipt"></i> Comprobantes</h2>
+        @if (!string.IsNullOrWhiteSpace(Model.ClienteNombre))
+        {
+            <div class="text-secondary">@Model.ClienteNombre</div>
+        }
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a asp-controller="Clientes" asp-action="Detalles" asp-route-id="@Model.ClienteId" class="btn btn-outline-azure">
+            <i class="ti ti-arrow-left"></i> Volver
+        </a>
+        <a asp-action="Crear" asp-route-clienteId="@Model.ClienteId" class="btn btn-azure">
+            <i class="ti ti-plus"></i> Nuevo comprobante
+        </a>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" asp-action="Index" asp-route-clienteId="@Model.ClienteId" class="row g-3 align-items-end">
+            <input type="hidden" name="clienteId" value="@Model.ClienteId" />
+            <div class="col-md-2">
+                <label class="form-label">Tipo</label>
+                <select name="tipo" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="Factura" selected="@(Model.Tipo == "Factura")">Factura</option>
+                    <option value="Boleta" selected="@(Model.Tipo == "Boleta")">Boleta</option>
+                    <option value="NotaDebito" selected="@(Model.Tipo == "NotaDebito")">Nota de Débito</option>
+                    <option value="NotaCredito" selected="@(Model.Tipo == "NotaCredito")">Nota de Crédito</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">RUT</label>
+                <input type="text" name="rut" class="form-control" value="@Model.RUT" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Fecha desde</label>
+                <input type="date" name="fechaDesde" class="form-control" value="@(Model.FechaDesde?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Fecha hasta</label>
+                <input type="date" name="fechaHasta" class="form-control" value="@(Model.FechaHasta?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Estado</label>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="Activo" selected="@(Model.Estado == "Activo")">Activo</option>
+                    <option value="Anulado" selected="@(Model.Estado == "Anulado")">Anulado</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-azure flex-fill">
+                    <i class="ti ti-search"></i> Filtrar
+                </button>
+                <a asp-action="Index" asp-route-clienteId="@Model.ClienteId" class="btn btn-outline-secondary">
+                    <i class="ti ti-x"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.Items.Count == 0)
+{
+    <div class="card">
+        <div class="card-body">
+            <div class="empty">
+                <div class="empty-img">
+                    <i class="ti ti-receipt-off fs-1 text-secondary"></i>
+                </div>
+                <p class="empty-title">No hay comprobantes para los filtros seleccionados</p>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Número</th>
+                        <th>RUT</th>
+                        <th class="text-end">Importe total</th>
+                        <th>Estado</th>
+                        <th>Asiento</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@item.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td>@item.Tipo</td>
+                            <td>@item.Numero</td>
+                            <td>@item.RUT</td>
+                            <td class="text-end">@item.ImporteTotal.ToString("N2")</td>
+                            <td>
+                                @if (item.Estado == "Anulado")
+                                {
+                                    <span class="badge bg-danger-lt text-danger">Anulado</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success-lt text-success">Activo</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.AsientoId.HasValue)
+                                {
+                                    <span class="badge bg-azure-lt text-azure">Asociado</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">—</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Detalles" asp-route-id="@item.Id" asp-route-clienteId="@Model.ClienteId" class="btn btn-sm btn-ghost-azure">
+                                    <i class="ti ti-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
