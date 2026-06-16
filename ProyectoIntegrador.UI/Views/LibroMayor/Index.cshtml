@@ -15,6 +15,39 @@
         <a asp-controller="Clientes" asp-action="Detalles" asp-route-id="@Model.ClienteId" class="btn btn-outline-azure">
             <i class="ti ti-arrow-left"></i> Volver
         </a>
+        @{
+            var exportUrl = Url.Action("Exportar", "LibroMayor", new
+            {
+                clienteId = Model.ClienteId,
+                ejercicioId = Model.EjercicioId,
+                fechaDesde = Model.FechaDesde?.ToString("yyyy-MM-dd"),
+                fechaHasta = Model.FechaHasta?.ToString("yyyy-MM-dd")
+            });
+
+            if (Model.CuentaIds.Count > 0)
+                exportUrl += "&" + string.Join("&", Model.CuentaIds.Select(id => $"cuentaIds={id}"));
+        }
+        @{
+            var pdfUrl = Url.Action("ExportarPdf", "LibroMayor", new
+            {
+                clienteId = Model.ClienteId,
+                ejercicioId = Model.EjercicioId,
+                fechaDesde = Model.FechaDesde?.ToString("yyyy-MM-dd"),
+                fechaHasta = Model.FechaHasta?.ToString("yyyy-MM-dd")
+            });
+
+            if (Model.CuentaIds.Count > 0)
+                pdfUrl += "&" + string.Join("&", Model.CuentaIds.Select(id => $"cuentaIds={id}"));
+        }
+
+        <a href="@pdfUrl"
+           class="btn btn-outline-danger @(Model.CuentasMayor.Count == 0 ? "disabled" : "")">
+            <i class="ti ti-file-type-pdf"></i> Exportar PDF
+        </a>
+        <a href="@exportUrl"
+           class="btn btn-outline-success @(Model.CuentasMayor.Count == 0 ? "disabled" : "")">
+            <i class="ti ti-file-spreadsheet"></i> Exportar Excel
+        </a>
     </div>
 </div>
 
@@ -101,7 +134,23 @@ else
                                 <span class="badge bg-azure-lt text-azure">Saldo inicial: @cuenta.SaldoInicial.ToString("N2")</span>
                                 <span class="badge bg-success-lt text-success">Débitos: @cuenta.Debitos.ToString("N2")</span>
                                 <span class="badge bg-danger-lt text-danger">Créditos: @cuenta.Creditos.ToString("N2")</span>
-                                <span class="badge bg-primary-lt text-primary">Saldo final: @cuenta.SaldoFinal.ToString("N2")</span>
+                                <span class="badge bg-primary-lt text-primary">
+                                    @{ 
+                                        string saldoFinalLabel;
+                                        decimal saldoFinalValor;
+                                        if (cuenta.Debitos > cuenta.Creditos) {
+                                            saldoFinalLabel = "Saldo deudor";
+                                            saldoFinalValor = cuenta.Debitos - cuenta.Creditos;
+                                        } else if (cuenta.Creditos > cuenta.Debitos) {
+                                            saldoFinalLabel = "Saldo acreedor";
+                                            saldoFinalValor = cuenta.Creditos - cuenta.Debitos;
+                                        } else {
+                                            saldoFinalLabel = "Saldo deudor";
+                                            saldoFinalValor = 0m;
+                                        }
+                                    }
+                                    @saldoFinalLabel: @saldoFinalValor.ToString("N2")
+                                </span>
                             </div>
                         </div>
                     </button>

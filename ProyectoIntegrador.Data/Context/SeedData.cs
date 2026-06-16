@@ -60,6 +60,7 @@ public static class SeedData
     private static readonly Guid PermComprobantesCrear = new("b0000000-0005-0001-0001-000000000001");
     private static readonly Guid PermComprobantesConsultar = new("b0000000-0005-0001-0001-000000000002");
     private static readonly Guid PermComprobantesEditar = new("b0000000-0005-0001-0001-000000000003");
+    private static readonly Guid PermComprobantesAnular = new("b0000000-0005-0001-0001-000000000004");
 
     // Importaciones
     private static readonly Guid PermImportacionesCrear = new("b0000000-0006-0001-0001-000000000001");
@@ -142,6 +143,7 @@ public static class SeedData
      new Permiso { Id = PermComprobantesCrear, Nombre = "Crear Comprobantes", Modulo = "Comprobantes", Accion = "Crear" },
                new Permiso { Id = PermComprobantesConsultar, Nombre = "Consultar Comprobantes", Modulo = "Comprobantes", Accion = "Consultar" },
                new Permiso { Id = PermComprobantesEditar, Nombre = "Editar Comprobantes", Modulo = "Comprobantes", Accion = "Editar" },
+               new Permiso { Id = PermComprobantesAnular, Nombre = "Anular Comprobantes", Modulo = "Comprobantes", Accion = "Anular" },
 
           // ── Importaciones ──
           new Permiso { Id = PermImportacionesCrear, Nombre = "Crear Importaciones", Modulo = "Importaciones", Accion = "Crear" },
@@ -183,7 +185,7 @@ public static class SeedData
             PermClientesCrear, PermClientesConsultar, PermClientesEditar, PermClientesDesactivar,
          PermCuentasCrear, PermCuentasConsultar, PermCuentasEditar, PermCuentasDesactivar,
      PermAsientosCrear, PermAsientosConsultar, PermAsientosRevertir,
-            PermComprobantesCrear, PermComprobantesConsultar, PermComprobantesEditar,
+            PermComprobantesCrear, PermComprobantesConsultar, PermComprobantesEditar, PermComprobantesAnular,
     PermImportacionesCrear, PermImportacionesConsultar,
           PermReportesConsultar, PermReportesExportar,
             PermEjerciciosCrear, PermEjerciciosConsultar, PermEjerciciosEditar, PermEjerciciosDesactivar,

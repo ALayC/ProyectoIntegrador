@@ -38,6 +38,7 @@ public static class AuditoriaConstantes
         public const string Editar = "Editar";
         public const string Activar = "Activar";
         public const string Desactivar = "Desactivar";
+        public const string Anular = "Anular";
         public const string Cerrar = "Cerrar";
         public const string Confirmar = "Confirmar";
         public const string Revertir = "Revertir";
