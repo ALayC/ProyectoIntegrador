@@ -37,17 +37,6 @@ public class EjercicioContableService : IEjercicioContableService
         await ValidarClienteExistente(clienteId);
         ValidarRangoFechas(fechaInicio, fechaFin);
 
-        if (await _ejercicioRepository.ExisteSolapamiento(clienteId, fechaInicio, fechaFin))
-        {
-            throw new EjercicioSolapadoException(fechaInicio.ToDateTime(TimeOnly.MinValue), fechaFin.ToDateTime(TimeOnly.MinValue));
-        }
-
-        var abierto = await _ejercicioRepository.ObtenerAbiertoPorCliente(clienteId);
-        if (abierto is not null)
-        {
-            throw new ValidacionException("Ya existe un ejercicio abierto para el cliente.");
-        }
-
         var ejercicio = new EjercicioContable
         {
             Id = Guid.NewGuid(),
@@ -112,17 +101,6 @@ public class EjercicioContableService : IEjercicioContableService
         var fechaFin = dto.FechaFin.Value;
 
         ValidarRangoFechas(fechaInicio, fechaFin);
-
-        if (await _ejercicioRepository.ExisteSolapamiento(ejercicio.ClienteId, fechaInicio, fechaFin, id))
-        {
-            throw new EjercicioSolapadoException(fechaInicio.ToDateTime(TimeOnly.MinValue), fechaFin.ToDateTime(TimeOnly.MinValue));
-        }
-
-        var abierto = await _ejercicioRepository.ObtenerAbiertoPorCliente(ejercicio.ClienteId);
-        if (abierto is not null && abierto.Id != id)
-        {
-            throw new ValidacionException("Ya existe un ejercicio abierto para el cliente.");
-        }
 
         ejercicio.FechaInicio = fechaInicio;
         ejercicio.FechaFin = fechaFin;

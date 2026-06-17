@@ -58,6 +58,7 @@ public class ClienteService : IClienteService
             NombreFantasia = clienteDto.NombreFantasia,
             Email = clienteDto.Email,
             Telefono = clienteDto.Telefono,
+            Direccion = clienteDto.Direccion,
             TipoContribuyente = clienteDto.TipoContribuyente,
             MonedaBase = clienteDto.MonedaBase,
             Estado = "Activo"
@@ -132,6 +133,7 @@ public class ClienteService : IClienteService
         cliente.NombreFantasia = clienteDto.NombreFantasia;
         cliente.Email = clienteDto.Email;
         cliente.Telefono = clienteDto.Telefono;
+        cliente.Direccion = clienteDto.Direccion;
         cliente.TipoContribuyente = clienteDto.TipoContribuyente;
         cliente.MonedaBase = clienteDto.MonedaBase;
 
@@ -224,6 +226,7 @@ public class ClienteService : IClienteService
             NombreFantasia = cliente.NombreFantasia,
             Email = cliente.Email,
             Telefono = cliente.Telefono,
+            Direccion = cliente.Direccion,
             TipoContribuyente = cliente.TipoContribuyente,
             MonedaBase = cliente.MonedaBase,
             Estado = cliente.Estado
@@ -244,6 +247,7 @@ public class ClienteService : IClienteService
             cliente.NombreFantasia,
             cliente.Email,
             cliente.Telefono,
+            cliente.Direccion,
             cliente.TipoContribuyente,
             cliente.MonedaBase,
             cliente.Estado

@@ -122,6 +122,16 @@ public class ClientesController : Controller
     [HttpGet]
     public async Task<IActionResult> PlanDeCuentas(Guid id)
     {
+        var clienteResponse = await _apiClient.GetAsync<ClienteListViewModel>($"api/clientes/{id}");
+
+        if (clienteResponse.EsNoAutorizado) return RedirectToAction("Login", "Auth");
+
+        if (!clienteResponse.EsExitoso || clienteResponse.Data is null)
+        {
+            TempData["Error"] = "Cliente no encontrado.";
+            return RedirectToAction(nameof(Index));
+        }
+
         var response = await _apiClient.GetAsync<List<CuentaContableArbolViewModel>>(
             $"api/clientes/{id}/plan-de-cuentas");
 
@@ -133,7 +143,8 @@ public class ClientesController : Controller
             return RedirectToAction(nameof(Detalles), new { id });
         }
 
-        ViewData["ClienteId"] = id;   // ? agregar esto
+        ViewData["ClienteId"] = id;
+        ViewData["ClienteNombre"] = clienteResponse.Data.RazonSocial;
         return View(response.Data ?? new List<CuentaContableArbolViewModel>());
     }
 

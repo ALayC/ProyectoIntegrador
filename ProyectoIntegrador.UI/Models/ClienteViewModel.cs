@@ -24,6 +24,9 @@ public class ClienteViewModel
     [Display(Name = "Teléfono")]
     public string Telefono { get; set; } = string.Empty;
 
+    [Display(Name = "Dirección")]
+    public string? Direccion { get; set; }
+
     [Required(ErrorMessage = "El tipo de contribuyente es obligatorio.")]
     [Display(Name = "Tipo de contribuyente")]
     public string TipoContribuyente { get; set; } = string.Empty;
@@ -41,6 +44,7 @@ public class ClienteListViewModel
     public string? NombreFantasia { get; set; }
     public string Email { get; set; } = string.Empty;
     public string Telefono { get; set; } = string.Empty;
+    public string? Direccion { get; set; }
     public string TipoContribuyente { get; set; } = string.Empty;
     public string MonedaBase { get; set; } = string.Empty;
     public string Estado { get; set; } = string.Empty;

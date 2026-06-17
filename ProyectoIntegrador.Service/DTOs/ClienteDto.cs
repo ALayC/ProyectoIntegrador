@@ -14,6 +14,7 @@ public class ClienteResponseDto
     public string? NombreFantasia { get; set; }
     public string Email { get; set; } = string.Empty;
     public string Telefono { get; set; } = string.Empty;
+    public string? Direccion { get; set; }
     public string TipoContribuyente { get; set; } = string.Empty;
     public string MonedaBase { get; set; } = string.Empty;
     public string Estado { get; set; } = string.Empty;
@@ -39,6 +40,8 @@ public class ClienteDto
 
     [Required(ErrorMessage = "El teléfono es obligatorio.")]
     public string Telefono { get; set; } = string.Empty;
+
+    public string? Direccion { get; set; }
 
     [Required(ErrorMessage = "El tipo de contribuyente es obligatorio.")]
     public string TipoContribuyente { get; set; } = string.Empty;
