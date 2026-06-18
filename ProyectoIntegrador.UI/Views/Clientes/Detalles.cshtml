@@ -168,6 +168,10 @@
                                 <div class="text-secondary">Teléfono</div>
                                 <div class="fw-semibold">@Model.Telefono</div>
                             </div>
+                            <div class="col-12">
+                                <div class="text-secondary">Dirección</div>
+                                <div class="fw-semibold">@(string.IsNullOrWhiteSpace(Model.Direccion) ? "No informado" : Model.Direccion)</div>
+                            </div>
                         </div>
                     </div>
                 </div>

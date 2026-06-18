@@ -103,6 +103,8 @@ public class CuentasContablesController : Controller
         {
             PlanCuentasId = parent.PlanCuentasId,
             CuentaPadreId = parent.Id,
+            Tipo = parent.Tipo,
+            Naturaleza = parent.Naturaleza,
             EsSistema = false,
             Estado = "Activa"
         };
