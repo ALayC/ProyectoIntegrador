@@ -99,6 +99,13 @@ public class CuentasContablesController : Controller
         }
 
         var parent = response.Data;
+
+        // Obtener el siguiente código sugerido para la subcuenta
+        string codigoSugerido = string.Empty;
+        var codigoResponse = await _apiClient.GetAsync<CodigoSugeridoDto>($"api/cuentas-contables/{parentId}/siguiente-codigo");
+        if (codigoResponse.EsExitoso && codigoResponse.Data is not null)
+            codigoSugerido = codigoResponse.Data.Codigo;
+
         var vm = new CuentaContableViewModel
         {
             PlanCuentasId = parent.PlanCuentasId,
@@ -106,7 +113,8 @@ public class CuentasContablesController : Controller
             Tipo = parent.Tipo,
             Naturaleza = parent.Naturaleza,
             EsSistema = false,
-            Estado = "Activa"
+            Estado = "Activa",
+            Codigo = codigoSugerido
         };
 
         var viewModel = new CuentaContableFormViewModel

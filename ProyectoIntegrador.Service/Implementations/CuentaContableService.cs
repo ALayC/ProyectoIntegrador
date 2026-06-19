@@ -229,6 +229,28 @@ public class CuentaContableService : ICuentaContableService
         await _cuentaRepository.Actualizar(cuenta);
     }
 
+    public async Task<string> SiguienteCodigoHija(Guid cuentaPadreId)
+    {
+        var padre = await _cuentaRepository.ObtenerPorId(cuentaPadreId)
+            ?? throw new EntidadNoEncontradaException("CuentaContable", cuentaPadreId);
+
+        var hijas = await _cuentaRepository.ObtenerHijas(cuentaPadreId);
+
+        var prefijo = padre.Codigo;
+        var maxSufijo = hijas
+            .Select(h =>
+            {
+                if (h.Codigo.StartsWith(prefijo + ".") &&
+                    int.TryParse(h.Codigo[(prefijo.Length + 1)..].Split('.')[0], out var n))
+                    return n;
+                return 0;
+            })
+            .DefaultIfEmpty(0)
+            .Max();
+
+        return $"{prefijo}.{maxSufijo + 1}";
+    }
+
     // ──────────────────────────────────────────────
     // Métodos privados
     // ──────────────────────────────────────────────

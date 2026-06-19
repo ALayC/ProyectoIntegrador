@@ -79,6 +79,15 @@ public class CuentasContablesController : ControllerBase
         return Ok(new { mensaje = "Cuenta contable activada correctamente." });
     }
 
+    /// <summary>Retorna el siguiente código sugerido para una subcuenta hija.</summary>
+    [HttpGet("{id:guid}/siguiente-codigo")]
+    [RequierePermiso("Cuentas", "Consultar")]
+    public async Task<IActionResult> SiguienteCodigoHija(Guid id)
+    {
+        var codigo = await _cuentaContableService.SiguienteCodigoHija(id);
+        return Ok(new { codigo });
+    }
+
     // ??????????????????????????????????????????????
     private Guid ObtenerUsuarioIdDelToken()
     {
