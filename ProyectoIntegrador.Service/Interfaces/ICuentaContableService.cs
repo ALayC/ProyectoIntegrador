@@ -12,4 +12,5 @@ public interface ICuentaContableService
     Task<CuentaContableResponseDto> Actualizar(Guid id, ActualizarCuentaContableDto dto, Guid usuarioId);
     Task Desactivar(Guid id, Guid usuarioId);
     Task Activar(Guid id);
+    Task<string> SiguienteCodigoHija(Guid cuentaPadreId);
 }

@@ -11,6 +11,13 @@ QuestPDF.Settings.License = LicenseType.Community;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
+// 🔹 Application Insights ─────────────────────
+var appInsightsConnectionString = configuration["ApplicationInsights:ConnectionString"];
+if (!string.IsNullOrEmpty(appInsightsConnectionString))
+{
+    builder.Services.AddApplicationInsightsTelemetry();
+}
+
 // 🔹 MVC con Views ─────────────────────────────
 builder.Services.AddControllersWithViews();
 

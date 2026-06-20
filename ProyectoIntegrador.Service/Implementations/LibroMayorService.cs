@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
 using ProyectoIntegrador.Service.DTOs;
@@ -12,17 +14,20 @@ public class LibroMayorService : ILibroMayorService
     private readonly ICuentaContableRepository _cuentaRepository;
     private readonly IPlanDeCuentasRepository _planDeCuentasRepository;
     private readonly IEjercicioContableRepository _ejercicioRepository;
+    private readonly ILogger<LibroMayorService> _logger;
 
     public LibroMayorService(
         IAsientoContableRepository asientoRepository,
         ICuentaContableRepository cuentaRepository,
         IPlanDeCuentasRepository planDeCuentasRepository,
-        IEjercicioContableRepository ejercicioRepository)
+        IEjercicioContableRepository ejercicioRepository,
+        ILogger<LibroMayorService> logger)
     {
         _asientoRepository = asientoRepository;
         _cuentaRepository = cuentaRepository;
         _planDeCuentasRepository = planDeCuentasRepository;
         _ejercicioRepository = ejercicioRepository;
+        _logger = logger;
     }
 
     /// <summary>
@@ -30,6 +35,8 @@ public class LibroMayorService : ILibroMayorService
     /// </summary>
     public async Task<LibroMayorResponseDto> Obtener(LibroMayorFiltroDto filtro)
     {
+        var sw = Stopwatch.StartNew();
+
         var plan = await _planDeCuentasRepository.ObtenerPorClienteId(filtro.ClienteId)
             ?? throw new EntidadNoEncontradaException("PlanDeCuentas", filtro.ClienteId);
 
@@ -141,7 +148,7 @@ public class LibroMayorService : ILibroMayorService
             });
         }
 
-        return new LibroMayorResponseDto
+        var resultado = new LibroMayorResponseDto
         {
             ClienteId = filtro.ClienteId,
             FechaDesde = filtro.FechaDesde,
@@ -149,6 +156,16 @@ public class LibroMayorService : ILibroMayorService
             EjercicioId = filtro.EjercicioId,
             Cuentas = cuentasDto
         };
+
+        sw.Stop();
+        if (sw.ElapsedMilliseconds > 2000)
+            _logger.LogWarning("Libro Mayor generado con tiempo elevado | ClienteId: {ClienteId} | Cuentas: {Cuentas} | Tiempo: {TiempoMs}ms",
+                filtro.ClienteId, cuentasDto.Count, sw.ElapsedMilliseconds);
+        else
+            _logger.LogInformation("Libro Mayor generado | ClienteId: {ClienteId} | Cuentas: {Cuentas} | Tiempo: {TiempoMs}ms",
+                filtro.ClienteId, cuentasDto.Count, sw.ElapsedMilliseconds);
+
+        return resultado;
     }
 
     /// <summary>

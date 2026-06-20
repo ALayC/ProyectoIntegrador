@@ -21,6 +21,13 @@ using ProyectoIntegrador.Service.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
+// ── Application Insights ─────────────────────
+var appInsightsConnectionString = configuration["ApplicationInsights:ConnectionString"];
+if (!string.IsNullOrEmpty(appInsightsConnectionString))
+{
+    builder.Services.AddApplicationInsightsTelemetry();
+}
+
 // ── Entity Framework Core + SQL Server ────────
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
@@ -246,6 +253,9 @@ var app = builder.Build();
 
 // 1. Middleware global de manejo de excepciones (primero en el pipeline)
 app.UseMiddleware<ExceptionMiddleware>();
+
+// 2. Logging de requests (inmediatamente después del exception middleware)
+app.UseMiddleware<RequestLoggingMiddleware>();
 
 // 2. Swagger (solo en desarrollo)
 if (app.Environment.IsDevelopment())

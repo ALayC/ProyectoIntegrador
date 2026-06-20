@@ -48,6 +48,11 @@ public class CuentaContableResumenViewModel
     public string Nombre { get; set; } = string.Empty;
 }
 
+public class CodigoSugeridoDto
+{
+    public string Codigo { get; set; } = string.Empty;
+}
+
 public class CuentaContableArbolViewModel
 {
     public Guid Id { get; set; }

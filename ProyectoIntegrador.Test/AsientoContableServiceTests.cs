@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Moq;
 using ProyectoIntegrador.Data.Context;
@@ -7,6 +8,7 @@ using ProyectoIntegrador.Data.Repositories.Interfaces;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Exceptions;
 using ProyectoIntegrador.Service.Implementations;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ProyectoIntegrador.Test;
 
@@ -45,7 +47,8 @@ public class AsientoContableServiceTests : IDisposable
             _mockCuentaRepo.Object,
             _mockEjercicioRepo.Object,
             _mockSaldoRepo.Object,
-            _context);
+            _context,
+            NullLogger<AsientoContableService>.Instance);
     }
 
     public void Dispose()
