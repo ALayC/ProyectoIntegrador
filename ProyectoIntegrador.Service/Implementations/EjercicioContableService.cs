@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
 using ProyectoIntegrador.Service.Constants;
@@ -12,15 +13,18 @@ public class EjercicioContableService : IEjercicioContableService
     private readonly IEjercicioContableRepository _ejercicioRepository;
     private readonly IClienteRepository _clienteRepository;
     private readonly IAuditoriaService _auditoriaService;
+    private readonly ILogger<EjercicioContableService> _logger;
 
     public EjercicioContableService(
         IEjercicioContableRepository ejercicioRepository,
         IClienteRepository clienteRepository,
-        IAuditoriaService auditoriaService)
+        IAuditoriaService auditoriaService,
+        ILogger<EjercicioContableService> logger)
     {
         _ejercicioRepository = ejercicioRepository;
         _clienteRepository = clienteRepository;
         _auditoriaService = auditoriaService;
+        _logger = logger;
     }
 
     public async Task<EjercicioContableResponseDto> Crear(CrearEjercicioContableDto dto)
@@ -54,6 +58,9 @@ public class EjercicioContableService : IEjercicioContableService
             AuditoriaConstantes.Acciones.Crear,
             datosAnteriores: null,
             datosNuevos: ConstruirDatosAuditoria(ejercicio));
+
+        _logger.LogInformation("Ejercicio contable creado | Id: {EjercicioId} | ClienteId: {ClienteId} | Desde: {FechaInicio} | Hasta: {FechaFin}",
+            ejercicio.Id, clienteId, fechaInicio, fechaFin);
 
         return Mapear(ejercicio);
     }
@@ -130,6 +137,9 @@ public class EjercicioContableService : IEjercicioContableService
             AuditoriaConstantes.Acciones.Cerrar,
             datosAnteriores: datosAnteriores,
             datosNuevos: ConstruirDatosAuditoria(ejercicio));
+
+        _logger.LogInformation("Ejercicio contable cerrado | Id: {EjercicioId} | ClienteId: {ClienteId} | UsuarioId: {UsuarioId}",
+            ejercicio.Id, ejercicio.ClienteId, usuarioId);
     }
 
     // ??????????????????????????????????????????????

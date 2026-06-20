@@ -1,4 +1,6 @@
-﻿using ProyectoIntegrador.Data.Repositories.Interfaces;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.Logging;
+using ProyectoIntegrador.Data.Repositories.Interfaces;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Exceptions;
 using ProyectoIntegrador.Service.Interfaces;
@@ -10,17 +12,24 @@ public class EstadoResultadosService : IEstadoResultadosService
     private readonly ILineaAsientoRepository _lineaAsientoRepository;
     private readonly IPlanDeCuentasRepository _planDeCuentasRepository;
     private readonly ICuentaContableRepository _cuentaContableRepository;
+    private readonly ILogger<EstadoResultadosService> _logger;
 
-    public EstadoResultadosService(ILineaAsientoRepository lineaAsientoRepository, IPlanDeCuentasRepository planDeCuentasRepository,
-        ICuentaContableRepository cuentaContableRepository)
+    public EstadoResultadosService(
+        ILineaAsientoRepository lineaAsientoRepository,
+        IPlanDeCuentasRepository planDeCuentasRepository,
+        ICuentaContableRepository cuentaContableRepository,
+        ILogger<EstadoResultadosService> logger)
     {
         _lineaAsientoRepository = lineaAsientoRepository;
         _planDeCuentasRepository = planDeCuentasRepository;
         _cuentaContableRepository = cuentaContableRepository;
+        _logger = logger;
     }
 
     public async Task<EstadoResultadosResponseDto> Generar(EstadoResultadosFiltroDto filtro)
     {
+        var sw = Stopwatch.StartNew();
+
         if (filtro.FechaDesde > filtro.FechaHasta)
         {
             throw new ValidacionException("La fecha desde no puede ser mayor a la fecha hasta.");
@@ -112,7 +121,7 @@ public class EstadoResultadosService : IEstadoResultadosService
 
         var resultadoNeto = totalIngresos - totalEgresos;
 
-        return new EstadoResultadosResponseDto
+        var resultado = new EstadoResultadosResponseDto
         {
             TotalIngresos = totalIngresos,
             TotalEgresos = totalEgresos,
@@ -120,6 +129,16 @@ public class EstadoResultadosService : IEstadoResultadosService
             Ingresos = ingresos,
             Egresos = egresos
         };
+
+        sw.Stop();
+        if (sw.ElapsedMilliseconds > 2000)
+            _logger.LogWarning("Estado de Resultados generado con tiempo elevado | ClienteId: {ClienteId} | Tiempo: {TiempoMs}ms",
+                filtro.ClienteId, sw.ElapsedMilliseconds);
+        else
+            _logger.LogInformation("Estado de Resultados generado | ClienteId: {ClienteId} | Tiempo: {TiempoMs}ms",
+                filtro.ClienteId, sw.ElapsedMilliseconds);
+
+        return resultado;
     }
 
     private static decimal AcumularImportes(EstadoResultadoNodoDto nodo)

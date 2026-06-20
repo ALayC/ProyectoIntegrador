@@ -1,5 +1,6 @@
 ﻿using Azure.Core;
 using Google.Apis.Auth;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using ProyectoIntegrador.Data.Context;
@@ -21,17 +22,20 @@ public class AuthService : IAuthService
     private readonly IRolRepository _rolRepository;
     private readonly ITokenRevocadoRepository _tokenRevocadoRepository;
     private readonly JwtOptions _jwtOptions;
+    private readonly ILogger<AuthService> _logger;
 
     public AuthService(
        IUsuarioRepository usuarioRepository,
            IRolRepository rolRepository,
            ITokenRevocadoRepository tokenRevocadoRepository,
-       IOptions<JwtOptions> jwtOptions)
+       IOptions<JwtOptions> jwtOptions,
+       ILogger<AuthService> logger)
     {
         _usuarioRepository = usuarioRepository;
         _rolRepository = rolRepository;
         _tokenRevocadoRepository = tokenRevocadoRepository;
         _jwtOptions = jwtOptions.Value;
+        _logger = logger;
     }
 
     public async Task<AuthResponseDto> Registrar(RegistroDto registroDto)
@@ -40,6 +44,7 @@ public class AuthService : IAuthService
         var existeEmail = await _usuarioRepository.ExisteEmail(registroDto.Email);
         if (existeEmail)
         {
+            _logger.LogWarning("Intento de registro con email duplicado: {Email}", registroDto.Email);
             throw new DuplicadoException("email", registroDto.Email);
         }
 
@@ -66,6 +71,8 @@ public class AuthService : IAuthService
         // Generar JWT
         var token = GenerarToken(usuario, rolContador.Nombre);
 
+        _logger.LogInformation("Usuario registrado correctamente: {Email} | Rol: {Rol}", usuario.Email, rolContador.Nombre);
+
         return new AuthResponseDto
         {
             Token = token,
@@ -78,29 +85,38 @@ public class AuthService : IAuthService
     public async Task<AuthResponseDto> Login(LoginDto loginDto)
     {
         // Buscar usuario por email
-        var usuario = await _usuarioRepository.ObtenerPorEmail(loginDto.Email)
- ?? throw new EntidadNoEncontradaException("Las credenciales proporcionadas no son válidas.");
+        var usuario = await _usuarioRepository.ObtenerPorEmail(loginDto.Email);
+        if (usuario is null)
+        {
+            _logger.LogWarning("Intento de login fallido - usuario no encontrado: {Email}", loginDto.Email);
+            throw new EntidadNoEncontradaException("Las credenciales proporcionadas no son válidas.");
+        }
 
         // Verificar que tenga password (podría ser usuario Google)
         if (string.IsNullOrEmpty(usuario.PasswordHash))
         {
+            _logger.LogWarning("Intento de login local para usuario con auth externa: {Email}", loginDto.Email);
             throw new EntidadNoEncontradaException("Las credenciales proporcionadas no son válidas.");
         }
 
         // Verificar password con BCrypt
         if (!BCrypt.Net.BCrypt.Verify(loginDto.Password, usuario.PasswordHash))
         {
+            _logger.LogWarning("Intento de login con credenciales incorrectas: {Email}", loginDto.Email);
             throw new EntidadNoEncontradaException("Las credenciales proporcionadas no son válidas.");
         }
 
         // Verificar que el usuario esté activo
         if (usuario.Estado != "Activo")
         {
+            _logger.LogWarning("Intento de login con cuenta inactiva: {Email}", loginDto.Email);
             throw new AccesoNoAutorizadoException("La cuenta de usuario se encuentra inactiva.");
         }
 
         // Generar JWT
         var token = GenerarToken(usuario, usuario.Rol.Nombre);
+
+        _logger.LogInformation("Login exitoso: {Email} | Rol: {Rol}", usuario.Email, usuario.Rol.Nombre);
 
         return new AuthResponseDto
         {
@@ -126,6 +142,7 @@ public class AuthService : IAuthService
         };
 
         await _tokenRevocadoRepository.Guardar(tokenRevocado);
+        _logger.LogInformation("Logout exitoso: UsuarioId {UsuarioId}", usuarioId);
     }
 
     public async Task<AuthResponseDto> ObtenerUsuarioActual(Guid id)
@@ -171,8 +188,8 @@ new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
 
     public async Task<AuthResponseDto> LoginConGoogle(string? idToken, string? accessToken)
     {
-        Console.WriteLine($"[Service] idToken? {!string.IsNullOrEmpty(idToken)} | accessToken? {!string.IsNullOrEmpty(accessToken)}");
-        Console.WriteLine($"[Service] GoogleClientId config: {_jwtOptions.GoogleClientId}");
+        _logger.LogInformation("LoginConGoogle iniciado | idToken presente: {IdToken} | accessToken presente: {AccessToken}",
+            !string.IsNullOrEmpty(idToken), !string.IsNullOrEmpty(accessToken));
 
         string email;
         string nombre;
@@ -180,7 +197,7 @@ new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
 
         if (!string.IsNullOrEmpty(idToken))
         {
-            Console.WriteLine("[Service] Rama: id_token");
+            _logger.LogInformation("LoginConGoogle: validando via id_token");
             try
             {
                 var payload = await GoogleJsonWebSignature.ValidateAsync(idToken,
@@ -195,23 +212,25 @@ new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
             }
             catch (InvalidJwtException ex)
             {
-                Console.WriteLine($"[Service] InvalidJwtException: {ex.Message}");
+                _logger.LogWarning(ex, "LoginConGoogle: token de Google invalido");
                 throw new AccesoNoAutorizadoException("El token de Google no es válido.");
             }
         }
         else if (!string.IsNullOrEmpty(accessToken))
         {
-            Console.WriteLine("[Service] Rama: access_token → userinfo");
+            _logger.LogInformation("LoginConGoogle: validando via access_token (userinfo)");
             using var http = new HttpClient();
             http.DefaultRequestHeaders.Authorization =
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
 
             var resp = await http.GetAsync("https://www.googleapis.com/oauth2/v3/userinfo");
             var body = await resp.Content.ReadAsStringAsync();
-            Console.WriteLine($"[Service] userinfo status: {(int)resp.StatusCode} | body: {body}");
 
             if (!resp.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("LoginConGoogle: userinfo retorno {StatusCode}", (int)resp.StatusCode);
                 throw new AccesoNoAutorizadoException("El token de Google no es válido.");
+            }
 
             var json = System.Text.Json.JsonDocument.Parse(body).RootElement;
             email = json.GetProperty("email").GetString()!;
@@ -220,7 +239,7 @@ new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
         }
         else
         {
-            Console.WriteLine("[Service] Rama: ningún token");
+            _logger.LogWarning("LoginConGoogle: no se recibio ningun token");
             throw new AccesoNoAutorizadoException("No se recibió ningún token de Google.");
         }
 
@@ -245,18 +264,19 @@ new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
             };
 
             await _usuarioRepository.Guardar(usuario);
-            Console.WriteLine("[Service] ✅ Usuario guardado OK");
+            _logger.LogInformation("LoginConGoogle: nuevo usuario creado via Google | Email: {Email}", email);
 
             usuario.Rol = rolContador;
-            Console.WriteLine($"[Service] ✅ Rol asignado: {rolContador?.Nombre ?? "NULL"}");
         }
 
         if (usuario.Estado != "Activo")
+        {
+            _logger.LogWarning("LoginConGoogle: cuenta inactiva para {Email}", email);
             throw new AccesoNoAutorizadoException("La cuenta se encuentra inactiva.");
+        }
 
-        Console.WriteLine($"[Service] ✅ Generando token para rol: {usuario.Rol?.Nombre ?? "NULL"}");
         var token = GenerarToken(usuario, usuario.Rol.Nombre);
-        Console.WriteLine("[Service] ✅ Token generado OK, devolviendo respuesta");
+        _logger.LogInformation("LoginConGoogle exitoso: {Email} | Rol: {Rol}", email, usuario.Rol.Nombre);
 
         return new AuthResponseDto
         {

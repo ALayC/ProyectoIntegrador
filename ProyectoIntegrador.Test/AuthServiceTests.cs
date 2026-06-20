@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using ProyectoIntegrador.Data.Context;
 using ProyectoIntegrador.Data.Entities;
@@ -35,7 +37,8 @@ public class AuthServiceTests
             _mockUsuarioRepo.Object,
   _mockRolRepo.Object,
             _mockTokenRepo.Object,
-   _jwtOptions);
+   _jwtOptions,
+            NullLogger<AuthService>.Instance);
     }
 
     [Fact]

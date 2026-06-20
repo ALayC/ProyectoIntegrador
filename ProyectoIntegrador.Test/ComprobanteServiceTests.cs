@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
@@ -28,7 +30,8 @@ public class ComprobanteServiceTests
             _comprobanteRepository.Object,
             _clienteRepository.Object,
             _auditoriaService.Object,
-            _asientoContableService.Object);
+            _asientoContableService.Object,
+            NullLogger<ComprobanteService>.Instance);
     }
 
     [Fact]

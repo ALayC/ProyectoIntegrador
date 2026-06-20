@@ -1,4 +1,5 @@
-﻿using ProyectoIntegrador.Data.Entities;
+﻿using Microsoft.Extensions.Logging;
+using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
 using ProyectoIntegrador.Service.Constants;
 using ProyectoIntegrador.Service.DTOs;
@@ -14,19 +15,22 @@ public class ClienteService : IClienteService
     private readonly IPlanDeCuentasRepository _planDeCuentasRepository;
     private readonly IAuditoriaService _auditoriaService;
     private readonly ICuentaContableService _cuentaContableService;
+    private readonly ILogger<ClienteService> _logger;
 
     public ClienteService(
         IClienteRepository clienteRepository,
         IUsuarioRepository usuarioRepository,
         IPlanDeCuentasRepository planDeCuentasRepository,
         IAuditoriaService auditoriaService,
-        ICuentaContableService cuentaContableService)
+        ICuentaContableService cuentaContableService,
+        ILogger<ClienteService> logger)
     {
         _clienteRepository = clienteRepository;
         _usuarioRepository = usuarioRepository;
         _planDeCuentasRepository = planDeCuentasRepository;
         _auditoriaService = auditoriaService;
         _cuentaContableService = cuentaContableService;
+        _logger = logger;
     }
 
     /// <inheritdoc />
@@ -36,6 +40,7 @@ public class ClienteService : IClienteService
         var existeRut = await _clienteRepository.ExisteRut(clienteDto.Rut);
         if (existeRut)
         {
+            _logger.LogWarning("Intento de crear cliente con RUT duplicado: {Rut} | ContadorId: {ContadorId}", clienteDto.Rut, contadorId);
             throw new DuplicadoException("RUT", clienteDto.Rut);
         }
 
@@ -45,6 +50,7 @@ public class ClienteService : IClienteService
 
         if (contador.Rol.Nombre != "Contador" && contador.Rol.Nombre != "Administrador")
         {
+            _logger.LogWarning("Usuario {ContadorId} sin rol adecuado intento crear cliente", contadorId);
             throw new AccesoNoAutorizadoException(contadorId, "Crear Clientes");
         }
 
@@ -84,6 +90,8 @@ public class ClienteService : IClienteService
             AuditoriaConstantes.Acciones.Crear,
             datosAnteriores: null,
             datosNuevos: ConstruirDatosAuditoria(cliente));
+
+        _logger.LogInformation("Cliente creado | Id: {ClienteId} | RUT: {Rut} | ContadorId: {ContadorId}", cliente.Id, cliente.Rut, contadorId);
 
         return MapearAResponseDto(cliente);
     }
@@ -147,6 +155,7 @@ public class ClienteService : IClienteService
             datosAnteriores: datosAnteriores,
             datosNuevos: ConstruirDatosAuditoria(cliente));
 
+        _logger.LogInformation("Cliente actualizado | Id: {ClienteId} | UsuarioId: {UsuarioId}", id, usuarioId);
         return MapearAResponseDto(cliente);
     }
 
@@ -171,6 +180,8 @@ public class ClienteService : IClienteService
             AuditoriaConstantes.Acciones.Desactivar,
             datosAnteriores: datosAnteriores,
             datosNuevos: ConstruirDatosAuditoria(cliente));
+
+        _logger.LogInformation("Cliente desactivado | Id: {ClienteId} | UsuarioId: {UsuarioId}", id, usuarioId);
     }
 
     /// <inheritdoc />
@@ -191,6 +202,8 @@ public class ClienteService : IClienteService
             AuditoriaConstantes.Acciones.Activar,
             datosAnteriores: datosAnteriores,
             datosNuevos: ConstruirDatosAuditoria(cliente));
+
+        _logger.LogInformation("Cliente activado | Id: {ClienteId} | UsuarioId: {UsuarioId}", id, usuarioId);
     }
 
     /// <inheritdoc />

@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace ProyectoIntegrador.UI.Services;
 
@@ -13,16 +14,18 @@ public class ApiClient
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger<ApiClient> _logger;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
 
-    public ApiClient(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
+    public ApiClient(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor, ILogger<ApiClient> logger)
     {
         _httpClientFactory = httpClientFactory;
         _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
     }
 
     /// <summary>
@@ -31,8 +34,17 @@ public class ApiClient
     public async Task<ApiResponse<T>> GetAsync<T>(string url)
     {
         var client = CrearClienteConToken();
-        var response = await client.GetAsync(url);
-        return await ProcesarRespuesta<T>(response);
+        try
+        {
+            var response = await client.GetAsync(url);
+            LogearRespuesta("GET", url, response.StatusCode);
+            return await ProcesarRespuesta<T>(response);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            _logger.LogError(ex, "Error de comunicacion con la API | GET {Url}", url);
+            throw;
+        }
     }
 
     /// <summary>
@@ -42,8 +54,17 @@ public class ApiClient
     {
         var client = CrearClienteConToken();
         var content = SerializarContenido(data);
-        var response = await client.PostAsync(url, content);
-        return await ProcesarRespuesta<T>(response);
+        try
+        {
+            var response = await client.PostAsync(url, content);
+            LogearRespuesta("POST", url, response.StatusCode);
+            return await ProcesarRespuesta<T>(response);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            _logger.LogError(ex, "Error de comunicacion con la API | POST {Url}", url);
+            throw;
+        }
     }
 
     /// <summary>
@@ -53,8 +74,17 @@ public class ApiClient
     {
         var client = CrearClienteConToken();
         var content = SerializarContenido(data);
-        var response = await client.PutAsync(url, content);
-        return await ProcesarRespuesta<T>(response);
+        try
+        {
+            var response = await client.PutAsync(url, content);
+            LogearRespuesta("PUT", url, response.StatusCode);
+            return await ProcesarRespuesta<T>(response);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            _logger.LogError(ex, "Error de comunicacion con la API | PUT {Url}", url);
+            throw;
+        }
     }
 
     /// <summary>
@@ -64,8 +94,17 @@ public class ApiClient
     {
         var client = CrearClienteConToken();
         var request = new HttpRequestMessage(HttpMethod.Patch, url);
-        var response = await client.SendAsync(request);
-        return await ProcesarRespuesta<object>(response);
+        try
+        {
+            var response = await client.SendAsync(request);
+            LogearRespuesta("PATCH", url, response.StatusCode);
+            return await ProcesarRespuesta<object>(response);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            _logger.LogError(ex, "Error de comunicacion con la API | PATCH {Url}", url);
+            throw;
+        }
     }
 
     /// <summary>
@@ -74,8 +113,17 @@ public class ApiClient
     public async Task<ApiResponse<object>> DeleteAsync(string url)
     {
         var client = CrearClienteConToken();
-        var response = await client.DeleteAsync(url);
-        return await ProcesarRespuesta<object>(response);
+        try
+        {
+            var response = await client.DeleteAsync(url);
+            LogearRespuesta("DELETE", url, response.StatusCode);
+            return await ProcesarRespuesta<object>(response);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            _logger.LogError(ex, "Error de comunicacion con la API | DELETE {Url}", url);
+            throw;
+        }
     }
 
     // ??????????????????????????????????????????????
@@ -93,6 +141,15 @@ public class ApiClient
         }
 
         return client;
+    }
+
+    private void LogearRespuesta(string metodo, string url, HttpStatusCode statusCode)
+    {
+        var codigo = (int)statusCode;
+        if (codigo >= 500)
+            _logger.LogError("API respondio {StatusCode} | {Metodo} {Url}", codigo, metodo, url);
+        else if (codigo >= 400)
+            _logger.LogWarning("API respondio {StatusCode} | {Metodo} {Url}", codigo, metodo, url);
     }
 
     private static StringContent SerializarContenido(object data)

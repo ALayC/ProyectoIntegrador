@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ProyectoIntegrador.Data.Context;
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
@@ -15,28 +16,37 @@ public class AsientoContableService : IAsientoContableService
     private readonly IEjercicioContableRepository _ejercicioRepository;
     private readonly ISaldoCuentaRepository _saldoRepository;
     private readonly AppDbContext _context;
+    private readonly ILogger<AsientoContableService> _logger;
 
     public AsientoContableService(
         IAsientoContableRepository asientoRepository,
         ICuentaContableRepository cuentaRepository,
         IEjercicioContableRepository ejercicioRepository,
         ISaldoCuentaRepository saldoRepository,
-        AppDbContext context)
+        AppDbContext context,
+        ILogger<AsientoContableService> logger)
     {
         _asientoRepository = asientoRepository;
         _cuentaRepository = cuentaRepository;
         _ejercicioRepository = ejercicioRepository;
         _saldoRepository = saldoRepository;
         _context = context;
+        _logger = logger;
     }
 
     public async Task<AsientoContableDto> Crear(CrearAsientoContableDto dto, Guid usuarioId)
     {
         if (dto.Lineas == null || dto.Lineas.Count < 2)
+        {
+            _logger.LogWarning("Intento de crear asiento con menos de 2 lineas | ClienteId: {ClienteId} | UsuarioId: {UsuarioId}", dto.ClienteId, usuarioId);
             throw new ValidacionException("Un asiento debe tener al menos dos líneas.");
+        }
 
         if (dto.Lineas.Select(l => l.CuentaContableId).Distinct().Count() != dto.Lineas.Count)
+        {
+            _logger.LogWarning("Intento de crear asiento con cuentas duplicadas | ClienteId: {ClienteId} | UsuarioId: {UsuarioId}", dto.ClienteId, usuarioId);
             throw new ValidacionException("Las líneas del asiento deben pertenecer a cuentas contables distintas.");
+        }
 
         var ejercicio = await _ejercicioRepository.ObtenerPorId(dto.EjercicioId)
             ?? throw new EntidadNoEncontradaException("EjercicioContable", dto.EjercicioId);
@@ -54,7 +64,11 @@ public class AsientoContableService : IAsientoContableService
         var totalHaber = dto.Lineas.Sum(l => l.Haber);
 
         if (totalDebe != totalHaber)
+        {
+            _logger.LogWarning("Asiento desbalanceado | Debe: {Debe} | Haber: {Haber} | ClienteId: {ClienteId} | UsuarioId: {UsuarioId}",
+                totalDebe, totalHaber, dto.ClienteId, usuarioId);
             throw new AsientoDesbalanceadoException(totalDebe, totalHaber);
+        }
 
         foreach (var linea in dto.Lineas)
         {
@@ -118,6 +132,20 @@ public class AsientoContableService : IAsientoContableService
             await ActualizarSaldos(asiento.LineasAsiento, dto.ClienteId, dto.EjercicioId, dto.Fecha);
 
             await transaction.CommitAsync();
+
+            _logger.LogInformation("Asiento contable creado | N°: {Numero} | ClienteId: {ClienteId} | EjercicioId: {EjercicioId} | UsuarioId: {UsuarioId}",
+                asiento.Numero, dto.ClienteId, dto.EjercicioId, usuarioId);
+        }
+        catch (Exception ex) when (ex is not AsientoDesbalanceadoException
+                                     && ex is not ValidacionException
+                                     && ex is not EntidadNoEncontradaException
+                                     && ex is not EjercicioCerradoException
+                                     && ex is not AccesoNoAutorizadoException
+                                     && ex is not CuentaNoImputableException)
+        {
+            _logger.LogError(ex, "Error inesperado al crear asiento | ClienteId: {ClienteId} | UsuarioId: {UsuarioId}", dto.ClienteId, usuarioId);
+            await transaction.RollbackAsync();
+            throw;
         }
         catch
         {
@@ -187,10 +215,16 @@ public class AsientoContableService : IAsientoContableService
             ?? throw new EntidadNoEncontradaException("AsientoContable", asientoId);
 
         if (original.Estado == "Revertido")
+        {
+            _logger.LogWarning("Intento de revertir asiento ya revertido | AsientoId: {AsientoId} | UsuarioId: {UsuarioId}", asientoId, usuarioId);
             throw new AsientoYaRevertidoException(asientoId);
+        }
 
         if (original.AsientoOrigenId != null)
+        {
+            _logger.LogWarning("Intento de revertir un asiento de reversion | AsientoId: {AsientoId} | UsuarioId: {UsuarioId}", asientoId, usuarioId);
             throw new ValidacionException("No se puede revertir un asiento de reversión.");
+        }
 
         AsientoContable asientoInverso;
 
@@ -238,6 +272,15 @@ public class AsientoContableService : IAsientoContableService
                 asientoInverso.Fecha);
 
             await transaction.CommitAsync();
+
+            _logger.LogInformation("Asiento revertido | AsientoOriginalId: {AsientoId} | AsientoInversoN°: {Numero} | ClienteId: {ClienteId} | UsuarioId: {UsuarioId}",
+                asientoId, asientoInverso.Numero, original.ClienteId, usuarioId);
+        }
+        catch (Exception ex) when (ex is not AsientoYaRevertidoException && ex is not ValidacionException && ex is not EntidadNoEncontradaException)
+        {
+            _logger.LogError(ex, "Error inesperado al revertir asiento | AsientoId: {AsientoId} | UsuarioId: {UsuarioId}", asientoId, usuarioId);
+            await transaction.RollbackAsync();
+            throw;
         }
         catch
         {

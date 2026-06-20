@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
 using ProyectoIntegrador.Service.DTOs;
@@ -9,6 +10,7 @@ namespace ProyectoIntegrador.Service.Implementations;
 public class AuditoriaService : IAuditoriaService
 {
     private readonly IAuditoriaRepository _auditoriaRepository;
+    private readonly ILogger<AuditoriaService> _logger;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -16,9 +18,10 @@ public class AuditoriaService : IAuditoriaService
         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
     };
 
-    public AuditoriaService(IAuditoriaRepository auditoriaRepository)
+    public AuditoriaService(IAuditoriaRepository auditoriaRepository, ILogger<AuditoriaService> logger)
     {
         _auditoriaRepository = auditoriaRepository;
+        _logger = logger;
     }
 
     /// <summary>
@@ -37,7 +40,18 @@ public class AuditoriaService : IAuditoriaService
             DatosNuevos = Serializar(datosNuevos)
         };
 
-        await _auditoriaRepository.Guardar(auditoria);
+        try
+        {
+            await _auditoriaRepository.Guardar(auditoria);
+            _logger.LogInformation("Auditoria registrada | Entidad: {Entidad} | Accion: {Accion} | UsuarioId: {UsuarioId}",
+                entidad, accion, usuarioId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al persistir auditoria | Entidad: {Entidad} | Accion: {Accion} | UsuarioId: {UsuarioId}",
+                entidad, accion, usuarioId);
+            throw;
+        }
     }
 
     /// <summary>

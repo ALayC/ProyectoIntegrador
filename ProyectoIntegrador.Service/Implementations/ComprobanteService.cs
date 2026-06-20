@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
 using ProyectoIntegrador.Service.Constants;
@@ -13,17 +14,20 @@ public class ComprobanteService : IComprobanteService
     private readonly IClienteRepository _clienteRepository;
     private readonly IAuditoriaService _auditoriaService;
     private readonly IAsientoContableService _asientoContableService;
+    private readonly ILogger<ComprobanteService> _logger;
 
     public ComprobanteService(
         IComprobanteRepository comprobanteRepository,
         IClienteRepository clienteRepository,
         IAuditoriaService auditoriaService,
-        IAsientoContableService asientoContableService)
+        IAsientoContableService asientoContableService,
+        ILogger<ComprobanteService> logger)
     {
         _comprobanteRepository = comprobanteRepository;
         _clienteRepository = clienteRepository;
         _auditoriaService = auditoriaService;
         _asientoContableService = asientoContableService;
+        _logger = logger;
     }
 
     public async Task<ComprobanteDetalleDto> Crear(ComprobanteCrearDto dto, Guid usuarioId)
@@ -74,6 +78,9 @@ public class ComprobanteService : IComprobanteService
             AuditoriaConstantes.Acciones.Crear,
             datosAnteriores: null,
             datosNuevos: resultado);
+
+        _logger.LogInformation("Comprobante creado | Id: {ComprobanteId} | Tipo: {Tipo} | Nº: {Numero} | ClienteId: {ClienteId} | UsuarioId: {UsuarioId}",
+            comprobante.Id, comprobante.Tipo, comprobante.Numero, comprobante.ClienteId, usuarioId);
 
         return resultado;
     }
@@ -132,6 +139,8 @@ public class ComprobanteService : IComprobanteService
             datosAnteriores: datosAnteriores,
             datosNuevos: resultado);
 
+        _logger.LogInformation("Comprobante modificado | Id: {ComprobanteId} | UsuarioId: {UsuarioId}", id, usuarioId);
+
         return resultado;
     }
 
@@ -156,6 +165,8 @@ public class ComprobanteService : IComprobanteService
             AuditoriaConstantes.Acciones.Anular,
             datosAnteriores: datosAnteriores,
             datosNuevos: MapearDetalle(comprobanteAnulado));
+
+        _logger.LogInformation("Comprobante anulado | Id: {ComprobanteId} | UsuarioId: {UsuarioId}", id, usuarioId);
     }
 
     public async Task<ComprobanteDetalleDto> Obtener(Guid id)
@@ -259,6 +270,9 @@ public class ComprobanteService : IComprobanteService
             AuditoriaConstantes.Acciones.Confirmar,
             datosAnteriores: datosAnteriores,
             datosNuevos: MapearDetalle(comprobante));
+
+        _logger.LogInformation("Asiento generado desde comprobante | ComprobanteId: {ComprobanteId} | AsientoId: {AsientoId} | UsuarioId: {UsuarioId}",
+            id, asientoCreado.Id, usuarioId);
 
         return asientoCreado;
     }
