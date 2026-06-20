@@ -1,4 +1,6 @@
-﻿using Moq;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using ProyectoIntegrador.Data.Context;
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
@@ -32,7 +34,8 @@ public class ClienteServiceTests
    _mockUsuarioRepo.Object,
        _mockPlanRepo.Object,
          _mockAuditoriaService.Object,
-        _mockCuentaService.Object);
+        _mockCuentaService.Object,
+        NullLogger<ClienteService>.Instance);
     }
 
     [Fact]

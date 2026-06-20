@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
@@ -25,7 +27,8 @@ public class LibroMayorServiceTests
             _asientoRepository.Object,
             _cuentaRepository.Object,
             _planRepository.Object,
-            _ejercicioRepository.Object);
+            _ejercicioRepository.Object,
+            NullLogger<LibroMayorService>.Instance);
     }
 
     [Fact]

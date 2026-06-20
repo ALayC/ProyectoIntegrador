@@ -43,7 +43,8 @@ Cada capa tiene responsabilidades claras y se comunica con la siguiente a travé
 **Qué contiene:**
 - Controllers (delgados: reciben request → llaman servicio → devuelven response)
 - Configuración de JWT y OAuth 2.0
-- Middleware global de excepciones
+- Middleware global de excepciones (`ExceptionMiddleware`)
+- Middleware de logging de requests HTTP (`RequestLoggingMiddleware`)
 - Rate limiting
 - Configuración de inyección de dependencias
 
@@ -172,7 +173,8 @@ ProyectoIntegrador.API/
 │   ├── AuthController.cs
 │   └── ReportesController.cs
 ├── Middleware/
-│   └── ExceptionMiddleware.cs
+│   ├── ExceptionMiddleware.cs
+│   └── RequestLoggingMiddleware.cs
 ├── Program.cs
 └── appsettings.json
 
@@ -248,6 +250,91 @@ Los servicios lanzan excepciones tipadas. El middleware global las traduce a HTT
 | `DuplicadoException` | 409 | RUT o email ya existente |
 | `EjercicioSolapadoException` | 400 | Ejercicio se solapa con otro |
 | `ImportacionInvalidaException` | 400 | Excel con estructura incorrecta |
+
+---
+
+## Logging y Observabilidad
+
+El sistema implementa logging técnico en dos capas: el pipeline HTTP de la API y la capa de servicios. En producción, todos los logs se envían a **Azure Application Insights**. En desarrollo, se escriben en la consola.
+
+### Configuración
+
+La integración con Application Insights es condicional: solo se activa si `ApplicationInsights:ConnectionString` tiene valor en `appsettings.json`. Esto permite correr la aplicación localmente sin una cuenta de Azure.
+
+```json
+// appsettings.json (producción)
+"ApplicationInsights": {
+  "ConnectionString": "InstrumentationKey=...;IngestionEndpoint=..."
+}
+
+// appsettings.Development.json (local, sin App Insights)
+"ApplicationInsights": {
+  "ConnectionString": ""
+}
+```
+
+Los niveles de log difieren por ambiente:
+
+| Ambiente | Nivel por defecto | EF Core SQL |
+|----------|-------------------|-------------|
+| Development | `Debug` | `Information` (muestra queries) |
+| Production | `Warning` | no configurado |
+
+### Pipeline HTTP — `RequestLoggingMiddleware`
+
+Registra **cada request HTTP** sin excepción, con método, ruta, status code, duración en ms, userId y dirección IP. El nivel varía según el status code:
+
+| Status | Nivel | Ejemplo |
+|--------|-------|---------|
+| 2xx / 3xx | `Information` | `HTTP GET /api/clientes -> 200 \| 45ms \| Usuario: abc123` |
+| 4xx | `Warning` | `HTTP POST /api/login -> 401 \| 8ms \| Usuario: anonimo \| IP: 192.168.1.1` |
+| 5xx | `Error` | `HTTP POST /api/asientos -> 500 \| 123ms \| ...` |
+
+### Excepciones — `ExceptionMiddleware`
+
+Intercept toda excepción no controlada. Loggea con nivel diferenciado y devuelve JSON estructurado al cliente. **Nunca expone stack traces al cliente.**
+
+| Tipo de excepción | Nivel de log | Datos capturados |
+|-------------------|--------------|------------------|
+| Excepciones de negocio (4xx) | `Warning` | Método, ruta, usuario, tipo de excepción, mensaje |
+| `AccesoNoAutorizadoException` (403) | `Warning` | + dirección IP |
+| Excepciones no mapeadas (500) | `Error` | + stack trace completo |
+
+### Servicios — `ILogger<T>`
+
+Todos los servicios de la capa Service reciben `ILogger<T>` por constructor y emiten logs estructurados para operaciones relevantes:
+
+| Servicio | Eventos loggeados |
+|----------|-------------------|
+| `AuthService` | Login exitoso/fallido, registro, logout, login con Google |
+| `AsientoContableService` | Creación/reversión de asientos, validaciones fallidas (balance, duplicados) |
+| `ClienteService` | Alta, modificación, activación, desactivación |
+| `CuentaContableService` | Alta, modificación, activación, desactivación de cuentas |
+| `EjercicioContableService` | Apertura y cierre de ejercicios |
+| `ComprobanteService` | Creación, modificación, anulación, generación de asiento |
+| `UsuarioService` | Alta, edición, desactivación de usuarios |
+| `RolService` | Creación/modificación de roles, asignación/remoción de permisos |
+| `LibroMayorService` | `Warning` si la generación del reporte supera 2000 ms |
+| `EstadoResultadosService` | `Warning` si la generación del reporte supera 2000 ms |
+| `AuditoriaService` | `Error` si falla la persistencia de un registro de auditoría |
+| `PermisoService` | Lecturas de permisos |
+
+### UI — `ApiClient`
+
+El cliente HTTP centralizado de la UI loggea automáticamente toda comunicación fallida con la API:
+
+| Situación | Nivel | Ejemplo |
+|-----------|-------|---------|
+| Respuesta 4xx de la API | `Warning` | `API respondio 404 \| GET /api/clientes/999` |
+| Respuesta 5xx de la API | `Error` | `API respondio 500 \| POST /api/asientos` |
+| `HttpRequestException` / timeout | `Error` | `Error de comunicacion con la API \| POST /api/login` |
+
+### Qué se puede ver en Azure Application Insights
+
+- **Traces**: requests exitosos, operaciones de servicios, lecturas
+- **Warnings**: validaciones de negocio fallidas, accesos denegados, requests 4xx, reportes lentos
+- **Exceptions**: errores 500 con stack trace, fallos de persistencia de auditoría, errores de comunicación UI→API
+- **Filtros disponibles** en `customDimensions`: `{UsuarioId}`, `{Ruta}`, `{Metodo}`, `{DuracionMs}`, `{TipoExcepcion}`
 
 ---
 

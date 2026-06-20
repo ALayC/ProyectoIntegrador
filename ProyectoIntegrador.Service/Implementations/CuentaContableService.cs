@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
 using ProyectoIntegrador.Service.Constants;
@@ -12,15 +13,18 @@ public class CuentaContableService : ICuentaContableService
     private readonly ICuentaContableRepository _cuentaRepository;
     private readonly IPlanDeCuentasRepository _planDeCuentasRepository;
     private readonly IAuditoriaService _auditoriaService;
+    private readonly ILogger<CuentaContableService> _logger;
 
     public CuentaContableService(
         ICuentaContableRepository cuentaRepository,
         IPlanDeCuentasRepository planDeCuentasRepository,
-        IAuditoriaService auditoriaService)
+        IAuditoriaService auditoriaService,
+        ILogger<CuentaContableService> logger)
     {
         _cuentaRepository = cuentaRepository;
         _planDeCuentasRepository = planDeCuentasRepository;
         _auditoriaService = auditoriaService;
+        _logger = logger;
     }
 
     public async Task<CuentaContableResponseDto> Crear(Guid planCuentasId, CrearCuentaContableDto dto, Guid usuarioId)
@@ -29,6 +33,7 @@ public class CuentaContableService : ICuentaContableService
 
         if (await _cuentaRepository.ExisteCodigo(planCuentasId, dto.Codigo))
         {
+            _logger.LogWarning("Intento de crear cuenta con codigo duplicado: {Codigo} | PlanId: {PlanId} | UsuarioId: {UsuarioId}", dto.Codigo, planCuentasId, usuarioId);
             throw new CuentaDuplicadaException(planCuentasId, dto.Codigo);
         }
 
@@ -73,6 +78,7 @@ public class CuentaContableService : ICuentaContableService
             datosAnteriores: null,
             datosNuevos: ConstruirDatosAuditoria(cuenta));
 
+        _logger.LogInformation("Cuenta contable creada | Codigo: {Codigo} | PlanId: {PlanId} | UsuarioId: {UsuarioId}", cuenta.Codigo, planCuentasId, usuarioId);
         return Mapear(cuenta);
     }
 
@@ -135,7 +141,7 @@ public class CuentaContableService : ICuentaContableService
         return cuentas.Select(Mapear).ToList();
     }
 
-        public async Task<CuentaContableResponseDto> Actualizar(Guid id, ActualizarCuentaContableDto dto, Guid usuarioId)
+    public async Task<CuentaContableResponseDto> Actualizar(Guid id, ActualizarCuentaContableDto dto, Guid usuarioId)
     {
         var cuenta = await _cuentaRepository.ObtenerPorId(id)
             ?? throw new EntidadNoEncontradaException("CuentaContable", id);
@@ -177,6 +183,7 @@ public class CuentaContableService : ICuentaContableService
             datosAnteriores: datosAnteriores,
             datosNuevos: ConstruirDatosAuditoria(cuenta));
 
+        _logger.LogInformation("Cuenta contable actualizada | Id: {CuentaId} | Codigo: {Codigo} | UsuarioId: {UsuarioId}", id, cuenta.Codigo, usuarioId);
         return Mapear(cuenta);
     }
 
@@ -206,6 +213,8 @@ public class CuentaContableService : ICuentaContableService
             AuditoriaConstantes.Acciones.Desactivar,
             datosAnteriores: datosAnteriores,
             datosNuevos: ConstruirDatosAuditoria(cuenta));
+
+        _logger.LogInformation("Cuenta contable desactivada | Id: {CuentaId} | Codigo: {Codigo} | UsuarioId: {UsuarioId}", id, cuenta.Codigo, usuarioId);
     }
 
     public async Task Activar(Guid id)
@@ -227,6 +236,29 @@ public class CuentaContableService : ICuentaContableService
 
         cuenta.Estado = "Activa";
         await _cuentaRepository.Actualizar(cuenta);
+        _logger.LogInformation("Cuenta contable activada | Id: {CuentaId} | Codigo: {Codigo}", id, cuenta.Codigo);
+    }
+
+    public async Task<string> SiguienteCodigoHija(Guid cuentaPadreId)
+    {
+        var padre = await _cuentaRepository.ObtenerPorId(cuentaPadreId)
+            ?? throw new EntidadNoEncontradaException("CuentaContable", cuentaPadreId);
+
+        var hijas = await _cuentaRepository.ObtenerHijas(cuentaPadreId);
+
+        var prefijo = padre.Codigo;
+        var maxSufijo = hijas
+            .Select(h =>
+            {
+                if (h.Codigo.StartsWith(prefijo + ".") &&
+                    int.TryParse(h.Codigo[(prefijo.Length + 1)..].Split('.')[0], out var n))
+                    return n;
+                return 0;
+            })
+            .DefaultIfEmpty(0)
+            .Max();
+
+        return $"{prefijo}.{maxSufijo + 1}";
     }
 
     public async Task<string> SiguienteCodigoHija(Guid cuentaPadreId)

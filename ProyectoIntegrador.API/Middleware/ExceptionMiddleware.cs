@@ -1,4 +1,5 @@
-using System.Net;
+ï»¿using System.Net;
+using System.Security.Claims;
 using System.Text.Json;
 using ProyectoIntegrador.Service.Exceptions;
 
@@ -6,7 +7,9 @@ namespace ProyectoIntegrador.API.Middleware;
 
 /// <summary>
 /// Intercepta todas las excepciones no controladas y las traduce
-/// a respuestas HTTP con código y mensaje apropiados.
+/// a respuestas HTTP con codigo y mensaje apropiados.
+/// Loggea con nivel diferenciado segun gravedad: Warning para errores
+/// de negocio esperados (4xx), Error para fallos inesperados (5xx).
 /// </summary>
 public class ExceptionMiddleware
 {
@@ -27,16 +30,15 @@ public class ExceptionMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Excepción no controlada: {Mensaje}", ex.Message);
             await ManejarExcepcionAsync(context, ex);
         }
     }
 
-    private static async Task ManejarExcepcionAsync(HttpContext context, Exception ex)
+    private async Task ManejarExcepcionAsync(HttpContext context, Exception ex)
     {
         var (statusCode, mensaje) = ex switch
         {
-            // 400 – Bad Request
+            // 400 - Bad Request
             AsientoDesbalanceadoException e    => (HttpStatusCode.BadRequest, e.Message),
             AsientoNoBalanceadoException e     => (HttpStatusCode.BadRequest, e.Message),
             EjercicioCerradoException e        => (HttpStatusCode.BadRequest, e.Message),
@@ -47,27 +49,54 @@ public class ExceptionMiddleware
             ImportacionInvalidaException e     => (HttpStatusCode.BadRequest, e.Message),
             ValidacionException e              => (HttpStatusCode.BadRequest, e.Message),
 
-            // 403 – Forbidden
+            // 403 - Forbidden
             AccesoNoAutorizadoException e      => (HttpStatusCode.Forbidden, e.Message),
 
-            // 404 – Not Found
+            // 404 - Not Found
             EntidadNoEncontradaException e     => (HttpStatusCode.NotFound, e.Message),
 
-            // 409 – Conflict
+            // 409 - Conflict
             AsientoYaRevertidoException e      => (HttpStatusCode.Conflict, e.Message),
             DuplicadoException e               => (HttpStatusCode.Conflict, e.Message),
             CuentaDuplicadaException e         => (HttpStatusCode.Conflict, e.Message),
 
-            // 500 – fallback genérico (no expone detalles internos)
-            _ => (HttpStatusCode.InternalServerError, "Ocurrió un error interno. Por favor intente nuevamente.")
+            // 500 - fallback generico
+            _ => (HttpStatusCode.InternalServerError, "Ocurrio un error interno. Por favor intente nuevamente.")
         };
 
+        var usuarioId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? context.User.FindFirst("sub")?.Value
+            ?? "anonimo";
+        var metodo = context.Request.Method;
+        var ruta   = context.Request.Path.Value ?? string.Empty;
+        var ip     = context.Connection.RemoteIpAddress?.ToString() ?? "desconocida";
+        var codigo = (int)statusCode;
+
+        if (statusCode == HttpStatusCode.InternalServerError)
+        {
+            _logger.LogError(ex,
+                "Error 500 | {Metodo} {Ruta} | Usuario: {UsuarioId} | IP: {IP} | Tipo: {TipoExcepcion} | Mensaje: {Mensaje}",
+                metodo, ruta, usuarioId, ip, ex.GetType().Name, ex.Message);
+        }
+        else if (statusCode == HttpStatusCode.Forbidden)
+        {
+            _logger.LogWarning(
+                "Acceso denegado {Codigo} | {Metodo} {Ruta} | Usuario: {UsuarioId} | IP: {IP} | Mensaje: {Mensaje}",
+                codigo, metodo, ruta, usuarioId, ip, ex.Message);
+        }
+        else
+        {
+            _logger.LogWarning(
+                "Excepcion de negocio {Codigo} | {Metodo} {Ruta} | Usuario: {UsuarioId} | Tipo: {TipoExcepcion} | Mensaje: {Mensaje}",
+                codigo, metodo, ruta, usuarioId, ex.GetType().Name, ex.Message);
+        }
+
         context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int)statusCode;
+        context.Response.StatusCode = codigo;
 
         var respuesta = new
         {
-            status = (int)statusCode,
+            status = codigo,
             error = mensaje
         };
 

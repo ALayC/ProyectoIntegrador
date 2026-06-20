@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
 using ProyectoIntegrador.Service.Constants;
@@ -12,15 +13,18 @@ public class RolService : IRolService
     private readonly IRolRepository _rolRepository;
     private readonly IPermisoRepository _permisoRepository;
     private readonly IAuditoriaService _auditoriaService;
+    private readonly ILogger<RolService> _logger;
 
     public RolService(
         IRolRepository rolRepository,
         IPermisoRepository permisoRepository,
-        IAuditoriaService auditoriaService)
+        IAuditoriaService auditoriaService,
+        ILogger<RolService> logger)
     {
         _rolRepository = rolRepository;
         _permisoRepository = permisoRepository;
         _auditoriaService = auditoriaService;
+        _logger = logger;
     }
 
     public async Task<List<RolResponseDto>> ObtenerTodos()
@@ -58,6 +62,7 @@ public class RolService : IRolService
         };
 
         await _rolRepository.Guardar(rol);
+        _logger.LogInformation("Rol creado | Id: {RolId} | Nombre: {Nombre}", rol.Id, rol.Nombre);
         return MapearRol(rol, []);
     }
 
@@ -75,6 +80,7 @@ public class RolService : IRolService
 
         rol.Nombre = dto.Nombre;
         await _rolRepository.Actualizar(rol);
+        _logger.LogInformation("Rol actualizado | Id: {RolId} | Nombre: {Nombre}", rol.Id, rol.Nombre);
 
         var permisos = await _rolRepository.ObtenerPermisos(id);
         return MapearRol(rol, permisos);
@@ -96,6 +102,8 @@ public class RolService : IRolService
             AuditoriaConstantes.Acciones.AsignarPermiso,
             datosAnteriores: null,
             datosNuevos: ConstruirDatosAuditoria(rol, permiso));
+
+        _logger.LogInformation("Permiso asignado | RolId: {RolId} | PermisoId: {PermisoId} | UsuarioId: {UsuarioId}", rolId, permisoId, usuarioId);
     }
 
     public async Task RemoverPermiso(Guid rolId, Guid permisoId, Guid usuarioId)
@@ -114,6 +122,8 @@ public class RolService : IRolService
             AuditoriaConstantes.Acciones.RemoverPermiso,
             datosAnteriores: ConstruirDatosAuditoria(rol, permiso),
             datosNuevos: null);
+
+        _logger.LogInformation("Permiso removido | RolId: {RolId} | PermisoId: {PermisoId} | UsuarioId: {UsuarioId}", rolId, permisoId, usuarioId);
     }
 
     // ??????????????????????????????????????????????

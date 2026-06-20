@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using ProyectoIntegrador.Data.Context;
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
@@ -13,15 +14,18 @@ public class UsuarioService : IUsuarioService
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IRolRepository _rolRepository;
     private readonly IAuditoriaService _auditoriaService;
+    private readonly ILogger<UsuarioService> _logger;
 
     public UsuarioService(
         IUsuarioRepository usuarioRepository,
         IRolRepository rolRepository,
-        IAuditoriaService auditoriaService)
+        IAuditoriaService auditoriaService,
+        ILogger<UsuarioService> logger)
     {
         _usuarioRepository = usuarioRepository;
         _rolRepository = rolRepository;
         _auditoriaService = auditoriaService;
+        _logger = logger;
     }
 
     public async Task<List<UsuarioResponseDto>> ObtenerTodos()
@@ -79,6 +83,9 @@ public class UsuarioService : IUsuarioService
             datosAnteriores: null,
             datosNuevos: ConstruirDatosAuditoria(usuario));
 
+        _logger.LogInformation("Usuario creado | Id: {UsuarioId} | Email: {Email} | Rol: {Rol} | AdminId: {AdminId}",
+            usuario.Id, usuario.Email, rol.Nombre, adminId);
+
         return Mapear(usuario);
     }
 
@@ -117,6 +124,8 @@ public class UsuarioService : IUsuarioService
             datosAnteriores: datosAnteriores,
             datosNuevos: ConstruirDatosAuditoria(usuario));
 
+        _logger.LogInformation("Usuario editado | Id: {UsuarioId} | AdminId: {AdminId}", id, adminId);
+
         return Mapear(usuario);
     }
 
@@ -139,6 +148,8 @@ public class UsuarioService : IUsuarioService
             AuditoriaConstantes.Acciones.Desactivar,
             datosAnteriores: datosAnteriores,
             datosNuevos: ConstruirDatosAuditoria(usuario));
+
+        _logger.LogInformation("Usuario desactivado | Id: {UsuarioId} | AdminId: {AdminId}", id, adminId);
     }
 
     // ??????????????????????????????????????????????
