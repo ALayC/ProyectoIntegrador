@@ -76,6 +76,16 @@ public class AsientosContablesController : ControllerBase
         return Ok(resultado);
     }
 
+    /// <summary>Importa asientos contables en bloque (bulk).</summary>
+    [HttpPost("importar")]
+    [RequierePermiso("Asientos", "Crear")]
+    public async Task<IActionResult> ImportarBulk([FromBody] ImportarAsientosBulkDto dto)
+    {
+        var usuarioId = ObtenerUsuarioIdDelToken();
+        var resultado = await _asientoService.ImportarBulk(dto, usuarioId);
+        return Ok(resultado);
+    }
+
     // ──────────────────────────────────────────────
     private Guid ObtenerUsuarioIdDelToken()
     {
