@@ -156,6 +156,61 @@ public class AsientoContableService : IAsientoContableService
         return await ObtenerPorId(asiento.Id);
     }
 
+    public async Task<ResultadoImportacionBulkDto> ImportarBulk(ImportarAsientosBulkDto dto, Guid usuarioId)
+    {
+        var resultado = new ResultadoImportacionBulkDto
+        {
+            TotalEnviados = dto.Asientos.Count
+        };
+
+        foreach (var asientoDto in dto.Asientos)
+        {
+            try
+            {
+                var crearDto = new CrearAsientoContableDto
+                {
+                    ClienteId = dto.ClienteId,
+                    EjercicioId = dto.EjercicioId,
+                    Fecha = asientoDto.Fecha,
+                    Glosa = asientoDto.Glosa,
+                    Lineas = asientoDto.Lineas.Select(l => new LineaAsientoInputDto
+                    {
+                        CuentaContableId = l.CuentaContableId,
+                        Debe = l.Debe,
+                        Haber = l.Haber,
+                        Moneda = "UYU",
+                        TipoCambio = 1m
+                    }).ToList()
+                };
+
+                var creado = await Crear(crearDto, usuarioId);
+
+                resultado.Resultados.Add(new ResultadoAsientoImportadoDto
+                {
+                    NumAsiento = asientoDto.NumAsiento,
+                    Exitoso = true,
+                    NumeroAsientoGenerado = creado.Numero,
+                    AsientoId = creado.Id
+                });
+
+                resultado.TotalCreados++;
+            }
+            catch (Exception ex)
+            {
+                resultado.Resultados.Add(new ResultadoAsientoImportadoDto
+                {
+                    NumAsiento = asientoDto.NumAsiento,
+                    Exitoso = false,
+                    MensajeError = ex.Message
+                });
+
+                resultado.TotalErrores++;
+            }
+        }
+
+        return resultado;
+    }
+
     public async Task<AsientoContableDto> ObtenerPorId(Guid id)
     {
         var asiento = await _asientoRepository.ObtenerPorIdConLineas(id)

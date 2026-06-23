@@ -652,4 +652,331 @@ public class AsientoContableServiceTests : IDisposable
     }
 
     #endregion
+
+    #region Tests de ImportarBulk
+
+    /// <summary>
+    /// Test 7: Importación bulk — todos los asientos son válidos y balanceados.
+    /// Verifica que TotalCreados = n, TotalErrores = 0 y cada resultado tiene Exitoso = true.
+    /// </summary>
+    [Fact]
+    public async Task ImportarBulk_ConAsientosValidos_RetornaTodosCreados()
+    {
+        // Arrange
+        var clienteId = Guid.NewGuid();
+        var ejercicioId = Guid.NewGuid();
+        var usuarioId = Guid.NewGuid();
+        var cuenta1Id = Guid.NewGuid();
+        var cuenta2Id = Guid.NewGuid();
+
+        var dto = new ImportarAsientosBulkDto
+        {
+            ClienteId = clienteId,
+            EjercicioId = ejercicioId,
+            Asientos = new List<AsientoImportacionDto>
+            {
+                new()
+                {
+                    NumAsiento = 1,
+                    Fecha = new DateOnly(DateTime.Today.Year, 1, 15),
+                    Glosa = "Compra insumos",
+                    Lineas = new List<LineaImportacionDto>
+                    {
+                        new() { CuentaContableId = cuenta1Id, Debe = 500m, Haber = 0m },
+                        new() { CuentaContableId = cuenta2Id, Debe = 0m,   Haber = 500m }
+                    }
+                },
+                new()
+                {
+                    NumAsiento = 2,
+                    Fecha = new DateOnly(DateTime.Today.Year, 2, 10),
+                    Glosa = "Venta servicios",
+                    Lineas = new List<LineaImportacionDto>
+                    {
+                        new() { CuentaContableId = cuenta1Id, Debe = 300m, Haber = 0m },
+                        new() { CuentaContableId = cuenta2Id, Debe = 0m,   Haber = 300m }
+                    }
+                }
+            }
+        };
+
+        _mockEjercicioRepo
+            .Setup(r => r.ObtenerPorId(ejercicioId))
+            .ReturnsAsync(new EjercicioContable
+            {
+                Id = ejercicioId,
+                ClienteId = clienteId,
+                FechaInicio = new DateOnly(DateTime.Today.Year, 1, 1),
+                FechaFin = new DateOnly(DateTime.Today.Year, 12, 31),
+                Estado = "Abierto"
+            });
+
+        _mockCuentaRepo
+            .Setup(r => r.ObtenerPorId(cuenta1Id))
+            .ReturnsAsync(new CuentaContable { Id = cuenta1Id, Codigo = "1.1.01", Nombre = "Caja", EsImputable = true, Estado = "Activa" });
+
+        _mockCuentaRepo
+            .Setup(r => r.ObtenerPorId(cuenta2Id))
+            .ReturnsAsync(new CuentaContable { Id = cuenta2Id, Codigo = "4.1.01", Nombre = "Ingresos", EsImputable = true, Estado = "Activa" });
+
+        _mockAsientoRepo
+            .Setup(r => r.ObtenerUltimoNumero(clienteId, ejercicioId))
+            .ReturnsAsync(0);
+
+        _mockAsientoRepo
+            .Setup(r => r.Guardar(It.IsAny<AsientoContable>()))
+            .Returns(Task.CompletedTask);
+
+        _mockSaldoRepo
+            .Setup(r => r.ObtenerPorPeriodo(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<DateOnly>()))
+            .ReturnsAsync((SaldoCuenta?)null);
+
+        _mockSaldoRepo
+            .Setup(r => r.Guardar(It.IsAny<SaldoCuenta>()))
+            .Returns(Task.CompletedTask);
+
+        _mockAsientoRepo
+            .Setup(r => r.ObtenerPorIdConLineas(It.IsAny<Guid>()))
+            .ReturnsAsync(new AsientoContable
+            {
+                Id = Guid.NewGuid(),
+                ClienteId = clienteId,
+                EjercicioId = ejercicioId,
+                UsuarioId = usuarioId,
+                Numero = 1,
+                Fecha = new DateOnly(DateTime.Today.Year, 1, 15),
+                Glosa = "Compra insumos",
+                Estado = "Confirmado",
+                LineasAsiento = new List<LineaAsiento>
+                {
+                    new() { Id = Guid.NewGuid(), CuentaContableId = cuenta1Id, Debe = 500m, Haber = 0m, Moneda = "UYU", TipoCambio = 1m, ImporteMonedaBase = 500m, CuentaContable = new CuentaContable { Id = cuenta1Id, Codigo = "1.1.01", Nombre = "Caja" } },
+                    new() { Id = Guid.NewGuid(), CuentaContableId = cuenta2Id, Debe = 0m, Haber = 500m, Moneda = "UYU", TipoCambio = 1m, ImporteMonedaBase = 500m, CuentaContable = new CuentaContable { Id = cuenta2Id, Codigo = "4.1.01", Nombre = "Ingresos" } }
+                }
+            });
+
+        // Act
+        var resultado = await _service.ImportarBulk(dto, usuarioId);
+
+        // Assert
+        Assert.Equal(2, resultado.TotalEnviados);
+        Assert.Equal(2, resultado.TotalCreados);
+        Assert.Equal(0, resultado.TotalErrores);
+        Assert.Equal(2, resultado.Resultados.Count);
+        Assert.All(resultado.Resultados, r => Assert.True(r.Exitoso));
+        Assert.All(resultado.Resultados, r => Assert.Null(r.MensajeError));
+
+        // Verificar que Guardar se llamó una vez por asiento
+        _mockAsientoRepo.Verify(r => r.Guardar(It.IsAny<AsientoContable>()), Times.Exactly(2));
+    }
+
+    /// <summary>
+    /// Test 8: Importación bulk — asiento con Debe ≠ Haber.
+    /// Verifica que el resultado registra Exitoso=false, MensajeError no nulo y NO se persiste nada.
+    /// </summary>
+    [Fact]
+    public async Task ImportarBulk_ConAsientoDesbalanceado_RegistraError()
+    {
+        // Arrange
+        var clienteId = Guid.NewGuid();
+        var ejercicioId = Guid.NewGuid();
+        var cuenta1Id = Guid.NewGuid();
+        var cuenta2Id = Guid.NewGuid();
+
+        var dto = new ImportarAsientosBulkDto
+        {
+            ClienteId = clienteId,
+            EjercicioId = ejercicioId,
+            Asientos = new List<AsientoImportacionDto>
+            {
+                new()
+                {
+                    NumAsiento = 5,
+                    Fecha = new DateOnly(DateTime.Today.Year, 3, 5),
+                    Glosa = "Asiento desbalanceado",
+                    Lineas = new List<LineaImportacionDto>
+                    {
+                        new() { CuentaContableId = cuenta1Id, Debe = 1000m, Haber = 0m },
+                        new() { CuentaContableId = cuenta2Id, Debe = 0m,    Haber = 800m }  // ❌ No balancea
+                    }
+                }
+            }
+        };
+
+        _mockEjercicioRepo
+            .Setup(r => r.ObtenerPorId(ejercicioId))
+            .ReturnsAsync(new EjercicioContable
+            {
+                Id = ejercicioId,
+                ClienteId = clienteId,
+                FechaInicio = new DateOnly(DateTime.Today.Year, 1, 1),
+                FechaFin = new DateOnly(DateTime.Today.Year, 12, 31),
+                Estado = "Abierto"
+            });
+
+        // Act
+        var resultado = await _service.ImportarBulk(dto, Guid.NewGuid());
+
+        // Assert
+        Assert.Equal(1, resultado.TotalEnviados);
+        Assert.Equal(0, resultado.TotalCreados);
+        Assert.Equal(1, resultado.TotalErrores);
+        Assert.Single(resultado.Resultados);
+        Assert.False(resultado.Resultados[0].Exitoso);
+        Assert.NotNull(resultado.Resultados[0].MensajeError);
+        Assert.Equal(5, resultado.Resultados[0].NumAsiento);
+
+        // Verificar que no se persistió ningún asiento
+        _mockAsientoRepo.Verify(r => r.Guardar(It.IsAny<AsientoContable>()), Times.Never);
+    }
+
+    /// <summary>
+    /// Test 9: Importación bulk mixta — primer asiento válido, segundo desbalanceado.
+    /// Verifica que TotalCreados=1, TotalErrores=1 y cada resultado tiene el estado correcto.
+    /// </summary>
+    [Fact]
+    public async Task ImportarBulk_ConMixtoExitosoYFallido_ContabilizaCorrectamente()
+    {
+        // Arrange
+        var clienteId = Guid.NewGuid();
+        var ejercicioId = Guid.NewGuid();
+        var usuarioId = Guid.NewGuid();
+        var cuenta1Id = Guid.NewGuid();
+        var cuenta2Id = Guid.NewGuid();
+
+        var dto = new ImportarAsientosBulkDto
+        {
+            ClienteId = clienteId,
+            EjercicioId = ejercicioId,
+            Asientos = new List<AsientoImportacionDto>
+            {
+                new()
+                {
+                    NumAsiento = 10,
+                    Fecha = new DateOnly(DateTime.Today.Year, 1, 10),
+                    Glosa = "Asiento válido",
+                    Lineas = new List<LineaImportacionDto>
+                    {
+                        new() { CuentaContableId = cuenta1Id, Debe = 400m, Haber = 0m },
+                        new() { CuentaContableId = cuenta2Id, Debe = 0m,   Haber = 400m }
+                    }
+                },
+                new()
+                {
+                    NumAsiento = 11,
+                    Fecha = new DateOnly(DateTime.Today.Year, 1, 20),
+                    Glosa = "Asiento desbalanceado",
+                    Lineas = new List<LineaImportacionDto>
+                    {
+                        new() { CuentaContableId = cuenta1Id, Debe = 100m, Haber = 0m },
+                        new() { CuentaContableId = cuenta2Id, Debe = 0m,   Haber = 999m }  // ❌ No balancea
+                    }
+                }
+            }
+        };
+
+        _mockEjercicioRepo
+            .Setup(r => r.ObtenerPorId(ejercicioId))
+            .ReturnsAsync(new EjercicioContable
+            {
+                Id = ejercicioId,
+                ClienteId = clienteId,
+                FechaInicio = new DateOnly(DateTime.Today.Year, 1, 1),
+                FechaFin = new DateOnly(DateTime.Today.Year, 12, 31),
+                Estado = "Abierto"
+            });
+
+        _mockCuentaRepo
+            .Setup(r => r.ObtenerPorId(cuenta1Id))
+            .ReturnsAsync(new CuentaContable { Id = cuenta1Id, Codigo = "1.1.01", Nombre = "Caja", EsImputable = true, Estado = "Activa" });
+
+        _mockCuentaRepo
+            .Setup(r => r.ObtenerPorId(cuenta2Id))
+            .ReturnsAsync(new CuentaContable { Id = cuenta2Id, Codigo = "4.1.01", Nombre = "Ingresos", EsImputable = true, Estado = "Activa" });
+
+        _mockAsientoRepo
+            .Setup(r => r.ObtenerUltimoNumero(clienteId, ejercicioId))
+            .ReturnsAsync(0);
+
+        _mockAsientoRepo
+            .Setup(r => r.Guardar(It.IsAny<AsientoContable>()))
+            .Returns(Task.CompletedTask);
+
+        _mockSaldoRepo
+            .Setup(r => r.ObtenerPorPeriodo(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<DateOnly>()))
+            .ReturnsAsync((SaldoCuenta?)null);
+
+        _mockSaldoRepo
+            .Setup(r => r.Guardar(It.IsAny<SaldoCuenta>()))
+            .Returns(Task.CompletedTask);
+
+        _mockAsientoRepo
+            .Setup(r => r.ObtenerPorIdConLineas(It.IsAny<Guid>()))
+            .ReturnsAsync(new AsientoContable
+            {
+                Id = Guid.NewGuid(),
+                ClienteId = clienteId,
+                EjercicioId = ejercicioId,
+                UsuarioId = usuarioId,
+                Numero = 1,
+                Fecha = new DateOnly(DateTime.Today.Year, 1, 10),
+                Glosa = "Asiento válido",
+                Estado = "Confirmado",
+                LineasAsiento = new List<LineaAsiento>
+                {
+                    new() { Id = Guid.NewGuid(), CuentaContableId = cuenta1Id, Debe = 400m, Haber = 0m, Moneda = "UYU", TipoCambio = 1m, ImporteMonedaBase = 400m, CuentaContable = new CuentaContable { Id = cuenta1Id, Codigo = "1.1.01", Nombre = "Caja" } },
+                    new() { Id = Guid.NewGuid(), CuentaContableId = cuenta2Id, Debe = 0m, Haber = 400m, Moneda = "UYU", TipoCambio = 1m, ImporteMonedaBase = 400m, CuentaContable = new CuentaContable { Id = cuenta2Id, Codigo = "4.1.01", Nombre = "Ingresos" } }
+                }
+            });
+
+        // Act
+        var resultado = await _service.ImportarBulk(dto, usuarioId);
+
+        // Assert
+        Assert.Equal(2, resultado.TotalEnviados);
+        Assert.Equal(1, resultado.TotalCreados);
+        Assert.Equal(1, resultado.TotalErrores);
+        Assert.Equal(2, resultado.Resultados.Count);
+
+        var exitoso = resultado.Resultados.Single(r => r.NumAsiento == 10);
+        Assert.True(exitoso.Exitoso);
+        Assert.Null(exitoso.MensajeError);
+        Assert.NotNull(exitoso.AsientoId);
+
+        var fallido = resultado.Resultados.Single(r => r.NumAsiento == 11);
+        Assert.False(fallido.Exitoso);
+        Assert.NotNull(fallido.MensajeError);
+        Assert.Null(fallido.AsientoId);
+
+        // Solo se guardó el primer asiento
+        _mockAsientoRepo.Verify(r => r.Guardar(It.IsAny<AsientoContable>()), Times.Once);
+    }
+
+    /// <summary>
+    /// Test 10: Importación bulk con lista vacía.
+    /// Verifica que todos los contadores son 0 y la lista de resultados está vacía.
+    /// </summary>
+    [Fact]
+    public async Task ImportarBulk_ConListaVacia_RetornaCerosTotales()
+    {
+        // Arrange
+        var dto = new ImportarAsientosBulkDto
+        {
+            ClienteId = Guid.NewGuid(),
+            EjercicioId = Guid.NewGuid(),
+            Asientos = new List<AsientoImportacionDto>()
+        };
+
+        // Act
+        var resultado = await _service.ImportarBulk(dto, Guid.NewGuid());
+
+        // Assert
+        Assert.Equal(0, resultado.TotalEnviados);
+        Assert.Equal(0, resultado.TotalCreados);
+        Assert.Equal(0, resultado.TotalErrores);
+        Assert.Empty(resultado.Resultados);
+
+        _mockAsientoRepo.Verify(r => r.Guardar(It.IsAny<AsientoContable>()), Times.Never);
+    }
+
+    #endregion
 }
