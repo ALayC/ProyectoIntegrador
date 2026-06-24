@@ -13,7 +13,7 @@ jobs:
   build:
     runs-on: windows-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +25,14 @@ jobs:
 
       - name: Build with dotnet
         run: dotnet build ProyectoIntegrador.API/ProyectoIntegrador.API.csproj --configuration Release
+
+      - name: Install EF Tools
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Run Migrations
+        run: dotnet ef database update --project ProyectoIntegrador.Data/ProyectoIntegrador.Data.csproj --startup-project ProyectoIntegrador.API/ProyectoIntegrador.API.csproj
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
 
       - name: dotnet publish
         run: dotnet publish ProyectoIntegrador.API/ProyectoIntegrador.API.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
@@ -38,13 +46,13 @@ jobs:
   deploy:
     runs-on: windows-latest
     needs: build
-    
+
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-      
+
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
