@@ -1,0 +1,65 @@
+@model ProyectoIntegrador.UI.Models.ResendConfirmationViewModel
+@{
+    ViewData["Title"] = "Reenviar confirmación de email";
+}
+
+<div class="page-wrapper">
+    <div class="page-body">
+        <div class="container-xl d-flex flex-column justify-content-center">
+            <div class="row row-deck row-cards">
+                <div class="col-md-6 col-lg-4 mx-auto">
+                    <div class="card shadow-sm">
+                        <div class="card-body p-4">
+                            <h2 class="card-title mb-4 text-center">
+                                <i class="ti ti-mail"></i> Reenviar confirmación
+                            </h2>
+
+                            @if (!string.IsNullOrEmpty(Model.Mensaje))
+                            {
+                                <div class="alert alert-@(Model.EsExito ? "success" : "danger")" role="alert">
+                                    @Model.Mensaje
+                                </div>
+                            }
+
+                            @if (!Model.EsExito)
+                            {
+                                <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+
+                                <form asp-action="ResendConfirmation" method="post" class="mb-3">
+                                    <div class="mb-3">
+                                        <label asp-for="Email" class="form-label">Email</label>
+                                        <input asp-for="Email" type="email" class="form-control" placeholder="tu@email.com" autofocus />
+                                        <span asp-validation-for="Email" class="text-danger"></span>
+                                        <small class="form-hint">Ingresa el email con el que te registraste</small>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-azure">
+                                            <i class="ti ti-send"></i> Reenviar email
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <div class="text-center text-secondary small">
+                                    <p>¿Ya confirmaste tu email? <a asp-action="Login" class="link-azure">Iniciar sesión</a></p>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center mt-3">
+                                    <a asp-action="Login" class="btn btn-azure">
+                                        Ir al login
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -246,4 +246,6 @@ public class CuentasContablesController : Controller
         TempData["Exito"] = "Cuenta contable desactivada correctamente.";
         return RedirectToAction(nameof(Details), new { id, planId, clienteId });
     }
+
 }
+

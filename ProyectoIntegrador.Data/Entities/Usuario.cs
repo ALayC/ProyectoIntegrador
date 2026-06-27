@@ -12,6 +12,15 @@ public class Usuario
     public Guid? ContadorId { get; set; }
     public DateTime CreatedAt { get; set; }
 
+    // Email confirmation
+    public bool EmailConfirmado { get; set; } = false;
+    public string? TokenConfirmacionEmail { get; set; }
+    public DateTime? FechaExpiracionTokenConfirmacion { get; set; }
+
+    // Password reset
+    public string? TokenRestablecimiento { get; set; }
+    public DateTime? FechaExpiracionTokenRestablecimiento { get; set; }
+
     // Navegación
     public Rol Rol { get; set; } = null!;
     public Usuario? Contador { get; set; }

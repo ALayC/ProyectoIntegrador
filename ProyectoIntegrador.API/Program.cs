@@ -184,8 +184,15 @@ builder.Services.AddScoped<IComprobanteRepository, ComprobanteRepository>();
 // builder.Services.AddScoped<ICentroDeCostoRepository, CentroDeCostoRepository>();
 // builder.Services.AddScoped<ITipoDeCambioRepository, TipoDeCambioRepository>();
 
+// ── Opciones de configuración: Email ────────────
+builder.Services.Configure<EmailOptions>(configuration.GetSection("Email"));
+
+// ── Opciones de configuración: UI ────────────────
+builder.Services.Configure<UIOptions>(configuration.GetSection("UI"));
+
 // ── Inyección de dependencias: Servicios ──────
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IRolService, RolService>();
 builder.Services.AddScoped<IPermisoService, PermisoService>();
