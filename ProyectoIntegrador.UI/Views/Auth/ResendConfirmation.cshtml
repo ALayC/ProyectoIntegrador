@@ -23,7 +23,10 @@
 
                             @if (!Model.EsExito)
                             {
-                                <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+                                if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+                                {
+                                    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+                                }
 
                                 <form asp-action="ResendConfirmation" method="post" class="mb-3">
                                     <div class="mb-3">
