@@ -1,9 +1,10 @@
-﻿using System.Diagnostics;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Exceptions;
 using ProyectoIntegrador.Service.Interfaces;
+using System.Diagnostics;
 
 namespace ProyectoIntegrador.Service.Implementations;
 
@@ -59,20 +60,7 @@ public class EstadoResultadosService : IEstadoResultadosService
             {
                 continue;
             }
-            decimal importe = 0;
-            if (cuenta.Naturaleza == "Acreedora")
-            {
-                importe = linea.Haber - linea.Debe;
-            }
-            else if (cuenta.Naturaleza == "Deudora")
-            {
-                importe = linea.Debe - linea.Haber;
-            }
-            else
-            {
-                continue;
-            }
-            nodos[cuenta.Id].Importe += importe;
+            nodos[cuenta.Id].Importe += CalcularImporteMovimiento(linea, cuenta.Naturaleza);
         }
 
         foreach (var cuenta in cuentas)
@@ -139,6 +127,13 @@ public class EstadoResultadosService : IEstadoResultadosService
                 filtro.ClienteId, sw.ElapsedMilliseconds);
 
         return resultado;
+    }
+
+    private static decimal CalcularImporteMovimiento(LineaAsiento linea, string naturaleza)
+    {
+        return naturaleza == "Acreedora"
+            ? linea.Haber - linea.Debe
+            : linea.Debe - linea.Haber;
     }
 
     private static decimal AcumularImportes(EstadoResultadoNodoDto nodo)
