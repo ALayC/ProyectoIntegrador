@@ -53,6 +53,37 @@ namespace ProyectoIntegrador.Data.Repositories.Implementations
                 .ToListAsync();
         }
 
+        public async Task<List<LineaAsiento>> ObtenerParaBalanceGeneral(Guid clienteId, DateOnly fechaHasta)
+        {
+            return await _context.LineasAsiento
+                .Include(l => l.Asiento)
+                .Include(l => l.CuentaContable)
+                .ThenInclude(c => c.CuentaPadre)
+                .Where(l =>
+                    l.Asiento.ClienteId == clienteId &&
+                    l.Asiento.Estado == "Confirmado" &&
+                    l.Asiento.Fecha <= fechaHasta &&
+                    (l.CuentaContable.Tipo == "Activo" ||
+                     l.CuentaContable.Tipo == "Pasivo" ||
+                     l.CuentaContable.Tipo == "Patrimonio"))
+                .ToListAsync();
+        }
+
+        public async Task<List<LineaAsiento>> ObtenerParaLiquidacionIva(Guid clienteId, DateOnly fechaDesde, DateOnly fechaHasta)
+        {
+            return await _context.LineasAsiento
+                .Include(l => l.Asiento)
+                .Include(l => l.CuentaContable)
+                .Where(l =>
+                    l.Asiento.ClienteId == clienteId &&
+                    l.Asiento.Estado == "Confirmado" &&
+                    l.Asiento.Fecha >= fechaDesde &&
+                    l.Asiento.Fecha <= fechaHasta &&
+                    (l.CuentaContable.Nombre == "IVA Crédito Fiscal" ||
+                     l.CuentaContable.Nombre == "IVA Débito Fiscal"))
+                .ToListAsync();
+        }
+
         public Task<List<LineaAsiento>> ObtenerPorCuenta(Guid cuentaContableId, Guid ejercicioId, int pagina, int cantidadPorPagina)
         {
             throw new NotImplementedException();

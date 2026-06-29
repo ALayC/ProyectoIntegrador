@@ -3,6 +3,7 @@
 /// <summary>
 /// Filtros de consulta para generar el Estado de Resultados.
 /// </summary>
+
 public class EstadoResultadosFiltroDto
 {
     public Guid ClienteId { get; set; }
