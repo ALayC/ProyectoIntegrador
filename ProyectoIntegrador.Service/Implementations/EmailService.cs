@@ -30,7 +30,7 @@ public class EmailService : IEmailService
     {
         try
         {
-            var linkConfirmacion = $"{baseUrl}/auth/confirm-email?token={Uri.EscapeDataString(token)}";
+            var linkConfirmacion = $"{baseUrl}/Auth/ConfirmEmail?token={Uri.EscapeDataString(token)}";
 
             var cuerpoHtml = $@"
             <!DOCTYPE html>
@@ -82,7 +82,7 @@ public class EmailService : IEmailService
     {
         try
         {
-            var linkReset = $"{baseUrl}/auth/reset-password?token={Uri.EscapeDataString(token)}";
+            var linkReset = $"{baseUrl}/Auth/ResetPassword?token={Uri.EscapeDataString(token)}";
 
             var cuerpoHtml = $@"
             <!DOCTYPE html>
