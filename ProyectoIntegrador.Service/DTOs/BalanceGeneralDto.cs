@@ -1,6 +1,5 @@
 ﻿namespace ProyectoIntegrador.Service.DTOs
 {
-
     /// <summary>
     /// Filtros de consulta para generar el Balance General.
     /// </summary>
@@ -40,6 +39,8 @@
         public decimal TotalPatrimonio { get; set; }
 
         public decimal TotalPasivoPatrimonio { get; set; }
+
+        public bool Balancea { get; set; }
 
         public List<BalanceGeneralNodoDto> Activos { get; set; } = new();
 
