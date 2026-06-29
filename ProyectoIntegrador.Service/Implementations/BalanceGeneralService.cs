@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Exceptions;
@@ -55,23 +56,7 @@ namespace ProyectoIntegrador.Service.Implementations
                 {
                     continue;
                 }
-
-                decimal saldo;
-
-                if (cuenta.Naturaleza == "Acreedora")
-                {
-                    saldo = linea.Haber - linea.Debe;
-                }
-                else if (cuenta.Naturaleza == "Deudora")
-                {
-                    saldo = linea.Debe - linea.Haber;
-                }
-                else
-                {
-                    continue;
-                }
-
-                nodos[cuenta.Id].Saldo += saldo;
+                nodos[cuenta.Id].Saldo += CalcularSaldoMovimiento(linea, cuenta.Naturaleza);
             }
 
             foreach (var cuenta in cuentas)
@@ -139,15 +124,7 @@ namespace ProyectoIntegrador.Service.Implementations
 
             var balancea = totalActivos == totalPasivos + totalPatrimonio;
 
-            sw.Stop();
-            if (sw.ElapsedMilliseconds > 2000)
-                _logger.LogWarning("Estado de Resultados generado con tiempo elevado | ClienteId: {ClienteId} | Tiempo: {TiempoMs}ms",
-                    filtro.ClienteId, sw.ElapsedMilliseconds);
-            else
-                _logger.LogInformation("Estado de Resultados generado | ClienteId: {ClienteId} | Tiempo: {TiempoMs}ms",
-                    filtro.ClienteId, sw.ElapsedMilliseconds);
-
-            return new BalanceGeneralResponseDto
+            var resultado = new BalanceGeneralResponseDto
             {
                 TotalActivo = totalActivos,
                 TotalPasivo = totalPasivos,
@@ -158,6 +135,23 @@ namespace ProyectoIntegrador.Service.Implementations
                 Pasivos = pasivos,
                 Patrimonio = patrimonio
             };
+
+            sw.Stop();
+            if (sw.ElapsedMilliseconds > 2000)
+                _logger.LogWarning("Estado de Resultados generado con tiempo elevado | ClienteId: {ClienteId} | Tiempo: {TiempoMs}ms",
+                    filtro.ClienteId, sw.ElapsedMilliseconds);
+            else
+                _logger.LogInformation("Estado de Resultados generado | ClienteId: {ClienteId} | Tiempo: {TiempoMs}ms",
+                    filtro.ClienteId, sw.ElapsedMilliseconds);
+
+            return resultado;
+        }
+
+        private static decimal CalcularSaldoMovimiento(LineaAsiento linea, string naturaleza)
+        {
+            return naturaleza == "Acreedora"
+                ? linea.Haber - linea.Debe
+                : linea.Debe - linea.Haber;
         }
 
         private static decimal AcumularSaldos(BalanceGeneralNodoDto nodo)
