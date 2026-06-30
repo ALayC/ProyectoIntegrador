@@ -205,6 +205,7 @@ builder.Services.AddScoped<IComprobanteService, ComprobanteService>();
 builder.Services.AddScoped<ILibroMayorService, LibroMayorService>();
 builder.Services.AddScoped<ILineaAsientoRepository, LineaAsientoRepository>();
 builder.Services.AddScoped<IEstadoResultadosService, EstadoResultadosService>();
+builder.Services.AddScoped<IBalanceGeneralService, BalanceGeneralService>();
 builder.Services.AddScoped<ILiquidacionIvaService, LiquidacionIvaService>();
 
 // ── Filtro global de permisos ─────────────────
