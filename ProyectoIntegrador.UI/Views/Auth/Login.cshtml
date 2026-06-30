@@ -26,7 +26,12 @@
             </div>
 
             <div class="mb-2">
-                <label asp-for="Password" class="form-label"></label>
+                <label asp-for="Password" class="form-label">
+                    Contraseña
+                    <span class="form-label-description">
+                        <a asp-action="ForgotPassword" class="link-azure">¿Olvidaste tu contraseña?</a>
+                    </span>
+                </label>
                 <input asp-for="Password" class="form-control" />
                 <span asp-validation-for="Password" class="text-danger small"></span>
             </div>
@@ -36,12 +41,50 @@
                 var mensaje = ViewData.ModelState[string.Empty]?.Errors.FirstOrDefault()?.ErrorMessage;
                 if (!string.IsNullOrWhiteSpace(mensaje))
                 {
-                    <div class="text-danger small mt-2">@mensaje</div>
+                    @if (ViewBag.EmailNoConfirmado != null)
+                    {
+                        <div class="alert alert-warning alert-dismissible mt-3" role="alert">
+                            <div class="d-flex">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                        <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z"></path>
+                                        <path d="M3 7l9 6l9 -6"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="alert-title">Email no confirmado</h4>
+                                    <div class="text-secondary">@mensaje</div>
+                                    <div class="mt-2">
+                                        <a asp-action="ResendConfirmation" asp-route-email="@ViewBag.EmailNoConfirmado" class="btn btn-warning btn-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                                                <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                                            </svg>
+                                            Reenviar email de confirmación
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-danger small mt-2">@mensaje</div>
+                    }
                 }
             }
 
             <div class="form-footer mt-4">
                 <button type="submit" class="btn btn-azure w-100">Ingresar</button>
+            </div>
+
+            <div class="text-center mt-3">
+                <small class="text-secondary">
+                    ¿No recibiste el email de confirmación? 
+                    <a asp-action="ResendConfirmation" class="link-azure">Reenviar</a>
+                </small>
             </div>
         </form>
 
