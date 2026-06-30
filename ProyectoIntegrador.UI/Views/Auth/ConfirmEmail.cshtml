@@ -1,0 +1,70 @@
+@model ProyectoIntegrador.UI.Models.ConfirmEmailViewModel
+@{
+    ViewData["Title"] = "Confirmar email";
+}
+
+<div class="page-wrapper">
+    <div class="page-body">
+        <div class="container-xl d-flex flex-column justify-content-center" style="min-height: 60vh;">
+            <div class="row row-deck row-cards">
+                <div class="col-md-6 col-lg-5 mx-auto">
+                    <div class="card shadow-sm">
+                        <div class="card-body p-4 text-center">
+                            @if (Model.EsExito)
+                            {
+                                <div class="mb-4">
+                                    <div class="avatar avatar-xl bg-success-lt mb-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-mail-check" width="44" height="44" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                            <path d="M11 19h-6a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v6"></path>
+                                            <path d="M3 7l9 6l9 -6"></path>
+                                            <path d="M15 19l2 2l4 -4"></path>
+                                        </svg>
+                                    </div>
+                                    <h2 class="card-title text-success mb-3">? Email confirmado exitosamente</h2>
+                                    <p class="text-secondary mb-4">
+                                        Tu cuenta ha sido activada correctamente. Ahora puedes iniciar sesión con tus credenciales.
+                                    </p>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <a asp-action="Login" class="btn btn-azure">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2"></path><path d="M9 12h12l-3 -3"></path><path d="M18 15l3 -3"></path></svg>
+                                        Iniciar sesión
+                                    </a>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="mb-4">
+                                    <div class="avatar avatar-xl bg-danger-lt mb-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-alert-circle" width="44" height="44" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                            <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"></path>
+                                            <path d="M12 8v4"></path>
+                                            <path d="M12 16h.01"></path>
+                                        </svg>
+                                    </div>
+                                    <h2 class="card-title text-danger mb-3">? Error al confirmar email</h2>
+                                    <div class="alert alert-danger text-start" role="alert">
+                                        @Model.Mensaje
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <a asp-action="ResendConfirmation" class="btn btn-azure">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 8v-2a2 2 0 0 1 2 -2h2"></path><path d="M4 16v2a2 2 0 0 0 2 2h2"></path><path d="M16 4h2a2 2 0 0 1 2 2v2"></path><path d="M16 20h2a2 2 0 0 0 2 -2v-2"></path><path d="M9 10l.01 0"></path><path d="M15 10l.01 0"></path><path d="M9.5 15.05a3.5 3.5 0 0 1 5 0"></path></svg>
+                                        Reenviar email de confirmación
+                                    </a>
+                                    <a asp-action="Login" class="btn btn-ghost-secondary">
+                                        Volver al login
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

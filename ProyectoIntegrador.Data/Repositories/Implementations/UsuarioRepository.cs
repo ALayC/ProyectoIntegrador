@@ -21,8 +21,22 @@ public class UsuarioRepository : IUsuarioRepository
     public async Task<Usuario?> ObtenerPorEmail(string email)
     {
         return await _context.Usuarios
-       .Include(u => u.Rol)
-             .FirstOrDefaultAsync(u => u.Email == email);
+           .Include(u => u.Rol)
+                 .FirstOrDefaultAsync(u => u.Email == email);
+    }
+
+    public async Task<Usuario?> ObtenerPorTokenConfirmacion(string token)
+    {
+        return await _context.Usuarios
+            .Include(u => u.Rol)
+            .FirstOrDefaultAsync(u => u.TokenConfirmacionEmail == token);
+    }
+
+    public async Task<Usuario?> ObtenerPorTokenRestablecimiento(string token)
+    {
+        return await _context.Usuarios
+            .Include(u => u.Rol)
+            .FirstOrDefaultAsync(u => u.TokenRestablecimiento == token);
     }
 
     public async Task<List<Usuario>> ObtenerAuxiliaresPorContador(Guid contadorId, int pagina, int cantidadPorPagina)

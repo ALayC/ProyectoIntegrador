@@ -8,6 +8,7 @@ using ProyectoIntegrador.Data.Repositories.Interfaces;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Exceptions;
 using ProyectoIntegrador.Service.Implementations;
+using ProyectoIntegrador.Service.Interfaces;
 
 namespace ProyectoIntegrador.Test;
 
@@ -16,7 +17,9 @@ public class AuthServiceTests
     private readonly Mock<IUsuarioRepository> _mockUsuarioRepo;
     private readonly Mock<IRolRepository> _mockRolRepo;
     private readonly Mock<ITokenRevocadoRepository> _mockTokenRepo;
+    private readonly Mock<IEmailService> _mockEmailService;
     private readonly IOptions<JwtOptions> _jwtOptions;
+    private readonly IOptions<UIOptions> _uiOptions;
     private readonly AuthService _authService;
 
     public AuthServiceTests()
@@ -24,6 +27,7 @@ public class AuthServiceTests
         _mockUsuarioRepo = new Mock<IUsuarioRepository>();
         _mockRolRepo = new Mock<IRolRepository>();
         _mockTokenRepo = new Mock<ITokenRevocadoRepository>();
+        _mockEmailService = new Mock<IEmailService>();
 
         _jwtOptions = Options.Create(new JwtOptions
         {
@@ -33,11 +37,18 @@ public class AuthServiceTests
             DuracionMinutos = 60
         });
 
+        _uiOptions = Options.Create(new UIOptions
+        {
+            BaseUrl = "https://localhost:7160"
+        });
+
         _authService = new AuthService(
             _mockUsuarioRepo.Object,
-  _mockRolRepo.Object,
+            _mockRolRepo.Object,
             _mockTokenRepo.Object,
-   _jwtOptions,
+            _mockEmailService.Object,
+            _jwtOptions,
+            _uiOptions,
             NullLogger<AuthService>.Instance);
     }
 
