@@ -1,0 +1,62 @@
+@model BalanceGeneralNodoViewModel
+@{
+    var nivel = ViewData["Nivel"] as int? ?? 0;
+    var paddingLeft = nivel * 24;
+    var tieneHijas = Model.Hijas?.Count > 0;
+    var esNegativo = Model.Saldo < 0;
+    var claseSaldo = esNegativo ? "text-danger" : "text-dark";
+}
+
+<div class="list-group-item border-start-0 border-end-0 rounded-0 ps-0 pe-0">
+    <div style="padding-left: @(paddingLeft)px;">
+        @if (tieneHijas)
+        {
+            <details class="w-100 tree-node" style="list-style: none;">
+                <summary class="d-flex align-items-center gap-2 cursor-pointer py-2 px-3" style="user-select: none;">
+                    <span class="text-secondary" style="min-width: 20px; display: flex; align-items: center;">
+                        <i class="ti ti-chevron-right" style="font-size: 14px;"></i>
+                    </span>
+                    <span class="text-secondary" style="min-width: 20px; display: flex; align-items: center;">
+                        <i class="ti ti-folder" style="font-size: 16px;"></i>
+                    </span>
+                    <div class="flex-fill">
+                        <div class="d-flex align-items-center justify-content-between gap-2">
+                            <span class="text-dark">
+                                <span class="text-secondary fw-normal">@Model.Codigo</span>
+                                <span class="fw-semibold">@Model.Nombre</span>
+                            </span>
+                            <span class="fw-semibold @claseSaldo text-nowrap">
+                                @Model.Saldo.ToString("N2")
+                            </span>
+                        </div>
+                    </div>
+                </summary>
+                <div class="tree-children">
+                    @foreach (var hija in Model.Hijas)
+                    {
+                        @await Html.PartialAsync("_BalanceGeneralNodo", hija, new ViewDataDictionary(ViewData) { ["Nivel"] = nivel + 1 })
+                    }
+                </div>
+            </details>
+        }
+        else
+        {
+            <div class="d-flex align-items-center gap-2 py-2 px-3">
+                <span class="text-secondary" style="min-width: 20px; display: flex; align-items: center;">
+                    <i class="ti ti-file" style="font-size: 16px;"></i>
+                </span>
+                <div class="flex-fill">
+                    <div class="d-flex align-items-center justify-content-between gap-2">
+                        <span class="text-dark">
+                            <span class="text-secondary fw-normal">@Model.Codigo</span>
+                            <span class="fw-semibold">@Model.Nombre</span>
+                        </span>
+                        <span class="fw-semibold @claseSaldo text-nowrap">
+                            @Model.Saldo.ToString("N2")
+                        </span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
