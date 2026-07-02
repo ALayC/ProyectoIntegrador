@@ -1,0 +1,258 @@
+@model BalanceGeneralViewModel
+@{
+    ViewData["Title"] = "Balance General";
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col">
+                <h2 class="page-title">
+                    <i class="ti ti-scale"></i> Balance General
+                </h2>
+                @if (!string.IsNullOrWhiteSpace(Model.ClienteNombre))
+                {
+                    <div class="text-secondary">@Model.ClienteNombre</div>
+                }
+            </div>
+            <div class="col-auto ms-auto">
+                <a asp-controller="Clientes" asp-action="Detalles" asp-route-id="@Model.ClienteId" class="btn btn-outline-azure">
+                    <i class="ti ti-arrow-left"></i> Volver
+                </a>
+                @if (Model.Resultado is not null)
+                {
+                    <a asp-action="ExportarExcel"
+                       asp-route-clienteId="@Model.ClienteId"
+                       asp-route-fechaHasta="@(Model.FechaHasta?.ToString("yyyy-MM-dd"))"
+                       class="btn btn-outline-success">
+                        <i class="ti ti-file-spreadsheet"></i> Exportar Excel
+                    </a>
+
+                    <a asp-action="ExportarPdf"
+                       asp-route-clienteId="@Model.ClienteId"
+                       asp-route-fechaHasta="@(Model.FechaHasta?.ToString("yyyy-MM-dd"))"
+                       class="btn btn-outline-danger">
+                        <i class="ti ti-file-type-pdf"></i> Exportar PDF
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+        <!-- Filtros -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="get" asp-action="Index" class="row g-3 align-items-end">
+                    <input type="hidden" name="clienteId" value="@Model.ClienteId" />
+                    <div class="col-md-4">
+                        <label class="form-label">Fecha hasta</label>
+                        <input type="date" name="fechaHasta" class="form-control"
+                               value="@(Model.FechaHasta.HasValue ? Model.FechaHasta.Value.ToString("yyyy-MM-dd") : "")" />
+                    </div>
+                    <div class="col-md-8 d-flex gap-2 justify-content-end">
+                        <button type="submit" class="btn btn-azure">
+                            <i class="ti ti-search"></i> Generar reporte
+                        </button>
+                        <a asp-action="Index" asp-route-clienteId="@Model.ClienteId" class="btn btn-outline-secondary">
+                            <i class="ti ti-x"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        @if (Model.Resultado is null)
+        {
+            <!-- Estado sin resultados -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="empty">
+                        <div class="empty-img">
+                            <i class="ti ti-scale fs-1 text-secondary"></i>
+                        </div>
+                        <p class="empty-title">Ingrese una fecha</p>
+                        <p class="empty-subtitle text-secondary">Seleccione una fecha para generar el balance general.</p>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- Tarjetas de resumen -->
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="text-secondary small mb-2">Total Activo</div>
+                            <div class="display-6 fw-bold text-success">
+                                @Model.Resultado.TotalActivo.ToString("N2")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="text-secondary small mb-2">Total Pasivo</div>
+                            <div class="display-6 fw-bold text-warning">
+                                @Model.Resultado.TotalPasivo.ToString("N2")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="text-secondary small mb-2">Total Patrimonio</div>
+                            <div class="display-6 fw-bold text-info">
+                                @Model.Resultado.TotalPatrimonio.ToString("N2")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Árbol de Activos -->
+            <div class="card mb-3">
+                <div class="card-status-start bg-success"></div>
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Activos</h3>
+                </div>
+                @if (Model.Resultado.Activos.Count == 0)
+                {
+                    <div class="card-body">
+                        <div class="empty">
+                            <div class="empty-img">
+                                <i class="ti ti-folder-off fs-1 text-secondary"></i>
+                            </div>
+                            <p class="empty-title">No hay activos registrados</p>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            @foreach (var nodo in Model.Resultado.Activos)
+                            {
+                                @await Html.PartialAsync("_BalanceGeneralNodo", nodo, new ViewDataDictionary(ViewData) { ["Nivel"] = 0 })
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Árbol de Pasivos -->
+            <div class="card mb-3">
+                <div class="card-status-start bg-warning"></div>
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Pasivos</h3>
+                </div>
+                @if (Model.Resultado.Pasivos.Count == 0)
+                {
+                    <div class="card-body">
+                        <div class="empty">
+                            <div class="empty-img">
+                                <i class="ti ti-folder-off fs-1 text-secondary"></i>
+                            </div>
+                            <p class="empty-title">No hay pasivos registrados</p>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            @foreach (var nodo in Model.Resultado.Pasivos)
+                            {
+                                @await Html.PartialAsync("_BalanceGeneralNodo", nodo, new ViewDataDictionary(ViewData) { ["Nivel"] = 0 })
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Árbol de Patrimonio -->
+            <div class="card mb-3">
+                <div class="card-status-start bg-info"></div>
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Patrimonio</h3>
+                </div>
+                @if (Model.Resultado.Patrimonio.Count == 0)
+                {
+                    <div class="card-body">
+                        <div class="empty">
+                            <div class="empty-img">
+                                <i class="ti ti-folder-off fs-1 text-secondary"></i>
+                            </div>
+                            <p class="empty-title">No hay patrimonio registrado</p>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            @foreach (var nodo in Model.Resultado.Patrimonio)
+                            {
+                                @await Html.PartialAsync("_BalanceGeneralNodo", nodo, new ViewDataDictionary(ViewData) { ["Nivel"] = 0 })
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Resumen de Totales y Estado Contable -->
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title text-secondary mb-3">Verificación de la Ecuación Contable</h4>
+                            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                                <span class="text-secondary">Total Pasivo + Patrimonio</span>
+                                <span class="fw-bold">@Model.Resultado.TotalPasivoPatrimonio.ToString("N2")</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-secondary">Total Activo</span>
+                                <span class="fw-bold">@Model.Resultado.TotalActivo.ToString("N2")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            @if (Model.Resultado.Balancea)
+                            {
+                                <div class="alert alert-success mb-0" role="alert">
+                                    <div class="d-flex align-items-start gap-2">
+                                        <i class="ti ti-check flex-shrink-0 mt-1"></i>
+                                        <div>
+                                            <strong>Balance Equilibrado</strong>
+                                            <div class="small text-secondary mt-1">La ecuación contable se cumple correctamente.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-danger mb-0" role="alert">
+                                    <div class="d-flex align-items-start gap-2">
+                                        <i class="ti ti-alert-triangle flex-shrink-0 mt-1"></i>
+                                        <div>
+                                            <strong>Balance Desequilibrado</strong>
+                                            <div class="small text-secondary mt-1">Revise los registros contables.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
