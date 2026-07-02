@@ -14,6 +14,22 @@ public class EstadoResultadosFiltroDto
 }
 
 /// <summary>
+/// Respuesta del Estado de Resultados para un cliente y período.
+/// </summary>
+public class EstadoResultadosResponseDto
+{
+    public decimal TotalIngresos { get; set; }
+
+    public decimal TotalEgresos { get; set; }
+
+    public decimal ResultadoNeto { get; set; }
+
+    public List<EstadoResultadoNodoDto> Ingresos { get; set; } = new();
+
+    public List<EstadoResultadoNodoDto> Egresos { get; set; } = new();
+}
+
+/// <summary>
 /// Nodo del árbol del Estado de Resultados.
 /// Representa una cuenta contable y sus subtotales acumulados.
 /// </summary>
@@ -28,20 +44,4 @@ public class EstadoResultadoNodoDto
     public decimal Importe { get; set; }
 
     public List<EstadoResultadoNodoDto> Hijas { get; set; } = new();
-}
-
-/// <summary>
-/// Respuesta del Estado de Resultados para un cliente y período.
-/// </summary>
-public class EstadoResultadosResponseDto
-{
-    public decimal TotalIngresos { get; set; }
-
-    public decimal TotalEgresos { get; set; }
-
-    public decimal ResultadoNeto { get; set; }
-
-    public List<EstadoResultadoNodoDto> Ingresos { get; set; } = new();
-
-    public List<EstadoResultadoNodoDto> Egresos { get; set; } = new();
 }
