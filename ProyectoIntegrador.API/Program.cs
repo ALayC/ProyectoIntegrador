@@ -10,6 +10,8 @@ using ProyectoIntegrador.API.Middleware;
 using ProyectoIntegrador.Data.Context;
 using ProyectoIntegrador.Data.Repositories.Implementations;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
+using ProyectoIntegrador.Data.Repositories.Implementations;
+using ProyectoIntegrador.Data.Repositories.Interfaces;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Implementations;
 using ProyectoIntegrador.Service.Interfaces;
@@ -169,6 +171,7 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IRolRepository, RolRepository>();
 builder.Services.AddScoped<ITokenRevocadoRepository, TokenRevocadoRepository>();
+builder.Services.AddScoped<IDispositivoConfiableRepository, DispositivoConfiableRepository>();
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IPlanDeCuentasRepository, PlanDeCuentasRepository>();
 builder.Services.AddScoped<IAuditoriaRepository, AuditoriaRepository>();
