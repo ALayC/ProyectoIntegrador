@@ -362,6 +362,9 @@ public class AppDbContext : DbContext
               entity.Property(e => e.DebeAcumulado).HasPrecision(18, 2);
               entity.Property(e => e.HaberAcumulado).HasPrecision(18, 2);
               entity.Property(e => e.Saldo).HasPrecision(18, 2);
+              entity.Property(e => e.DebeAcumuladoBase).HasPrecision(18, 2);
+              entity.Property(e => e.HaberAcumuladoBase).HasPrecision(18, 2);
+              entity.Property(e => e.SaldoBase).HasPrecision(18, 2);
           });
 
         // ??????????????????????????????????????????????

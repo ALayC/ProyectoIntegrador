@@ -375,7 +375,11 @@ public class AsientoContableService : IAsientoContableService
                     Periodo = periodo,
                     DebeAcumulado = linea.Debe,
                     HaberAcumulado = linea.Haber,
-                    Saldo = linea.Debe - linea.Haber
+                    Saldo = linea.Debe - linea.Haber,
+                    Moneda = linea.Moneda,
+                    DebeAcumuladoBase = linea.Debe * linea.TipoCambio,
+                    HaberAcumuladoBase = linea.Haber * linea.TipoCambio,
+                    SaldoBase = (linea.Debe - linea.Haber) * linea.TipoCambio
                 };
 
                 await _saldoRepository.Guardar(saldo);
@@ -385,6 +389,9 @@ public class AsientoContableService : IAsientoContableService
                 saldo.DebeAcumulado += linea.Debe;
                 saldo.HaberAcumulado += linea.Haber;
                 saldo.Saldo = saldo.DebeAcumulado - saldo.HaberAcumulado;
+                saldo.DebeAcumuladoBase += linea.Debe * linea.TipoCambio;
+                saldo.HaberAcumuladoBase += linea.Haber * linea.TipoCambio;
+                saldo.SaldoBase = saldo.DebeAcumuladoBase - saldo.HaberAcumuladoBase;
 
                 await _saldoRepository.Actualizar(saldo);
             }

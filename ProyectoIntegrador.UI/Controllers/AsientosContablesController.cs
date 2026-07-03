@@ -183,6 +183,41 @@ public class AsientosContablesController : Controller
         return RedirectToAction(nameof(Index), new { clienteId });
     }
 
+    // ── Proxy para tipo de cambio (evita CORS del browser al API) ──────────
+    [HttpGet]
+    public async Task<IActionResult> CotizacionUsd([FromQuery] string fecha)
+    {
+        // Determinar fecha a consultar
+        DateOnly fechaConsulta;
+        if (!DateOnly.TryParse(fecha, out fechaConsulta))
+            fechaConsulta = DateOnly.FromDateTime(DateTime.Today);
+
+        var response = await _apiClient.GetAsync<CotizacionUsdViewModel>(
+            $"api/tipocambio?moneda=USD&fecha={fechaConsulta:yyyy-MM-dd}");
+
+        if (!response.EsExitoso || response.Data is null)
+            return Json(new { ok = false, esFallback = false });
+
+        // Detectar si es fallback comparando la fecha retornada
+        var esFallback = response.Data.Fecha != fechaConsulta;
+
+        return Json(new
+        {
+            ok = true,
+            valor = response.Data.Valor,
+            fechaReal = response.Data.Fecha.ToString("dd/MM/yyyy"),
+            esFallback
+        });
+    }
+
+    private class CotizacionUsdViewModel
+    {
+        public string Moneda { get; set; } = string.Empty;
+        public DateOnly Fecha { get; set; }
+        public decimal Valor { get; set; }
+        public string Fuente { get; set; } = string.Empty;
+    }
+
     // ──────────────────────────────────────────────
     private async Task RecargarSelectsAsync(CrearAsientoViewModel model)
     {
