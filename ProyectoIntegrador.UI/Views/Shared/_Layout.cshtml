@@ -18,15 +18,17 @@
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu" aria-controls="sidebar-menu" aria-expanded="false" aria-label="Mostrar menú">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <h1 class="navbar-brand navbar-brand-autodark">
+                <h1 class="navbar-brand navbar-brand-autodark mb-0">
                     <a asp-controller="Home" asp-action="Index" class="text-white text-decoration-none fw-semibold">
                         SIG Contable
                     </a>
+                    <p class="sg-sidebar-subtitle">Sistema Integrado Contable</p>
                 </h1>
-                <div class="collapse navbar-collapse" id="sidebar-menu">
+                <div class="collapse navbar-collapse d-flex flex-column justify-content-between" id="sidebar-menu" style="min-height:calc(100vh - 80px)">
                     <ul class="navbar-nav pt-lg-3">
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Index">
+                                <span class="nav-link-icon"><i class="ti ti-layout-dashboard"></i></span>
                                 <span class="nav-link-title">Panel principal</span>
                             </a>
                         </li>
@@ -34,6 +36,7 @@
                         {
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Clientes" asp-action="Index">
+                                    <span class="nav-link-icon"><i class="ti ti-users"></i></span>
                                     <span class="nav-link-title">Clientes</span>
                                 </a>
                             </li>
@@ -41,17 +44,30 @@
                             {
                                 <li class="nav-item">
                                     <a class="nav-link" asp-controller="Usuarios" asp-action="Index">
+                                        <span class="nav-link-icon"><i class="ti ti-user-cog"></i></span>
                                         <span class="nav-link-title">Usuarios</span>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" asp-controller="Roles" asp-action="Index">
+                                        <span class="nav-link-icon"><i class="ti ti-shield-check"></i></span>
                                         <span class="nav-link-title">Roles y Permisos</span>
                                     </a>
                                 </li>
                             }
                         }
                     </ul>
+                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                    {
+                        <div class="pb-3">
+                            <form asp-controller="Auth" asp-action="Logout" method="post">
+                                <button type="submit" class="nav-link w-100 text-start" title="Cerrar sesión" style="background:none;border:none;">
+                                    <span class="nav-link-icon"><i class="ti ti-logout"></i></span>
+                                    <span class="nav-link-title">Cerrar sesión</span>
+                                </button>
+                            </form>
+                        </div>
+                    }
                 </div>
             </div>
         </aside>
@@ -59,17 +75,20 @@
         <div class="page-wrapper">
             <header class="navbar navbar-expand-md d-print-none border-bottom bg-white">
                 <div class="container-xl">
-                    <div class="navbar-nav flex-row ms-auto order-md-last">
+                    <nav class="sg-breadcrumb-nav" aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item">
+                                <a asp-controller="Home" asp-action="Index">Gestión</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">@(ViewData["Title"] ?? "Sistema")</li>
+                        </ol>
+                    </nav>
+                    <div class="navbar-nav flex-row ms-auto order-md-last gap-1">
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
-                            <div class="nav-item d-flex align-items-center me-3 text-secondary">
-                                @User.Identity.Name
-                            </div>
-                            <div class="nav-item">
-                                <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-outline-azure btn-sm">Cerrar sesión</button>
-                                </form>
-                            </div>
+                            <span class="nav-item d-flex align-items-center me-2 text-secondary" style="font-size:13px">@User.Identity.Name</span>
+                            <a href="#" class="sg-topbar-icon" title="Notificaciones"><i class="ti ti-bell"></i></a>
+                            <a href="#" class="sg-topbar-icon" title="Ayuda"><i class="ti ti-help-circle"></i></a>
                         }
                         else
                         {
@@ -136,7 +155,7 @@
         NProgress.configure({ showSpinner: false, speed: 300, trickleSpeed: 120 });
         document.addEventListener('DOMContentLoaded', function () {
             NProgress.done();
-            AOS.init({ duration: 380, once: true, offset: 30, easing: 'ease-out-quad' });
+            AOS.init({ duration: 500, once: true, offset: 60, easing: 'ease-out-cubic' });
 
             // Alertas auto-cierre
             document.querySelectorAll('.alert-dismissible').forEach(function (el) {

@@ -52,20 +52,73 @@
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3" data-aos="fade-down">
-    <h2><i class="ti ti-users"></i> Mis Clientes</h2>
-    <a asp-action="Crear" class="btn btn-azure">
-        <i class="ti ti-plus"></i> Nuevo Cliente
+    <div>
+        <div style="font-size:20px;font-weight:600;color:#1a3a5c;"><i class="ti ti-users me-1"></i>Mis Clientes</div>
+        <div class="text-muted" style="font-size:13px;">Gestión de clientes registrados en el sistema</div>
+    </div>
+    <a asp-action="Crear" class="btn btn-sm" style="background:#1a3a5c;color:#fff;">
+        <i class="ti ti-plus me-1"></i> Nuevo Cliente
     </a>
 </div>
 
-<div class="row mb-3" data-aos="fade-up">
-    <div class="col-md-3">
-        <label for="buscar-clientes" class="form-label visually-hidden">Buscar clientes por RUT o razón social</label>
-        <div class="input-icon">
-            <span class="input-icon-addon">
-                <i class="ti ti-search"></i>
-            </span>
-            <input id="buscar-clientes" type="text" class="form-control" placeholder="Buscar por RUT o razón social" aria-label="Buscar clientes por RUT o razón social" />
+@{
+    var total     = Model.TotalRegistros;
+    var activos   = Model.Datos.Count(c => c.Estado == "Activo");
+    var inactivos = Model.Datos.Count(c => c.Estado == "Inactivo");
+    var conComp   = 0; // ampliar cuando el modelo exponga el dato
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3" data-aos="fade-up" data-aos-delay="0">
+        <div class="card sg-stat-card h-100" style="border-top-color:#1a3a5c;">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted" style="font-size:12px;">Total clientes</div>
+                        <div style="font-size:28px;font-weight:700;color:#1a3a5c;">@total</div>
+                    </div>
+                    <i class="ti ti-users" style="font-size:2rem;color:#1a3a5c;opacity:.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3" data-aos="fade-up" data-aos-delay="100">
+        <div class="card sg-stat-card h-100" style="border-top-color:#2fb344;">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted" style="font-size:12px;">Activos</div>
+                        <div style="font-size:28px;font-weight:700;color:#2fb344;">@activos</div>
+                    </div>
+                    <i class="ti ti-circle-check" style="font-size:2rem;color:#2fb344;opacity:.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3" data-aos="fade-up" data-aos-delay="200">
+        <div class="card sg-stat-card h-100" style="border-top-color:#f59f00;">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted" style="font-size:12px;">Con comprobantes</div>
+                        <div style="font-size:28px;font-weight:700;color:#f59f00;">@conComp</div>
+                    </div>
+                    <i class="ti ti-file-invoice" style="font-size:2rem;color:#f59f00;opacity:.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3" data-aos="fade-up" data-aos-delay="300">
+        <div class="card sg-stat-card h-100" style="border-top-color:#d63939;">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted" style="font-size:12px;">Inactivos</div>
+                        <div style="font-size:28px;font-weight:700;color:#d63939;">@inactivos</div>
+                    </div>
+                    <i class="ti ti-ban" style="font-size:2rem;color:#d63939;opacity:.3;"></i>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -78,149 +131,161 @@
 }
 else
 {
-    <div class="table-responsive" data-aos="fade-up" data-aos-delay="60">
-        <table class="table table-striped table-hover align-middle">
-            <thead>
-                <tr>
-                    <th>RUT</th>
-                    <th>Razón Social</th>
-                    <th>Email</th>
-                    <th>Estado</th>
-                    <th class="text-end">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var cliente in Model.Datos)
-                {
-                    var esInactivo = cliente.Estado == "Inactivo";
-                    <tr class="@(esInactivo ? "text-muted text-decoration-line-through" : "") clickable-row" data-rut="@cliente.Rut" data-razon="@cliente.RazonSocial" data-href="@Url.Action("Detalles", "Clientes", new { id = cliente.Id })">
-                        <td>
-                            @cliente.Rut
-                        </td>
-                        <td>
-                            @cliente.RazonSocial
-                        </td>
-                        <td>
-                            @cliente.Email
-                        </td>
-                        <td>
-                            @if (esInactivo)
-                            {
-                                <span class="text-danger fw-semibold">Inactivo</span>
-                            }
-
-                            else
-                            {
-                                <span class="text-success fw-semibold">Activo</span>
-                            }
-                        </td>
-                        <td class="text-end">
-                            <a asp-action="Editar" asp-route-id="@cliente.Id"
-                                   class="btn btn-sm btn-outline-azure" title="Editar">
-                                <i class="ti ti-edit"></i>
-                            </a>
-                            @if (!esInactivo)
-                            {
-                                <button type="button"
-                                        class="btn btn-sm btn-outline-danger"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#confirmar-desactivar-@cliente.Id"
-                                        title="Desactivar">
-                                    <i class="ti ti-ban"></i>
-                                </button>
-
-                                <div class="modal modal-blur fade" id="confirmar-desactivar-@cliente.Id" tabindex="-1" role="dialog" aria-hidden="true">
-                                    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Confirmar desactivación</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                                            </div>
-                                            <div class="modal-body text-secondary">
-                                                ¿Deseas desactivar el cliente <strong>@cliente.RazonSocial</strong>?
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
-                                                <form asp-action="Desactivar" asp-route-id="@cliente.Id" method="post">
-                                                    <button type="submit" class="btn btn-danger">Desactivar</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                            else
-                            {
-                                <button type="button"
-                                        class="btn btn-sm btn-outline-green"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#confirmar-activar-@cliente.Id"
-                                        title="Activar">
-                                    <i class="ti ti-circle-check"></i>
-                                </button>
-
-                                <div class="modal modal-blur fade" id="confirmar-activar-@cliente.Id" tabindex="-1" role="dialog" aria-hidden="true">
-                                    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Confirmar activación</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                                            </div>
-                                            <div class="modal-body text-secondary">
-                                                ¿Deseas activar el cliente <strong>@cliente.RazonSocial</strong>?
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
-                                                <form asp-action="Activar" asp-route-id="@cliente.Id" method="post">
-                                                    <button type="submit" class="btn btn-success">Activar</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        </td>
+    <div class="card" data-aos="fade-up" data-aos-delay="60">
+        <div class="card-header d-flex align-items-center gap-2 flex-wrap">
+            <div class="flex-grow-1">
+                <label for="buscar-clientes" class="form-label visually-hidden">Buscar clientes por RUT o razón social</label>
+                <div class="input-icon" style="max-width:280px;">
+                    <span class="input-icon-addon"><i class="ti ti-search"></i></span>
+                    <input id="buscar-clientes" type="text" class="form-control form-control-sm" placeholder="Buscar por RUT o razón social" aria-label="Buscar clientes por RUT o razón social" />
+                </div>
+            </div>
+            <div class="d-flex gap-1 ms-auto">
+                <button type="button" class="btn btn-sm btn-outline-secondary" title="Filtrar">
+                    <i class="ti ti-filter"></i> Filtrar
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" title="Exportar">
+                    <i class="ti ti-download"></i> Exportar
+                </button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="sg-thead">
+                    <tr>
+                        <th>RUT</th>
+                        <th>Razón Social</th>
+                        <th>Email</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acciones</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var cliente in Model.Datos)
+                    {
+                        var esInactivo = cliente.Estado == "Inactivo";
+                        <tr class="@(esInactivo ? "text-muted" : "") clickable-row" data-rut="@cliente.Rut" data-razon="@cliente.RazonSocial" data-href="@Url.Action("Detalles", "Clientes", new { id = cliente.Id })">
+                            <td><span class="sg-rut-chip">@cliente.Rut</span></td>
+                            <td>@cliente.RazonSocial</td>
+                            <td>@cliente.Email</td>
+                            <td>
+                                @if (esInactivo)
+                                {
+                                    <span class="sg-badge-inactivo"><span class="sg-badge-dot"></span>Inactivo</span>
+                                }
+                                else
+                                {
+                                    <span class="sg-badge-activo"><span class="sg-badge-dot"></span>Activo</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Detalles" asp-route-id="@cliente.Id"
+                                   class="sg-action-btn sg-btn-view" title="Ver detalle">
+                                    <i class="ti ti-eye"></i>
+                                </a>
+                                <a asp-action="Editar" asp-route-id="@cliente.Id"
+                                   class="sg-action-btn sg-btn-edit" title="Editar">
+                                    <i class="ti ti-edit"></i>
+                                </a>
+                                @if (!esInactivo)
+                                {
+                                    <button type="button"
+                                            class="sg-action-btn sg-btn-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmar-desactivar-@cliente.Id"
+                                            title="Desactivar">
+                                        <i class="ti ti-ban"></i>
+                                    </button>
+
+                                    <div class="modal modal-blur fade" id="confirmar-desactivar-@cliente.Id" tabindex="-1" role="dialog" aria-hidden="true">
+                                        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Confirmar desactivación</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                                </div>
+                                                <div class="modal-body text-secondary">
+                                                    ¿Deseas desactivar el cliente <strong>@cliente.RazonSocial</strong>?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
+                                                    <form asp-action="Desactivar" asp-route-id="@cliente.Id" method="post">
+                                                        <button type="submit" class="btn btn-danger">Desactivar</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <button type="button"
+                                            class="sg-action-btn sg-btn-view"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmar-activar-@cliente.Id"
+                                            title="Activar">
+                                        <i class="ti ti-circle-check"></i>
+                                    </button>
+
+                                    <div class="modal modal-blur fade" id="confirmar-activar-@cliente.Id" tabindex="-1" role="dialog" aria-hidden="true">
+                                        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Confirmar activación</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                                </div>
+                                                <div class="modal-body text-secondary">
+                                                    ¿Deseas activar el cliente <strong>@cliente.RazonSocial</strong>?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
+                                                    <form asp-action="Activar" asp-route-id="@cliente.Id" method="post">
+                                                        <button type="submit" class="btn btn-success">Activar</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <span class="text-muted" style="font-size:13px;">
+                @Model.TotalRegistros registro@(Model.TotalRegistros == 1 ? "" : "s") en total
+            </span>
+            @if (Model.TotalPaginas > 1)
+            {
+                <nav aria-label="Paginación de clientes">
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item @(Model.TienePaginaAnterior ? "" : "disabled")">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-pagina="@(Model.Pagina - 1)"
+                               asp-route-cantidadPorPagina="@Model.CantidadPorPagina">
+                                &laquo;
+                            </a>
+                        </li>
+                        @for (int i = 1; i <= Model.TotalPaginas; i++)
+                        {
+                            <li class="page-item @(i == Model.Pagina ? "active" : "")">
+                                <a class="page-link" asp-action="Index"
+                                   asp-route-pagina="@i"
+                                   asp-route-cantidadPorPagina="@Model.CantidadPorPagina">@i</a>
+                            </li>
+                        }
+                        <li class="page-item @(Model.TienePaginaSiguiente ? "" : "disabled")">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-pagina="@(Model.Pagina + 1)"
+                               asp-route-cantidadPorPagina="@Model.CantidadPorPagina">
+                                &raquo;
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        </div>
     </div>
-
-    @* Paginación *@
-    @if (Model.TotalPaginas > 1)
-    {
-        <nav aria-label="Paginación de clientes">
-            <ul class="pagination justify-content-center">
-                <li class="page-item @(Model.TienePaginaAnterior ? "" : "disabled")">
-                    <a class="page-link" asp-action="Index"
-                           asp-route-pagina="@(Model.Pagina - 1)"
-                           asp-route-cantidadPorPagina="@Model.CantidadPorPagina">
-                        &laquo; Anterior
-                    </a>
-                </li>
-
-                @for (int i = 1; i <= Model.TotalPaginas; i++)
-                {
-                    <li class="page-item @(i == Model.Pagina ? "active" : "")">
-                        <a class="page-link" asp-action="Index"
-                           asp-route-pagina="@i"
-                           asp-route-cantidadPorPagina="@Model.CantidadPorPagina">@i</a>
-                    </li>
-                }
-
-                <li class="page-item @(Model.TienePaginaSiguiente ? "" : "disabled")">
-                    <a class="page-link" asp-action="Index"
-                           asp-route-pagina="@(Model.Pagina + 1)"
-                           asp-route-cantidadPorPagina="@Model.CantidadPorPagina">
-                        Siguiente &raquo;
-                    </a>
-                </li>
-            </ul>
-        </nav>
-
-        <p class="text-center text-muted">
-            Mostrando página @Model.Pagina de @Model.TotalPaginas
-            (@Model.TotalRegistros registros en total)
-        </p>
-    }
 }

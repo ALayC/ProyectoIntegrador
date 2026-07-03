@@ -17,6 +17,7 @@ html {
     --sg-auth-end: #f8fbff;
     --sg-muted-surface: #eef2f7;
     --sg-tree-border: var(--tblr-border-color-translucent, rgba(24, 36, 51, 0.08));
+    --sg-primary: #1a3a5c;
 }
 
 @media (min-width: 768px) {
@@ -44,22 +45,40 @@ body {
 }
 
 .sg-sidebar {
-    background: linear-gradient(180deg, var(--sg-azure-700) 0%, var(--sg-azure-800) 100%);
+    background: #1a3a5c;
     border-right: 0;
     width: 85%;
 }
 
     .sg-sidebar .navbar-brand,
-    .sg-sidebar .nav-link,
     .sg-sidebar .nav-link-title {
-        color: var(--sg-sidebar-text) !important;
+        color: #fff !important;
+    }
+
+    .sg-sidebar .nav-link {
+        color: rgba(255,255,255,.55) !important;
     }
 
         .sg-sidebar .nav-link.active,
         .sg-sidebar .nav-link:hover {
-            background-color: rgba(255, 255, 255, 0.12);
-            border-radius: 0.5rem;
+            background: rgba(255,255,255,.12);
+            border-radius: 7px;
+            color: #fff !important;
         }
+
+        .sg-sidebar .nav-link.active .nav-link-title,
+        .sg-sidebar .nav-link:hover .nav-link-title {
+            color: #fff !important;
+        }
+
+    .sg-sidebar-subtitle {
+        color: #fff;
+        opacity: .4;
+        font-size: 11px;
+        letter-spacing: .03em;
+        margin-top: 2px;
+        margin-bottom: 0;
+    }
 
 .page-title {
     color: var(--sg-title-color);
@@ -116,8 +135,12 @@ details[open] .tree-caret {
 }
 
 #nprogress .bar {
-    background: var(--sg-azure-600);
+    background: #1a3a5c;
     height: 3px;
+}
+
+#nprogress .spinner {
+    display: none;
 }
 
 /* ── Botones press ──────────────────────────────────────────── */
@@ -186,4 +209,125 @@ details[open] .tree-caret {
 #sg-back-top:hover {
     transform: translateY(-3px);
     background: var(--sg-azure-700);
+}
+
+/* ── Stat cards ─────────────────────────────────────────────── */
+.sg-stat-card {
+    border-top-width: 3px !important;
+    border-top-style: solid !important;
+}
+
+/* ── Table header uppercase ─────────────────────────────────── */
+.sg-thead th {
+    background: #f8fafc;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: .04em;
+    color: var(--sg-text-muted);
+}
+
+/* ── RUT monospace chip ─────────────────────────────────────── */
+.sg-rut-chip {
+    font-family: monospace;
+    background: #f1f5f9;
+    padding: 2px 7px;
+    border-radius: 4px;
+}
+
+/* ── Badge pill status ──────────────────────────────────────── */
+.sg-badge-activo,
+.sg-badge-inactivo {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.sg-badge-activo {
+    background: rgba(47, 179, 68, 0.12);
+    color: #1a7a2e;
+}
+
+.sg-badge-inactivo {
+    background: rgba(214, 57, 57, 0.11);
+    color: #b91c1c;
+}
+
+.sg-badge-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.sg-badge-activo .sg-badge-dot {
+    background: #2fb344;
+    animation: sg-pulse 1.6s ease infinite;
+}
+
+.sg-badge-inactivo .sg-badge-dot {
+    background: #d63939;
+}
+
+@keyframes sg-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: .45; transform: scale(1.35); }
+}
+
+/* ── Action buttons 28px ────────────────────────────────────── */
+.sg-action-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    transition: background .15s ease, color .15s ease;
+}
+
+.sg-action-btn.sg-btn-view   { color: #2fb344; border-color: #2fb344; }
+.sg-action-btn.sg-btn-edit   { color: #206bc4; border-color: #206bc4; }
+.sg-action-btn.sg-btn-danger { color: #d63939; border-color: #d63939; }
+
+.sg-action-btn.sg-btn-view:hover   { background: rgba(47, 179, 68, 0.12); }
+.sg-action-btn.sg-btn-edit:hover   { background: rgba(32, 107, 196, 0.12); }
+.sg-action-btn.sg-btn-danger:hover { background: rgba(214, 57, 57, 0.12); }
+
+/* ── Breadcrumb topbar ──────────────────────────────────────── */
+.sg-breadcrumb-nav .breadcrumb-item a {
+    color: var(--sg-text-muted);
+    text-decoration: none;
+}
+
+.sg-breadcrumb-nav .breadcrumb-item.active {
+    font-weight: 700;
+    color: var(--sg-primary);
+}
+
+/* ── Topbar icon buttons ────────────────────────────────────── */
+.sg-topbar-icon {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--sg-text-muted);
+    font-size: 1.1rem;
+    transition: background .15s ease, color .15s ease;
+    text-decoration: none;
+}
+
+.sg-topbar-icon:hover {
+    background: #f1f5f9;
+    color: var(--sg-primary);
 }
