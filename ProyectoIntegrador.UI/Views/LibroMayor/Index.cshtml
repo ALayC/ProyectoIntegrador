@@ -3,7 +3,7 @@
     ViewData["Title"] = "Libro Mayor";
 }
 
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3" data-aos="fade-down">
     <div>
         <h2 class="mb-1"><i class="ti ti-report-analytics"></i> Libro Mayor</h2>
         @if (!string.IsNullOrWhiteSpace(Model.ClienteNombre))
@@ -52,6 +52,9 @@
 </div>
 
 <div class="card mb-3">
+    <div class="card-header">
+        <h3 class="card-title"><i class="ti ti-filter me-1"></i> Filtros</h3>
+    </div>
     <div class="card-body">
         <form method="get" asp-action="Index" class="row g-3 align-items-end">
             <input type="hidden" name="clienteId" value="@Model.ClienteId" />
@@ -62,46 +65,52 @@
                     @foreach (var ej in Model.Ejercicios)
                     {
                         <option value="@ej.Id" selected="@(Model.EjercicioId == ej.Id)">
-                            @ej.FechaInicio.Year � @ej.FechaFin.Year (@ej.Estado)
+                            @ej.FechaInicio.Year &ndash; @ej.FechaFin.Year (@ej.Estado)
                         </option>
                     }
                 </select>
             </div>
-            <div class="col-md-4">
-                <label class="form-label">Cuentas</label>
-                <select name="cuentaIds" class="form-select" multiple>
-                    @foreach (var cuenta in Model.Cuentas)
-                    {
-                        <option value="@cuenta.Id" selected="@(Model.CuentaIds.Contains(cuenta.Id))">
-                            @cuenta.Codigo � @cuenta.Nombre
-                        </option>
-                    }
-                </select>
-                <div class="form-hint">Pod�s seleccionar una o varias cuentas.</div>
-            </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <label class="form-label">Fecha desde</label>
                 <input type="date" name="fechaDesde" class="form-control"
                        value="@(Model.FechaDesde?.ToString("yyyy-MM-dd") ?? string.Empty)" />
             </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <label class="form-label">Fecha hasta</label>
                 <input type="date" name="fechaHasta" class="form-control"
                        value="@(Model.FechaHasta?.ToString("yyyy-MM-dd") ?? string.Empty)" />
             </div>
-            <div class="col-12 d-flex gap-2">
-                <button type="submit" class="btn btn-azure">
+            <div class="col-md-2 d-flex gap-2 align-items-end">
+                <button type="submit" class="btn btn-azure flex-fill">
                     <i class="ti ti-search"></i> Consultar
                 </button>
                 <a asp-action="Index" asp-route-clienteId="@Model.ClienteId" class="btn btn-outline-secondary">
-                    <i class="ti ti-x"></i> Limpiar
+                    <i class="ti ti-x"></i>
                 </a>
+            </div>
+            <div class="col-12">
+                <label class="form-label">
+                    Cuentas <span class="text-secondary fw-normal small">— dej&aacute; vac&iacute;o para todas</span>
+                </label>
+                <div class="border rounded p-2" style="max-height:88px; overflow-y:auto;">
+                    @foreach (var cuenta in Model.Cuentas)
+                    {
+                        <div class="form-check form-check-inline mb-1">
+                            <input class="form-check-input" type="checkbox" name="cuentaIds"
+                                   id="cuenta_@cuenta.Id" value="@cuenta.Id"
+                                   @(Model.CuentaIds.Contains(cuenta.Id) ? "checked" : "") />
+                            <label class="form-check-label small" for="cuenta_@cuenta.Id">
+                                @cuenta.Codigo &ndash; @cuenta.Nombre
+                            </label>
+                        </div>
+                    }
+                </div>
             </div>
         </form>
     </div>
 </div>
 
-@if (Model.CuentasMayor.Count == 0)
+                        @if (Model.CuentasMayor.Count == 0)
 {
     <div class="card">
         <div class="card-body">
@@ -122,7 +131,7 @@ else
         {
             var cuenta = Model.CuentasMayor[i];
             var collapseId = $"collapseMayor{i}";
-            <div class="accordion-item mb-2">
+            <div class="accordion-item mb-2" data-aos="fade-up" data-aos-delay="@(i * 40)">
                 <h2 class="accordion-header" id="heading-@i">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="false" aria-controls="@collapseId">
                         <div class="d-flex flex-wrap justify-content-between align-items-center w-100 gap-2">

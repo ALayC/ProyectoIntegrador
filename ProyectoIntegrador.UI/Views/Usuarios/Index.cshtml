@@ -3,7 +3,7 @@
     ViewData["Title"] = "Gestión de Usuarios";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center mb-3" data-aos="fade-down">
     <h2><i class="ti ti-users"></i> Gestión de Usuarios</h2>
     <div class="d-flex gap-2">
         <a asp-controller="Roles" asp-action="Index" class="btn btn-outline-azure">
@@ -16,7 +16,7 @@
 </div>
 
 @* Filtros *@
-<form method="get" asp-action="Index" class="row g-2 mb-3">
+<form method="get" asp-action="Index" class="row g-2 mb-3" data-aos="fade-up">
     <div class="col-md-3">
         <select name="filtroRol" class="form-select">
             <option value="">Todos los roles</option>

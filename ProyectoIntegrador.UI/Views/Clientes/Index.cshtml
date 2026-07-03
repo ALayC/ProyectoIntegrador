@@ -51,14 +51,14 @@
     </script>
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center mb-3" data-aos="fade-down">
     <h2><i class="ti ti-users"></i> Mis Clientes</h2>
     <a asp-action="Crear" class="btn btn-azure">
         <i class="ti ti-plus"></i> Nuevo Cliente
     </a>
 </div>
 
-<div class="row mb-3">
+<div class="row mb-3" data-aos="fade-up">
     <div class="col-md-3">
         <label for="buscar-clientes" class="form-label visually-hidden">Buscar clientes por RUT o razón social</label>
         <div class="input-icon">
@@ -78,7 +78,7 @@
 }
 else
 {
-    <div class="table-responsive">
+    <div class="table-responsive" data-aos="fade-up" data-aos-delay="60">
         <table class="table table-striped table-hover align-middle">
             <thead>
                 <tr>

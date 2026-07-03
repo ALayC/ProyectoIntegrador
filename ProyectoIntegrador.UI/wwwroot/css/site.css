@@ -105,3 +105,85 @@ details[open] .tree-caret {
         .sg-auth-card .btn-primary:hover {
             filter: brightness(1.05);
         }
+
+.card {
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
+}
+
+#nprogress .bar {
+    background: var(--sg-azure-600);
+    height: 3px;
+}
+
+/* ── Botones press ──────────────────────────────────────────── */
+.btn {
+    transition: transform 0.1s ease, filter 0.1s ease;
+}
+
+.btn:active:not(:disabled) {
+    transform: scale(0.96);
+}
+
+/* ── Tabla hover suave ──────────────────────────────────────── */
+.table-hover > tbody > tr {
+    transition: background-color 0.15s ease;
+}
+
+/* ── Fade-in de página ──────────────────────────────────────── */
+@keyframes sg-fadein {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-body {
+    animation: sg-fadein 0.25s ease both;
+}
+
+/* ── Input focus animado ────────────────────────────────────── */
+.form-control,
+.form-select {
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--sg-azure-600);
+    box-shadow: 0 0 0 0.2rem rgba(32, 107, 196, 0.18);
+}
+
+/* ── Botón ir arriba ────────────────────────────────────────── */
+#sg-back-top {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: var(--sg-azure-600);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease, background 0.18s ease;
+    z-index: 1050;
+    box-shadow: 0 4px 12px rgba(32, 107, 196, 0.35);
+}
+
+#sg-back-top.sg-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#sg-back-top:hover {
+    transform: translateY(-3px);
+    background: var(--sg-azure-700);
+}
