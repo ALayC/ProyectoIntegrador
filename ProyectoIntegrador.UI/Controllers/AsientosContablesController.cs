@@ -50,13 +50,13 @@ public class AsientosContablesController : Controller
             return View(model);
         }
 
-        var totalDebe = model.Lineas.Sum(l => l.Debe);
-        var totalHaber = model.Lineas.Sum(l => l.Haber);
+        var totalDebe  = model.Lineas.Sum(l => l.Debe  * l.TipoCambio);
+        var totalHaber = model.Lineas.Sum(l => l.Haber * l.TipoCambio);
 
-        if (totalDebe != totalHaber)
+        if (Math.Abs(totalDebe - totalHaber) > 0.001m)
         {
             ModelState.AddModelError(string.Empty,
-                $"El asiento está desbalanceado: Debe={totalDebe:N2}, Haber={totalHaber:N2}. Deben ser iguales.");
+                $"El asiento está desbalanceado en moneda base: Debe={totalDebe:N2}, Haber={totalHaber:N2}. Deben ser iguales.");
             await RecargarSelectsAsync(model);
             return View(model);
         }

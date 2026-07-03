@@ -138,7 +138,9 @@ public class ImportacionController : Controller
                 {
                     CuentaContableId = l.CuentaContableId!.Value,
                     Debe = l.Debe,
-                    Haber = l.Haber
+                    Haber = l.Haber,
+                    Moneda = l.Moneda,
+                    TipoCambio = l.TipoCambio
                 }).ToList()
             }).ToList();
 
@@ -216,7 +218,9 @@ public class ImportacionController : Controller
                 {
                     cuentaContableId = l.CuentaContableId,
                     debe = l.Debe,
-                    haber = l.Haber
+                    haber = l.Haber,
+                    moneda = l.Moneda,
+                    tipoCambio = l.TipoCambio
                 })
             })
         };

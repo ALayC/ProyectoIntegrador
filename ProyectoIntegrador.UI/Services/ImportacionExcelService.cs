@@ -18,9 +18,11 @@ public class ImportacionExcelService : IImportacionExcelService
     private const int ColNombreCuenta = 5; // auto-completado por fórmula VLOOKUP
     private const int ColDebe = 6;
     private const int ColHaber = 7;
+    private const int ColMoneda = 8;
+    private const int ColTipoCambio = 9;
 
     private static readonly string[] EncabezadosEsperados =
-        ["NumAsiento", "Fecha", "Glosa", "CodigoCuenta", "NombreCuenta", "Debe", "Haber"];
+        ["NumAsiento", "Fecha", "Glosa", "CodigoCuenta", "NombreCuenta", "Debe", "Haber", "Moneda", "TipoCambio"];
 
     // ── Generación del template ────────────────────────────────────────────
 
@@ -55,7 +57,7 @@ public class ImportacionExcelService : IImportacionExcelService
 
         // Título
         hojaImport.Cell(1, 1).Value = $"Importación de asientos — {clienteNombre}";
-        hojaImport.Range(1, 1, 1, 7).Merge();
+        hojaImport.Range(1, 1, 1, 9).Merge();
         hojaImport.Cell(1, 1).Style
             .Font.SetBold(true)
             .Font.SetFontSize(13)
@@ -66,10 +68,10 @@ public class ImportacionExcelService : IImportacionExcelService
         // Instrucciones
         hojaImport.Cell(2, 1).Value = "• NumAsiento: número entero que agrupa las líneas de un mismo asiento.";
         hojaImport.Cell(3, 1).Value = "• CodigoCuenta: seleccione del desplegable. La columna NombreCuenta se completa automáticamente.";
-        hojaImport.Cell(4, 1).Value = "• Debe y Haber: valores positivos. Cada asiento debe balancear (Debe = Haber).";
+        hojaImport.Cell(4, 1).Value = "• Debe y Haber: valores positivos. Cada asiento debe balancear (Debe = Haber en moneda base). Moneda: UYU/USD. TipoCambio: 1 para UYU.";
         for (int r = 2; r <= 4; r++)
         {
-            hojaImport.Range(r, 1, r, 7).Merge();
+            hojaImport.Range(r, 1, r, 9).Merge();
             hojaImport.Cell(r, 1).Style
                 .Font.SetItalic(true)
                 .Font.SetFontColor(XLColor.FromHtml("#626976"))
@@ -78,7 +80,7 @@ public class ImportacionExcelService : IImportacionExcelService
 
         // Encabezados de datos (fila 6)
         int filaEncabezado = 6;
-        string[] encabezados = ["NumAsiento", "Fecha", "Glosa", "CodigoCuenta", "NombreCuenta", "Debe", "Haber"];
+        string[] encabezados = ["NumAsiento", "Fecha", "Glosa", "CodigoCuenta", "NombreCuenta", "Debe", "Haber", "Moneda", "TipoCambio"];
         for (int c = 0; c < encabezados.Length; c++)
         {
             var cell = hojaImport.Cell(filaEncabezado, c + 1);
@@ -112,9 +114,11 @@ public class ImportacionExcelService : IImportacionExcelService
             hojaImport.Cell(fila, ColCodigo).Value = ej.cod;
             hojaImport.Cell(fila, ColDebe).Value = ej.debe;
             hojaImport.Cell(fila, ColHaber).Value = ej.haber;
+            hojaImport.Cell(fila, ColMoneda).Value = "UYU";
+            hojaImport.Cell(fila, ColTipoCambio).Value = 1;
 
             // Color tenue de ejemplo
-            hojaImport.Range(fila, 1, fila, 7).Style
+            hojaImport.Range(fila, 1, fila, 9).Style
                 .Fill.SetBackgroundColor(XLColor.FromHtml("#f0f4ff"))
                 .Font.SetFontColor(XLColor.FromHtml("#626976"));
         }
@@ -148,11 +152,17 @@ public class ImportacionExcelService : IImportacionExcelService
         hojaImport.Range(filaInicio, ColFecha, filaFin, ColFecha)
             .Style.NumberFormat.SetFormat("DD/MM/YYYY");
 
-        // Formato numérico en columnas E y F
+        // Formato numérico en columnas Debe, Haber y TipoCambio
         hojaImport.Range(filaInicio, ColDebe, filaFin, ColDebe)
             .Style.NumberFormat.SetFormat("#,##0.00");
         hojaImport.Range(filaInicio, ColHaber, filaFin, ColHaber)
             .Style.NumberFormat.SetFormat("#,##0.00");
+        hojaImport.Range(filaInicio, ColTipoCambio, filaFin, ColTipoCambio)
+            .Style.NumberFormat.SetFormat("#,##0.000000");
+
+        // Dropdown en columna Moneda
+        var rangoMoneda = hojaImport.Range(filaInicio, ColMoneda, filaFin, ColMoneda);
+        rangoMoneda.SetDataValidation().List("\"UYU,USD\"", true);
 
         // Anchos de columna
         hojaImport.Column(ColNumAsiento).Width = 14;
@@ -162,6 +172,8 @@ public class ImportacionExcelService : IImportacionExcelService
         hojaImport.Column(ColNombreCuenta).Width = 38;
         hojaImport.Column(ColDebe).Width = 16;
         hojaImport.Column(ColHaber).Width = 16;
+        hojaImport.Column(ColMoneda).Width = 10;
+        hojaImport.Column(ColTipoCambio).Width = 14;
 
         // Inmovilizar fila de encabezado
         hojaImport.SheetView.FreezeRows(filaEncabezado);
@@ -233,7 +245,7 @@ public class ImportacionExcelService : IImportacionExcelService
                 "El orden debe ser: NumAsiento, Fecha, Glosa, CodigoCuenta, NombreCuenta, Debe, Haber.");
     }
 
-    private sealed record FilaRaw(int NumAsiento, DateOnly Fecha, string Glosa, string CodigoCuenta, decimal Debe, decimal Haber, int NumFila);
+    private sealed record FilaRaw(int NumAsiento, DateOnly Fecha, string Glosa, string CodigoCuenta, decimal Debe, decimal Haber, string Moneda, decimal TipoCambio, int NumFila);
 
     private static List<FilaRaw> LeerFilas(IXLWorksheet hoja, int filaInicio)
     {
@@ -293,7 +305,20 @@ public class ImportacionExcelService : IImportacionExcelService
                 ? (decimal)celdaHaber.GetDouble()
                 : decimal.TryParse(celdaHaber.GetString().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var h) ? h : 0m;
 
-            filas.Add(new FilaRaw(numAsiento, fecha, glosa, codigo, debe, haber, filaActual));
+            // Moneda
+            var moneda = hoja.Cell(filaActual, ColMoneda).GetString().Trim().ToUpperInvariant();
+            if (string.IsNullOrWhiteSpace(moneda))
+                moneda = "UYU";
+
+            // TipoCambio
+            var celdaTc = hoja.Cell(filaActual, ColTipoCambio);
+            decimal tipoCambio = celdaTc.DataType == XLDataType.Number
+                ? (decimal)celdaTc.GetDouble()
+                : decimal.TryParse(celdaTc.GetString().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var tc) ? tc : 1m;
+            if (tipoCambio <= 0)
+                tipoCambio = 1m;
+
+            filas.Add(new FilaRaw(numAsiento, fecha, glosa, codigo, debe, haber, moneda, tipoCambio, filaActual));
             filaActual++;
         }
 
@@ -330,7 +355,9 @@ public class ImportacionExcelService : IImportacionExcelService
                     NombreCuenta = cuenta?.Nombre ?? string.Empty,
                     CuentaContableId = cuenta?.Id,
                     Debe = fila.Debe,
-                    Haber = fila.Haber
+                    Haber = fila.Haber,
+                    Moneda = fila.Moneda,
+                    TipoCambio = fila.TipoCambio
                 };
 
                 asiento.Lineas.Add(linea);

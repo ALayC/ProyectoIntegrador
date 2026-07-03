@@ -56,6 +56,8 @@ public class LiquidacionIvaServiceTests
             CuentaContableId = cuentaId,
             Debe  = debe,
             Haber = haber,
+            Moneda = "UYU",
+            TipoCambio = 1m,
             CuentaContable = new CuentaContable
             {
                 Id        = cuentaId,
@@ -71,6 +73,8 @@ public class LiquidacionIvaServiceTests
             CuentaContableId = cuentaId,
             Debe  = debe,
             Haber = haber,
+            Moneda = "UYU",
+            TipoCambio = 1m,
             CuentaContable = new CuentaContable
             {
                 Id        = cuentaId,

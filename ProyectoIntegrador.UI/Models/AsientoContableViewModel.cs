@@ -55,6 +55,8 @@ public class LineaAsientoViewModel
     public decimal Debe { get; set; }
     public decimal Haber { get; set; }
     public string Moneda { get; set; } = string.Empty;
+    public decimal TipoCambio { get; set; } = 1m;
+    public decimal ImporteMonedaBase { get; set; }
 }
 
 public class AsientoContableViewModel

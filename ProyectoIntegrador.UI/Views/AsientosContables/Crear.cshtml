@@ -27,8 +27,9 @@
     function actualizarTotales() {
         let debe = 0, haber = 0;
         document.querySelectorAll('.linea-fila').forEach(fila => {
-            debe  += parseFloat(fila.querySelector('[data-campo="debe"]').value)  || 0;
-            haber += parseFloat(fila.querySelector('[data-campo="haber"]').value) || 0;
+            const tc = parseFloat(fila.querySelector('[name$=".TipoCambio"]')?.value) || 1;
+            debe  += (parseFloat(fila.querySelector('[data-campo="debe"]').value)  || 0) * tc;
+            haber += (parseFloat(fila.querySelector('[data-campo="haber"]').value) || 0) * tc;
         });
         document.getElementById('total-debe').textContent  = debe.toFixed(2);
         document.getElementById('total-haber').textContent = haber.toFixed(2);
@@ -80,6 +81,7 @@
             i.addEventListener('focus', manejarFocusImporte);
             i.addEventListener('blur', manejarBlurImporte);
         });
+        tr.querySelectorAll('select[name$=".Moneda"]').forEach(s => s.addEventListener('change', actualizarTotales));
         actualizarTotales();
     }
 
@@ -119,6 +121,7 @@
         i.addEventListener('focus', manejarFocusImporte);
         i.addEventListener('blur', manejarBlurImporte);
     });
+    document.querySelectorAll('.linea-fila select[name$=".Moneda"]').forEach(s => s.addEventListener('change', actualizarTotales));
 
     actualizarTotales();
 })();

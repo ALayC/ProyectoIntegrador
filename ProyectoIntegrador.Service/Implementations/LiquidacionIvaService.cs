@@ -51,13 +51,13 @@ public class LiquidacionIvaService : ILiquidacionIvaService
 
             if (nombre == "IVA Débito Fiscal")
             {
-                // Cuenta acreedora: saldo = Haber - Debe
-                totalIvaVentas += linea.Haber - linea.Debe;
+                // Cuenta acreedora: saldo = Haber - Debe, convertido a moneda base
+                totalIvaVentas += (linea.Haber - linea.Debe) * linea.TipoCambio;
             }
             else if (nombre == "IVA Crédito Fiscal")
             {
-                // Cuenta deudora: saldo = Debe - Haber
-                totalIvaCompras += linea.Debe - linea.Haber;
+                // Cuenta deudora: saldo = Debe - Haber, convertido a moneda base
+                totalIvaCompras += (linea.Debe - linea.Haber) * linea.TipoCambio;
             }
         }
 

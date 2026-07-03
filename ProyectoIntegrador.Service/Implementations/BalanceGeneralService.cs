@@ -149,9 +149,11 @@ namespace ProyectoIntegrador.Service.Implementations
 
         private static decimal CalcularSaldoMovimiento(LineaAsiento linea, string naturaleza)
         {
+            var debeBase  = linea.Debe  * linea.TipoCambio;
+            var haberBase = linea.Haber * linea.TipoCambio;
             return naturaleza == "Acreedora"
-                ? linea.Haber - linea.Debe
-                : linea.Debe - linea.Haber;
+                ? haberBase - debeBase
+                : debeBase  - haberBase;
         }
 
         private static decimal AcumularSaldos(BalanceGeneralNodoDto nodo)
