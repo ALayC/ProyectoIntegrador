@@ -8,6 +8,8 @@ public class LineaImportacionViewModel
     public Guid? CuentaContableId { get; set; }
     public decimal Debe { get; set; }
     public decimal Haber { get; set; }
+    public string Moneda { get; set; } = "UYU";
+    public decimal TipoCambio { get; set; } = 1m;
 }
 
 // ── Vista previa de un asiento parseado del Excel ──────────────────────────
@@ -23,8 +25,8 @@ public class AsientoImportacionViewModel
 
     public bool EsValido => Errores.Count == 0;
 
-    public decimal TotalDebe => Lineas.Sum(l => l.Debe);
-    public decimal TotalHaber => Lineas.Sum(l => l.Haber);
+    public decimal TotalDebe => Lineas.Sum(l => l.Debe * l.TipoCambio);
+    public decimal TotalHaber => Lineas.Sum(l => l.Haber * l.TipoCambio);
 }
 
 // ── Paso 1: Formulario de carga ────────────────────────────────────────────
@@ -83,4 +85,6 @@ public class LineaParseadaSession
     public Guid CuentaContableId { get; set; }
     public decimal Debe { get; set; }
     public decimal Haber { get; set; }
+    public string Moneda { get; set; } = "UYU";
+    public decimal TipoCambio { get; set; } = 1m;
 }

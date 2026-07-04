@@ -1,4 +1,4 @@
-namespace ProyectoIntegrador.Data.Entities;
+ï»¿namespace ProyectoIntegrador.Data.Entities;
 
 public class SaldoCuenta
 {
@@ -11,7 +11,13 @@ public class SaldoCuenta
     public decimal HaberAcumulado { get; set; }
     public decimal Saldo { get; set; }
 
-    // Navegación
+    // Moneda base (multimoneda)
+    public string Moneda { get; set; } = "UYU";
+    public decimal DebeAcumuladoBase { get; set; }
+    public decimal HaberAcumuladoBase { get; set; }
+    public decimal SaldoBase { get; set; }
+
+    // Navegacion
     public Cliente Cliente { get; set; } = null!;
     public CuentaContable CuentaContable { get; set; } = null!;
     public EjercicioContable Ejercicio { get; set; } = null!;

@@ -60,23 +60,23 @@ public class LibroMayorPdfService : ILibroMayorPdfService
 
                         col.Item().PaddingTop(10).PaddingBottom(10).Row(resumen =>
                         {
-                            AgregarTarjetaResumen(resumen, "Saldo inicial", cuenta.SaldoInicial, ColorSaldoInicial);
+                            AgregarTarjetaResumen(resumen, "Saldo inicial (UYU)", cuenta.SaldoInicialBase, ColorSaldoInicial);
                             resumen.ConstantItem(8);
-                            AgregarTarjetaResumen(resumen, "Débitos", cuenta.Debitos, ColorDebitos);
+                            AgregarTarjetaResumen(resumen, "Débitos (UYU)", cuenta.DebitosBase, ColorDebitos);
                             resumen.ConstantItem(8);
-                            AgregarTarjetaResumen(resumen, "Créditos", cuenta.Creditos, ColorCreditos);
+                            AgregarTarjetaResumen(resumen, "Créditos (UYU)", cuenta.CreditosBase, ColorCreditos);
                             resumen.ConstantItem(8);
 
                             string saldoFinalLabel;
                             decimal saldoFinalValor;
-                            if (cuenta.Debitos > cuenta.Creditos) {
-                                saldoFinalLabel = "Saldo deudor";
-                                saldoFinalValor = cuenta.Debitos - cuenta.Creditos;
-                            } else if (cuenta.Creditos > cuenta.Debitos) {
-                                saldoFinalLabel = "Saldo acreedor";
-                                saldoFinalValor = cuenta.Creditos - cuenta.Debitos;
+                            if (cuenta.DebitosBase > cuenta.CreditosBase) {
+                                saldoFinalLabel = "Saldo deudor (UYU)";
+                                saldoFinalValor = cuenta.DebitosBase - cuenta.CreditosBase;
+                            } else if (cuenta.CreditosBase > cuenta.DebitosBase) {
+                                saldoFinalLabel = "Saldo acreedor (UYU)";
+                                saldoFinalValor = cuenta.CreditosBase - cuenta.DebitosBase;
                             } else {
-                                saldoFinalLabel = "Saldo deudor";
+                                saldoFinalLabel = "Saldo deudor (UYU)";
                                 saldoFinalValor = 0m;
                             }
 

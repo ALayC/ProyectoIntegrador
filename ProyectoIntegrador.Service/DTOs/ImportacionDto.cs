@@ -6,6 +6,8 @@ public class LineaImportacionDto
     public Guid CuentaContableId { get; set; }
     public decimal Debe { get; set; }
     public decimal Haber { get; set; }
+    public string Moneda { get; set; } = "UYU";
+    public decimal TipoCambio { get; set; } = 1m;
 }
 
 /// <summary>Un asiento completo dentro del bulk de importación.</summary>

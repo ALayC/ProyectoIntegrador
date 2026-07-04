@@ -60,14 +60,14 @@ public class AsientoContableService : IAsientoContableService
         if (dto.Fecha < ejercicio.FechaInicio || dto.Fecha > ejercicio.FechaFin)
             throw new ValidacionException("La fecha del asiento está fuera del rango del ejercicio contable.");
 
-        var totalDebe = dto.Lineas.Sum(l => l.Debe);
-        var totalHaber = dto.Lineas.Sum(l => l.Haber);
+        var totalDebeBase  = dto.Lineas.Sum(l => l.Debe  * l.TipoCambio);
+        var totalHaberBase = dto.Lineas.Sum(l => l.Haber * l.TipoCambio);
 
-        if (totalDebe != totalHaber)
+        if (Math.Abs(totalDebeBase - totalHaberBase) > 0.001m)
         {
-            _logger.LogWarning("Asiento desbalanceado | Debe: {Debe} | Haber: {Haber} | ClienteId: {ClienteId} | UsuarioId: {UsuarioId}",
-                totalDebe, totalHaber, dto.ClienteId, usuarioId);
-            throw new AsientoDesbalanceadoException(totalDebe, totalHaber);
+            _logger.LogWarning("Asiento desbalanceado en moneda base | DebeBase: {DebeBase} | HaberBase: {HaberBase} | ClienteId: {ClienteId} | UsuarioId: {UsuarioId}",
+                totalDebeBase, totalHaberBase, dto.ClienteId, usuarioId);
+            throw new AsientoDesbalanceadoException(totalDebeBase, totalHaberBase);
         }
 
         foreach (var linea in dto.Lineas)
@@ -122,7 +122,7 @@ public class AsientoContableService : IAsientoContableService
                     Haber = l.Haber,
                     Moneda = l.Moneda,
                     TipoCambio = l.TipoCambio,
-                    ImporteMonedaBase = (l.Debe + l.Haber) * l.TipoCambio
+                    ImporteMonedaBase = (l.Debe + l.Haber) * l.TipoCambio  // uno de los dos siempre es 0 por validacion previa
                 }).ToList()
             };
 
@@ -178,8 +178,8 @@ public class AsientoContableService : IAsientoContableService
                         CuentaContableId = l.CuentaContableId,
                         Debe = l.Debe,
                         Haber = l.Haber,
-                        Moneda = "UYU",
-                        TipoCambio = 1m
+                        Moneda = l.Moneda,
+                        TipoCambio = l.TipoCambio
                     }).ToList()
                 };
 
@@ -375,7 +375,11 @@ public class AsientoContableService : IAsientoContableService
                     Periodo = periodo,
                     DebeAcumulado = linea.Debe,
                     HaberAcumulado = linea.Haber,
-                    Saldo = linea.Debe - linea.Haber
+                    Saldo = linea.Debe - linea.Haber,
+                    Moneda = linea.Moneda,
+                    DebeAcumuladoBase = linea.Debe * linea.TipoCambio,
+                    HaberAcumuladoBase = linea.Haber * linea.TipoCambio,
+                    SaldoBase = (linea.Debe - linea.Haber) * linea.TipoCambio
                 };
 
                 await _saldoRepository.Guardar(saldo);
@@ -385,6 +389,9 @@ public class AsientoContableService : IAsientoContableService
                 saldo.DebeAcumulado += linea.Debe;
                 saldo.HaberAcumulado += linea.Haber;
                 saldo.Saldo = saldo.DebeAcumulado - saldo.HaberAcumulado;
+                saldo.DebeAcumuladoBase += linea.Debe * linea.TipoCambio;
+                saldo.HaberAcumuladoBase += linea.Haber * linea.TipoCambio;
+                saldo.SaldoBase = saldo.DebeAcumuladoBase - saldo.HaberAcumuladoBase;
 
                 await _saldoRepository.Actualizar(saldo);
             }

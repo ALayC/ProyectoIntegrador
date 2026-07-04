@@ -120,6 +120,13 @@ builder.Services.AddScoped<IEstadoResultadosPdfService, EstadoResultadosPdfServi
 builder.Services.AddScoped<ProyectoIntegrador.UI.Services.IImportacionExcelService,
                             ProyectoIntegrador.UI.Services.ImportacionExcelService>();
 
+// 🔹 HttpClient nombrado para BCU SOAP ─────────
+builder.Services.AddHttpClient("BCU", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+    client.DefaultRequestHeaders.Add("User-Agent", "ProyectoIntegrador/1.0");
+});
+
 var app = builder.Build();
 
 // 🔹 Pipeline HTTP ─────────────────────────────

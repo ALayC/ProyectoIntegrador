@@ -97,62 +97,82 @@
                     <span class="badge bg-danger-lt text-danger">Haber: @Model.TotalHaber.ToString("N2")</span>
                 </div>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Cuenta</th>
-                                <th class="text-end">Debe</th>
-                                <th class="text-end">Haber</th>
-                                <th class="text-center">Moneda</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var linea in Model.Lineas)
-                            {
-                                <tr>
-                                    <td>
-                                        <div class="fw-semibold">@linea.CodigoCuenta</div>
-                                        <div class="text-secondary small">@linea.NombreCuenta</div>
-                                    </td>
-                                    <td class="text-end">
-                                        @if (linea.Debe > 0)
+            @{
+                bool tieneMultimoneda = Model.Lineas.Any(l => l.Moneda != "UYU" || l.TipoCambio != 1m);
+                decimal totalDebeBase  = Model.Lineas.Sum(l => l.Debe  * l.TipoCambio);
+                decimal totalHaberBase = Model.Lineas.Sum(l => l.Haber * l.TipoCambio);
+            }
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Cuenta</th>
+                                            <th class="text-end">Debe</th>
+                                            <th class="text-end">Haber</th>
+                                            <th class="text-center">Moneda</th>
+                                            @if (tieneMultimoneda)
+                                            {
+                                                <th class="text-end text-secondary small">T/C</th>
+                                                <th class="text-end text-secondary small">Base (UYU)</th>
+                                            }
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var linea in Model.Lineas)
                                         {
-                                            <span class="fw-semibold text-success">@linea.Debe.ToString("N2")</span>
+                                            <tr>
+                                                <td>
+                                                    <div class="fw-semibold">@linea.CodigoCuenta</div>
+                                                    <div class="text-secondary small">@linea.NombreCuenta</div>
+                                                </td>
+                                                <td class="text-end">
+                                                    @if (linea.Debe > 0)
+                                                    {
+                                                        <span class="fw-semibold text-success">@linea.Debe.ToString("N2")</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">—</span>
+                                                    }
+                                                </td>
+                                                <td class="text-end">
+                                                    @if (linea.Haber > 0)
+                                                    {
+                                                        <span class="fw-semibold text-danger">@linea.Haber.ToString("N2")</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">—</span>
+                                                    }
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge @(linea.Moneda == "USD" ? "bg-blue-lt text-blue" : "bg-secondary-lt")">@linea.Moneda</span>
+                                                </td>
+                                                @if (tieneMultimoneda)
+                                                {
+                                                    <td class="text-end text-secondary small">@linea.TipoCambio.ToString("N4")</td>
+                                                    <td class="text-end text-secondary small">@linea.ImporteMonedaBase.ToString("N2")</td>
+                                                }
+                                            </tr>
                                         }
-                                        else
-                                        {
-                                            <span class="text-muted">—</span>
-                                        }
-                                    </td>
-                                    <td class="text-end">
-                                        @if (linea.Haber > 0)
-                                        {
-                                            <span class="fw-semibold text-danger">@linea.Haber.ToString("N2")</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">—</span>
-                                        }
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-secondary-lt">@linea.Moneda</span>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                        <tfoot class="table-light">
-                            <tr>
-                                <th>TOTALES</th>
-                                <th class="text-end">@Model.TotalDebe.ToString("N2")</th>
-                                <th class="text-end">@Model.TotalHaber.ToString("N2")</th>
-                                <th></th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
+                                    </tbody>
+                                    <tfoot class="table-light">
+                                        <tr>
+                                            <th>TOTALES</th>
+                                            <th class="text-end">@Model.TotalDebe.ToString("N2")</th>
+                                            <th class="text-end">@Model.TotalHaber.ToString("N2")</th>
+                                            <th></th>
+                                            @if (tieneMultimoneda)
+                                            {
+                                                <th></th>
+                                                <th class="text-end text-secondary small">@totalDebeBase.ToString("N2") / @totalHaberBase.ToString("N2")</th>
+                                            }
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
             @if (puedeRevertirse)
             {
                 <div class="card-footer bg-warning-lt">

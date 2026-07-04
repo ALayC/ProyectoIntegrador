@@ -10,6 +10,134 @@
         Model.Cuentas.Select(c => new { id = c.Id, texto = $"{c.Codigo} – {c.Nombre}" })
     ));
 
+    // ── Estado global de cotización ─────────────────────────────────────
+    let tcUsdObtenido = false;   // true una vez que BCU respondió (exitoso o fallback)
+    let tcUsdBuscando = false;   // true mientras el fetch está en curso
+    let tcUsdValor    = null;    // valor numérico obtenido del BCU (null si aún no hay)
+
+    // ── Banner de aviso ─────────────────────────────────────────────────
+    function mostrarBannerEspera() {
+        setBanner('warning', '<span class="spinner-border spinner-border-sm me-2"></span>Obteniendo cotización USD del BCU...');
+        document.getElementById('btn-submit').disabled = true;
+    }
+
+    function mostrarBannerFallback(fechaReal) {
+        setBanner('warning',
+            `<i class="ti ti-alert-triangle me-1"></i>BCU no tiene cotización para la fecha del asiento. ` +
+            `Se usó el valor del <strong>${fechaReal}</strong>. Verificá el T/C antes de guardar.`);
+        document.getElementById('btn-submit').disabled = false;
+    }
+
+    function mostrarBannerError() {
+        setBanner('danger',
+            '<i class="ti ti-wifi-off me-1"></i>No se pudo obtener la cotización del BCU. ' +
+            'Ingresá el tipo de cambio manualmente en cada línea USD.');
+        document.getElementById('btn-submit').disabled = false;
+    }
+
+    function ocultarBanner() {
+        const b = document.getElementById('banner-cotizacion');
+        if (b) b.remove();
+        document.getElementById('btn-submit').disabled = false;
+    }
+
+    function setBanner(tipo, html) {
+        let b = document.getElementById('banner-cotizacion');
+        if (!b) {
+            b = document.createElement('div');
+            b.id = 'banner-cotizacion';
+            // Insertar justo antes de la card de líneas
+            const cardLineas = document.getElementById('card-lineas');
+            cardLineas.parentNode.insertBefore(b, cardLineas);
+        }
+        b.className = `alert alert-${tipo} py-2 px-3 mb-2`;
+        b.innerHTML = html;
+    }
+
+    // ── Consulta al proxy de UI ─────────────────────────────────────────
+    async function obtenerCotizacionUsd() {
+        if (tcUsdBuscando) return;
+        tcUsdBuscando = true;
+        mostrarBannerEspera();
+
+        const fechaInput = document.getElementById('Fecha')?.value ?? '';
+
+        try {
+            const url = `/AsientosContables/CotizacionUsd?fecha=${encodeURIComponent(fechaInput)}`;
+            const resp = await fetch(url, { credentials: 'same-origin' });
+            const data = await resp.json();
+
+            if (!data.ok) {
+                mostrarBannerError();
+                return;
+            }
+
+            // Rellenar T/C en todas las líneas USD que el usuario NO tocó (valor == 1)
+            document.querySelectorAll('.linea-fila').forEach(fila => {
+                const selMoneda = fila.querySelector('[name$=".Moneda"]');
+                const inputTc   = fila.querySelector('[name$=".TipoCambio"]');
+                if (!selMoneda || !inputTc) return;
+                if (selMoneda.value !== 'USD') return;
+                // Solo pisar si el usuario no editó (valor sigue siendo el default 1)
+                if (parseFloat(inputTc.value) === 1) {
+                    inputTc.value = data.valor;
+                    inputTc.classList.add('border-warning');
+                }
+            });
+
+            actualizarTotales();
+
+            if (data.esFallback) {
+                mostrarBannerFallback(data.fechaReal);
+            } else {
+                ocultarBanner();
+            }
+
+            tcUsdValor    = data.valor;
+            tcUsdObtenido = true;
+        } catch {
+            mostrarBannerError();
+        } finally {
+            tcUsdBuscando = false;
+        }
+    }
+
+    // ── Detectar primera vez que alguna línea cambia a USD ──────────────
+    function alCambiarMoneda(selectEl) {
+        actualizarTotales();
+        if (selectEl.value === 'USD') {
+            if (!tcUsdObtenido) {
+                // Primera vez: lanzar fetch al BCU
+                obtenerCotizacionUsd();
+            } else if (tcUsdValor !== null) {
+                // Ya tenemos el TC: aplicarlo a esta línea si el usuario no lo tocó
+                const fila = selectEl.closest('.linea-fila');
+                const inputTc = fila?.querySelector('[name$=".TipoCambio"]');
+                if (inputTc && parseFloat(inputTc.value) === 1) {
+                    inputTc.value = tcUsdValor;
+                    inputTc.classList.add('border-warning');
+                    actualizarTotales();
+                }
+            }
+        }
+        // Si vuelve a UYU → restaurar TC a 1 si sigue siendo el valor de BCU
+        if (selectEl.value === 'UYU') {
+            const fila = selectEl.closest('.linea-fila');
+            const inputTc = fila?.querySelector('[name$=".TipoCambio"]');
+            if (inputTc && parseFloat(inputTc.value) !== 1) {
+                // Solo resetear si no quedó ninguna otra línea en USD
+                const hayOtrasUsd = [...document.querySelectorAll('.linea-fila')]
+                    .some(f => f !== fila && f.querySelector('[name$=".Moneda"]')?.value === 'USD');
+                if (!hayOtrasUsd) tcUsdObtenido = false;
+            }
+            if (inputTc) { inputTc.value = '1'; inputTc.classList.remove('border-warning'); }
+            actualizarTotales();
+            // Ocultar banner si no queda ninguna línea USD
+            const hayUsd = [...document.querySelectorAll('[name$=".Moneda"]')].some(s => s.value === 'USD');
+            if (!hayUsd) ocultarBanner();
+        }
+    }
+
     function buildSelect(name, index) {
         const sel = document.createElement('select');
         sel.className = 'form-select form-select-sm';
@@ -27,8 +155,9 @@
     function actualizarTotales() {
         let debe = 0, haber = 0;
         document.querySelectorAll('.linea-fila').forEach(fila => {
-            debe  += parseFloat(fila.querySelector('[data-campo="debe"]').value)  || 0;
-            haber += parseFloat(fila.querySelector('[data-campo="haber"]').value) || 0;
+            const tc = parseFloat(fila.querySelector('[name$=".TipoCambio"]')?.value) || 1;
+            debe  += (parseFloat(fila.querySelector('[data-campo="debe"]').value)  || 0) * tc;
+            haber += (parseFloat(fila.querySelector('[data-campo="haber"]').value) || 0) * tc;
         });
         document.getElementById('total-debe').textContent  = debe.toFixed(2);
         document.getElementById('total-haber').textContent = haber.toFixed(2);
@@ -50,7 +179,7 @@
         const tr = document.createElement('tr');
         tr.className = 'linea-fila';
         tr.innerHTML = `
-            <td>${buildSelect('', index).outerHTML.replace('name=""', `name="Lineas[${index}].CuentaContableId"`)}</td>
+            <td></td>
             <td><input type="number" class="form-control form-control-sm" name="Lineas[${index}].Debe"
                  min="0" step="0.01" value="0" data-campo="debe" /></td>
             <td><input type="number" class="form-control form-control-sm" name="Lineas[${index}].Haber"
@@ -69,31 +198,32 @@
                 </button>
             </td>`;
 
-        // Reconstruir el select correctamente con opciones
         const tdSelect = tr.querySelector('td:first-child');
-        tdSelect.innerHTML = '';
         tdSelect.appendChild(buildSelect('', index));
 
         tbody.appendChild(tr);
+
         tr.querySelectorAll('input[type=number]').forEach(i => {
             i.addEventListener('input', actualizarTotales);
             i.addEventListener('focus', manejarFocusImporte);
             i.addEventListener('blur', manejarBlurImporte);
         });
+        tr.querySelectorAll('[name$=".Moneda"]').forEach(s => s.addEventListener('change', () => alCambiarMoneda(s)));
+
+        // Si ya tenemos el TC y se agrega una nueva línea, auto-rellenar si BCU ya respondió ok
+        if (tcUsdObtenido) {
+            // nada — el usuario elige la moneda y el campo queda en 1 hasta que elija USD
+        }
         actualizarTotales();
     }
 
     function manejarFocusImporte(e) {
         const value = e.target.value.trim();
-        if (value === '0' || value === '0.00') {
-            e.target.value = '';
-        }
+        if (value === '0' || value === '0.00') e.target.value = '';
     }
 
     function manejarBlurImporte(e) {
-        if (e.target.value.trim() === '') {
-            e.target.value = '0';
-        }
+        if (e.target.value.trim() === '') e.target.value = '0';
         actualizarTotales();
     }
 
@@ -105,13 +235,15 @@
         const filas = document.querySelectorAll('.linea-fila');
         if (filas.length <= 2) return;
         btn.closest('tr').remove();
-        // Re-indexar names
         document.querySelectorAll('.linea-fila').forEach((fila, i) => {
             fila.querySelectorAll('[name]').forEach(el => {
                 el.name = el.name.replace(/Lineas\[\d+\]/, `Lineas[${i}]`);
             });
         });
         actualizarTotales();
+        // Si ya no hay líneas USD, resetear estado
+        const hayUsd = [...document.querySelectorAll('[name$=".Moneda"]')].some(s => s.value === 'USD');
+        if (!hayUsd) { tcUsdObtenido = false; ocultarBanner(); }
     });
 
     document.querySelectorAll('.linea-fila input[type=number]').forEach(i => {
@@ -119,6 +251,8 @@
         i.addEventListener('focus', manejarFocusImporte);
         i.addEventListener('blur', manejarBlurImporte);
     });
+    document.querySelectorAll('.linea-fila [name$=".Moneda"]').forEach(s =>
+        s.addEventListener('change', () => alCambiarMoneda(s)));
 
     actualizarTotales();
 })();
@@ -196,7 +330,7 @@
         </div>
     </div>
 
-    <div class="card mb-3">
+    <div class="card mb-3" id="card-lineas">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h3 class="card-title mb-0">
                 <i class="ti ti-list"></i> Líneas del asiento
@@ -276,7 +410,7 @@
         <a asp-action="Index" asp-route-clienteId="@Model.ClienteId" class="btn btn-ghost-secondary">
             Cancelar
         </a>
-        <button type="submit" class="btn btn-primary">
+        <button type="submit" id="btn-submit" class="btn btn-primary">
             <i class="ti ti-device-floppy"></i> Registrar asiento
         </button>
     </div>
