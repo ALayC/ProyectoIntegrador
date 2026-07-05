@@ -211,6 +211,40 @@
         <i class="ti ti-arrow-up" style="font-size:1.1rem"></i>
     </button>
 
+    <!-- Botón flotante Asistente IA -->
+    <button id="ai-chat-toggle" type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#ai-chat"
+            aria-controls="ai-chat"
+            title="Asistente Contable"
+            style="position:fixed;bottom:1.5rem;right:5rem;z-index:1049;width:48px;height:48px;border-radius:50%;background:#1a3a5c;color:#fff;border:none;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.3);cursor:pointer;">
+        <i class="ti ti-message-bolt" style="font-size:1.3rem"></i>
+    </button>
+
+    <!-- Offcanvas Asistente Contable -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="ai-chat" aria-labelledby="ai-chat-label" style="width:380px;">
+        <div class="offcanvas-header" style="background:#1a3a5c;color:#fff;">
+            <h5 class="offcanvas-title d-flex align-items-center gap-2" id="ai-chat-label">
+                <i class="ti ti-brain"></i> Asistente Contable
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column p-0" style="height:calc(100% - 57px);">
+            <div id="ai-messages" style="flex:1;overflow-y:auto;padding:1rem;">
+                <div id="ai-welcome" class="text-center text-muted py-4">
+                    <i class="ti ti-sparkles" style="font-size:2rem;color:#1a3a5c;"></i>
+                    <p class="mt-2 mb-0" style="font-size:.9rem;">Preguntame sobre normativa DGI, IVA, o cualquier consulta contable.</p>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2 p-2" style="border-top:1px solid #e5e7eb;">
+                <input id="ai-input" type="text" class="form-control form-control-sm" placeholder="Escribí tu consulta..." autocomplete="off" />
+                <button id="ai-send" type="button" class="btn btn-sm" style="background:#1a3a5c;color:#fff;white-space:nowrap;">
+                    <i class="ti ti-send"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="~/tabler/dist/js/tabler.min.js" asp-append-version="true"></script>
     <script src="https://unpkg.com/nprogress@0.2.0/nprogress.js"></script>
     <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
@@ -228,6 +262,18 @@
                     setTimeout(function () { el.remove(); }, 500);
                 }, 4000);
             });
+
+            // Botón flotante IA: ocultar cuando el offcanvas está abierto
+            var aiChatEl = document.getElementById('ai-chat');
+            var aiToggleBtn = document.getElementById('ai-chat-toggle');
+            if (aiChatEl && aiToggleBtn) {
+                aiChatEl.addEventListener('show.bs.offcanvas', function () {
+                    aiToggleBtn.style.display = 'none';
+                });
+                aiChatEl.addEventListener('hide.bs.offcanvas', function () {
+                    aiToggleBtn.style.display = 'flex';
+                });
+            }
 
             // Botón ir arriba
             var btn = document.getElementById('sg-back-top');
@@ -255,5 +301,87 @@
         document.addEventListener('submit', function () { NProgress.start(); });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        (function () {
+            var messagesEl = document.getElementById('ai-messages');
+            var inputEl = document.getElementById('ai-input');
+            var sendBtn = document.getElementById('ai-send');
+
+            function addMsg(text, isUser) {
+                var welcome = document.getElementById('ai-welcome');
+                if (welcome) welcome.remove();
+
+                var wrapper = document.createElement('div');
+                wrapper.className = 'd-flex mb-2 ' + (isUser ? 'justify-content-end' : 'justify-content-start');
+
+                var bubble = document.createElement('div');
+                bubble.style.cssText = isUser
+                    ? 'background:#1a3a5c;color:#fff;border-radius:12px 12px 2px 12px;padding:.5rem .85rem;max-width:85%;font-size:.875rem;white-space:pre-wrap;word-break:break-word;'
+                    : 'background:#f1f5f9;color:#1f2937;border-radius:12px 12px 12px 2px;padding:.5rem .85rem;max-width:85%;font-size:.875rem;white-space:pre-wrap;word-break:break-word;';
+                bubble.textContent = text;
+
+                wrapper.appendChild(bubble);
+                messagesEl.appendChild(wrapper);
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            }
+
+            function addTyping() {
+                var existing = document.getElementById('typing-indicator');
+                if (existing) existing.remove();
+
+                var wrapper = document.createElement('div');
+                wrapper.id = 'typing-indicator';
+                wrapper.className = 'd-flex mb-2 justify-content-start';
+
+                var bubble = document.createElement('div');
+                bubble.style.cssText = 'background:#f1f5f9;color:#6b7280;border-radius:12px 12px 12px 2px;padding:.5rem .85rem;font-size:.875rem;';
+                bubble.textContent = 'Escribiendo...';
+
+                wrapper.appendChild(bubble);
+                messagesEl.appendChild(wrapper);
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            }
+
+            async function send() {
+                var text = inputEl.value.trim();
+                if (!text) return;
+
+                inputEl.value = '';
+                sendBtn.disabled = true;
+                inputEl.disabled = true;
+
+                addMsg(text, true);
+                addTyping();
+
+                try {
+                    var res = await fetch('/Ai/Chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ pregunta: text })
+                    });
+                    var data = await res.json();
+                    var typing = document.getElementById('typing-indicator');
+                    if (typing) typing.remove();
+                    addMsg(data.respuesta, false);
+                } catch (e) {
+                    var typing = document.getElementById('typing-indicator');
+                    if (typing) typing.remove();
+                    addMsg('Error al conectar con el asistente.', false);
+                } finally {
+                    sendBtn.disabled = false;
+                    inputEl.disabled = false;
+                    inputEl.focus();
+                }
+            }
+
+            if (sendBtn) sendBtn.addEventListener('click', send);
+            if (inputEl) {
+                inputEl.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') { e.preventDefault(); send(); }
+                });
+            }
+        })();
+    </script>
 </body>
 </html>
