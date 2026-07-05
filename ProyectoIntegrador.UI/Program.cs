@@ -19,7 +19,11 @@ if (!string.IsNullOrEmpty(appInsightsConnectionString))
 }
 
 // 🔹 MVC con Views ─────────────────────────────
-builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<ProyectoIntegrador.UI.Filters.ClienteContextFilter>();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.AddService<ProyectoIntegrador.UI.Filters.ClienteContextFilter>();
+});
 
 // 🔹 HttpClient nombrado "API" ─────────────────
 var apiBaseUrl = configuration["ApiBaseUrl"]

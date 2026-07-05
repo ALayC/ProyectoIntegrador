@@ -1,6 +1,8 @@
 @model BalanceGeneralViewModel
 @{
     ViewData["Title"] = "Balance General";
+    ViewData["ClienteId"] = Model.ClienteId;
+    ViewData["ClienteNombre"] = Model.ClienteNombre;
 }
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3" data-aos="fade-down">
