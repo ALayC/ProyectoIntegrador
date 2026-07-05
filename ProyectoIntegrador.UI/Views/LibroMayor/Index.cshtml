@@ -3,6 +3,77 @@
     ViewData["Title"] = "Libro Mayor";
 }
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+
+<style>
+    .choices__inner {
+        border: 1px solid var(--tblr-border-color, #dce1e7);
+        border-radius: var(--tblr-border-radius, 4px);
+        background-color: #fff;
+        min-height: 38px;
+        font-size: 14px;
+        padding: 4px 8px;
+    }
+
+    .choices__input {
+        font-size: 14px;
+        background-color: transparent;
+    }
+
+    .choices__list--dropdown,
+    .choices__list[aria-expanded] {
+        border-color: var(--tblr-border-color, #dce1e7);
+        border-radius: var(--tblr-border-radius, 4px);
+        background-color: #ffffff !important;
+        font-size: 14px;
+        z-index: 99999 !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+
+        .choices__list--dropdown .choices__item,
+        .choices__list[aria-expanded] .choices__item {
+            background-color: #ffffff;
+            color: #1f2937;
+        }
+
+        .choices__list--dropdown .choices__input,
+        .choices__list[aria-expanded] .choices__input {
+            background-color: #f8fafc !important;
+            border-bottom: 1px solid #dce1e7;
+            color: #1f2937;
+        }
+
+        .choices__list--dropdown .choices__item--selectable.is-highlighted,
+        .choices__list[aria-expanded] .choices__item--selectable.is-highlighted {
+            background-color: #1a3a5c;
+            color: #fff;
+        }
+
+    .choices__item.choices__item--selected {
+        background-color: rgba(26, 58, 92, 0.10);
+        color: #1a3a5c;
+        border-color: rgba(26, 58, 92, 0.25);
+        border-radius: 4px;
+        font-size: 12px;
+    }
+
+    .choices__button {
+        border-left-color: rgba(26, 58, 92, 0.25);
+        filter: brightness(0) saturate(100%) invert(17%) sepia(40%) saturate(800%) hue-rotate(185deg);
+    }
+
+    #filtros-card {
+        position: relative;
+        z-index: 100;
+    }
+
+    #filtros-card,
+    #filtros-card .card-header,
+    #filtros-card .card-body {
+        overflow: visible;
+    }
+</style>
+
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3" data-aos="fade-down">
     <div>
         <h2 class="mb-1"><i class="ti ti-report-analytics"></i> Libro Mayor</h2>
@@ -51,7 +122,7 @@
     </div>
 </div>
 
-<div class="card mb-3">
+<div class="card mb-3" id="filtros-card">
     <div class="card-header">
         <h3 class="card-title"><i class="ti ti-filter me-1"></i> Filtros</h3>
     </div>
@@ -90,27 +161,23 @@
             </div>
             <div class="col-12">
                 <label class="form-label">
-                    Cuentas <span class="text-secondary fw-normal small">— dej&aacute; vac&iacute;o para todas</span>
+                    Cuentas <span class="text-secondary fw-normal small">— dejá vacío para todas</span>
                 </label>
-                <div class="border rounded p-2" style="max-height:88px; overflow-y:auto;">
+                <select id="select-cuentas" name="cuentaIds" multiple class="form-select">
                     @foreach (var cuenta in Model.Cuentas)
                     {
-                        <div class="form-check form-check-inline mb-1">
-                            <input class="form-check-input" type="checkbox" name="cuentaIds"
-                                   id="cuenta_@cuenta.Id" value="@cuenta.Id"
-                                   @(Model.CuentaIds.Contains(cuenta.Id) ? "checked" : "") />
-                            <label class="form-check-label small" for="cuenta_@cuenta.Id">
-                                @cuenta.Codigo &ndash; @cuenta.Nombre
-                            </label>
-                        </div>
+                        var isSelected = Model.CuentaIds.Contains(cuenta.Id);
+                        <option value="@cuenta.Id" selected="@isSelected">
+                            @cuenta.Codigo – @cuenta.Nombre
+                        </option>
                     }
-                </div>
+                </select>
             </div>
         </form>
     </div>
 </div>
 
-                        @if (Model.CuentasMayor.Count == 0)
+@if (Model.CuentasMayor.Count == 0)
 {
     <div class="card">
         <div class="card-body">
@@ -118,8 +185,8 @@
                 <div class="empty-img">
                     <i class="ti ti-report-off fs-1 text-secondary"></i>
                 </div>
-                <p class="empty-title">No hay movimientos para el per�odo seleccionado</p>
-                <p class="empty-subtitle text-secondary">Ajust� los filtros para consultar otras cuentas o fechas.</p>
+                <p class="empty-title">No hay movimientos para el período seleccionado</p>
+                <p class="empty-subtitle text-secondary">Ajustá los filtros para consultar otras cuentas o fechas.</p>
             </div>
         </div>
     </div>
@@ -141,19 +208,24 @@ else
                             </div>
                             <div class="d-flex flex-wrap gap-2">
                                 <span class="badge bg-azure-lt text-azure">Saldo inicial: @cuenta.SaldoInicialBase.ToString("N2") UYU</span>
-                                <span class="badge bg-success-lt text-success">D&#233;bitos: @cuenta.DebitosBase.ToString("N2") UYU</span>
-                                <span class="badge bg-danger-lt text-danger">Cr&#233;ditos: @cuenta.CreditosBase.ToString("N2") UYU</span>
+                                <span class="badge bg-success-lt text-success">Débitos: @cuenta.DebitosBase.ToString("N2") UYU</span>
+                                <span class="badge bg-danger-lt text-danger">Créditos: @cuenta.CreditosBase.ToString("N2") UYU</span>
                                 <span class="badge bg-primary-lt text-primary">
-                                    @{ 
+                                    @{
                                         string saldoFinalLabel;
                                         decimal saldoFinalValor;
-                                        if (cuenta.DebitosBase > cuenta.CreditosBase) {
+                                        if (cuenta.DebitosBase > cuenta.CreditosBase)
+                                        {
                                             saldoFinalLabel = "Saldo deudor";
                                             saldoFinalValor = cuenta.DebitosBase - cuenta.CreditosBase;
-                                        } else if (cuenta.CreditosBase > cuenta.DebitosBase) {
+                                        }
+                                        else if (cuenta.CreditosBase > cuenta.DebitosBase)
+                                        {
                                             saldoFinalLabel = "Saldo acreedor";
                                             saldoFinalValor = cuenta.CreditosBase - cuenta.DebitosBase;
-                                        } else {
+                                        }
+                                        else
+                                        {
                                             saldoFinalLabel = "Saldo deudor";
                                             saldoFinalValor = 0m;
                                         }
@@ -204,4 +276,22 @@ else
             </div>
         }
     </div>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script>
+        var choicesInstance = new Choices('#select-cuentas', {
+        removeItemButton: true,
+        searchPlaceholderValue: 'Buscar cuenta...',
+        noResultsText: 'No se encontraron cuentas',
+        noChoicesText: 'No hay cuentas disponibles',
+        itemSelectText: '',
+        placeholder: true,
+        shouldSort: false,
+        classNames: {
+        containerOuter: 'choices'
+        }
+        });
+    </script>
 }
