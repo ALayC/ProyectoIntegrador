@@ -8,9 +8,9 @@
         cursor: pointer;
     }
 
-    .clickable-row:hover {
-        background-color: var(--tblr-table-hover-bg, rgba(0, 0, 0, 0.02));
-    }
+        .clickable-row:hover {
+            background-color: var(--tblr-table-hover-bg, rgba(0, 0, 0, 0.02));
+        }
 </style>
 
 @section Scripts {
@@ -48,6 +48,14 @@
                 if (href) window.location.href = href;
             });
         })();
+
+        // Mover modales al <body> para evitar problemas de stacking context
+        // causados por transform: translateZ(0) que AOS deja en el card padre.
+        (function () {
+            document.querySelectorAll('.modal').forEach(function (modal) {
+                document.body.appendChild(modal);
+            });
+        })();
     </script>
 }
 
@@ -62,10 +70,10 @@
 </div>
 
 @{
-    var total     = Model.TotalRegistros;
-    var activos   = Model.Datos.Count(c => c.Estado == "Activo");
+    var total = Model.TotalRegistros;
+    var activos = Model.Datos.Count(c => c.Estado == "Activo");
     var inactivos = Model.Datos.Count(c => c.Estado == "Inactivo");
-    var conComp   = 0; // ampliar cuando el modelo exponga el dato
+    var conComp = 0; // ampliar cuando el modelo exponga el dato
 }
 
 <div class="row g-3 mb-4">
@@ -196,26 +204,6 @@ else
                                             title="Desactivar">
                                         <i class="ti ti-ban"></i>
                                     </button>
-
-                                    <div class="modal modal-blur fade" id="confirmar-desactivar-@cliente.Id" tabindex="-1" role="dialog" aria-hidden="true">
-                                        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">Confirmar desactivación</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                                                </div>
-                                                <div class="modal-body text-secondary">
-                                                    ¿Deseas desactivar el cliente <strong>@cliente.RazonSocial</strong>?
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
-                                                    <form asp-action="Desactivar" asp-route-id="@cliente.Id" method="post">
-                                                        <button type="submit" class="btn btn-danger">Desactivar</button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 }
                                 else
                                 {
@@ -226,26 +214,6 @@ else
                                             title="Activar">
                                         <i class="ti ti-circle-check"></i>
                                     </button>
-
-                                    <div class="modal modal-blur fade" id="confirmar-activar-@cliente.Id" tabindex="-1" role="dialog" aria-hidden="true">
-                                        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">Confirmar activación</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                                                </div>
-                                                <div class="modal-body text-secondary">
-                                                    ¿Deseas activar el cliente <strong>@cliente.RazonSocial</strong>?
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
-                                                    <form asp-action="Activar" asp-route-id="@cliente.Id" method="post">
-                                                        <button type="submit" class="btn btn-success">Activar</button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 }
                             </td>
                         </tr>
@@ -253,6 +221,54 @@ else
                 </tbody>
             </table>
         </div>
+        @foreach (var cliente in Model.Datos)
+        {
+            var esInactivo = cliente.Estado == "Inactivo";
+            if (!esInactivo)
+            {
+                <div class="modal modal-blur fade" id="confirmar-desactivar-@cliente.Id" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Confirmar desactivación</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                            </div>
+                            <div class="modal-body text-secondary">
+                                ¿Deseas desactivar el cliente <strong>@cliente.RazonSocial</strong>?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
+                                <form asp-action="Desactivar" asp-route-id="@cliente.Id" method="post">
+                                    <button type="submit" class="btn btn-danger">Desactivar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="modal modal-blur fade" id="confirmar-activar-@cliente.Id" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Confirmar activación</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                            </div>
+                            <div class="modal-body text-secondary">
+                                ¿Deseas activar el cliente <strong>@cliente.RazonSocial</strong>?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
+                                <form asp-action="Activar" asp-route-id="@cliente.Id" method="post">
+                                    <button type="submit" class="btn btn-success">Activar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
         <div class="card-footer d-flex align-items-center justify-content-between flex-wrap gap-2">
             <span class="text-muted" style="font-size:13px;">
                 @Model.TotalRegistros registro@(Model.TotalRegistros == 1 ? "" : "s") en total

@@ -59,11 +59,20 @@
                     </ul>
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
                     {
-                        <div class="pb-3">
+                        <div class="pb-3 px-3">
+                            @{
+                                var nombreUsuario = User.Identity.Name ?? "Usuario";
+                                var inicial = nombreUsuario.Length > 0 ? nombreUsuario[0].ToString().ToUpper() : "U";
+                            }
+                            <div class="d-flex align-items-center gap-2 mb-2 px-1">
+                                <div class="sg-avatar-initial">@inicial</div>
+                                <div class="text-white" style="font-size:13px;opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@nombreUsuario</div>
+                            </div>
+                            <hr class="sg-sidebar-divider" />
                             <form asp-controller="Auth" asp-action="Logout" method="post">
-                                <button type="submit" class="nav-link w-100 text-start" title="Cerrar sesión" style="background:none;border:none;">
-                                    <span class="nav-link-icon"><i class="ti ti-logout"></i></span>
-                                    <span class="nav-link-title">Cerrar sesión</span>
+                                <button type="submit" class="sg-logout-pill" title="Cerrar sesión">
+                                    <i class="ti ti-logout"></i>
+                                    <span>Cerrar sesión</span>
                                 </button>
                             </form>
                         </div>

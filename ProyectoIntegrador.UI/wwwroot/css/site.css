@@ -47,8 +47,62 @@ body {
 .sg-sidebar {
     background: #1a3a5c;
     border-right: 0;
-    width: 85%;
+    width: 450px !important;
+    --tblr-navbar-vertical-width: 450px;
 }
+
+.navbar-vertical ~ .page-wrapper {
+    margin-left: 450px !important;
+}
+
+/* ── Avatar inicial ─────────────────────────────────────────── */
+.sg-avatar-initial {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.25);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ── Divider sidebar ────────────────────────────────────────── */
+.sg-sidebar-divider {
+    border-color: rgba(255,255,255,.12);
+    margin: 0.5rem 0 0.75rem;
+}
+
+/* ── Logout pill ────────────────────────────────────────────── */
+.sg-logout-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 14px;
+    border-radius: 50px;
+    border: 1px solid rgba(255,255,255,.18);
+    background: rgba(255,255,255,.08);
+    color: rgba(255,255,255,.85);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .2s ease, border-color .2s ease, color .2s ease;
+}
+
+    .sg-logout-pill:hover {
+        background: rgba(214, 57, 57, 0.30);
+        border-color: rgba(214, 57, 57, .5);
+        color: #fff;
+    }
+
+    .sg-logout-pill i {
+        font-size: 1rem;
+    }
 
     .sg-sidebar .navbar-brand,
     .sg-sidebar .nav-link-title {
@@ -73,8 +127,8 @@ body {
 
     .sg-sidebar-subtitle {
         color: #fff;
-        opacity: .4;
-        font-size: 11px;
+        opacity: .75;
+        font-size: 13px;
         letter-spacing: .03em;
         margin-top: 2px;
         margin-bottom: 0;
