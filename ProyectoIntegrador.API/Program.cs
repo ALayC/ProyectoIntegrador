@@ -10,6 +10,8 @@ using ProyectoIntegrador.API.Middleware;
 using ProyectoIntegrador.Data.Context;
 using ProyectoIntegrador.Data.Repositories.Implementations;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
+using ProyectoIntegrador.Data.Repositories.Implementations;
+using ProyectoIntegrador.Data.Repositories.Interfaces;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Implementations;
 using ProyectoIntegrador.Service.Interfaces;

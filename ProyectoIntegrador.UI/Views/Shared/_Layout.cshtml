@@ -245,7 +245,53 @@
         </div>
     </div>
 
+    <button id="sg-back-top" aria-label="Ir arriba" title="Ir arriba">
+        <i class="ti ti-arrow-up" style="font-size:1.1rem"></i>
+    </button>
+
     <script src="~/tabler/dist/js/tabler.min.js" asp-append-version="true"></script>
+    <script src="https://unpkg.com/nprogress@0.2.0/nprogress.js"></script>
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+    <script>
+        NProgress.configure({ showSpinner: false, speed: 300, trickleSpeed: 120 });
+        document.addEventListener('DOMContentLoaded', function () {
+            NProgress.done();
+            AOS.init({ duration: 500, once: true, offset: 60, easing: 'ease-out-cubic' });
+
+            // Alertas auto-cierre
+            document.querySelectorAll('.alert-dismissible').forEach(function (el) {
+                setTimeout(function () {
+                    el.style.transition = 'opacity 0.5s ease';
+                    el.style.opacity = '0';
+                    setTimeout(function () { el.remove(); }, 500);
+                }, 4000);
+            });
+
+            // Botón ir arriba
+            var btn = document.getElementById('sg-back-top');
+            if (btn) {
+                window.addEventListener('scroll', function () {
+                    btn.classList.toggle('sg-visible', window.scrollY > 280);
+                }, { passive: true });
+                btn.addEventListener('click', function () {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            }
+        });
+        document.addEventListener('click', function (e) {
+            var link = e.target.closest('a[href]');
+            if (!link) return;
+            var href = link.getAttribute('href');
+            if (!href || href.startsWith('#') || href.startsWith('javascript') || link.target === '_blank') return;
+            // Skip same-page hash links (e.g. /Clientes/Detalles/id#tab-x)
+            try {
+                var target = new URL(href, window.location.href);
+                if (target.pathname === window.location.pathname && target.hash) return;
+            } catch (ex) { }
+            if (!e.ctrlKey && !e.metaKey && !e.shiftKey) NProgress.start();
+        });
+        document.addEventListener('submit', function () { NProgress.start(); });
+    </script>
     <script src="https://unpkg.com/nprogress@0.2.0/nprogress.js"></script>
     <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
     <script>
