@@ -39,10 +39,6 @@ public class AuthController : ControllerBase
     [EnableRateLimiting("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
     {
-        // Leer cookie de dispositivo confiable si existe
-        Request.Cookies.TryGetValue("trusted_device", out var tokenDispositivo);
-        loginDto.TokenDispositivo = tokenDispositivo;
-
         var resultado = await _authService.Login(loginDto);
         return Ok(resultado);
     }
@@ -56,18 +52,6 @@ public class AuthController : ControllerBase
     {
         Request.Cookies.TryGetValue("trusted_device", out var tokenDispositivoActual);
         var resultado = await _authService.Verificar2FAAsync(dto, tokenDispositivoActual);
-
-        if (dto.RecordarDispositivo && resultado.TempToken is not null)
-        {
-            Response.Cookies.Append("trusted_device", resultado.TempToken, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTimeOffset.UtcNow.AddDays(7)
-            });
-            resultado.TempToken = null;
-        }
 
         return Ok(resultado);
     }
