@@ -30,4 +30,14 @@ public interface IAuthService
     /// Restablece la contraseña del usuario usando el token enviado por email.
     /// </summary>
     Task<AuthResponseDto> RestablecerContraseñaAsync(string token, string nuevaContraseña);
+
+    /// <summary>
+    /// Verifica el código 2FA y emite el JWT real. Opcionalmente registra dispositivo confiable.
+    /// </summary>
+    Task<AuthResponseDto> Verificar2FAAsync(Verificar2FADto dto, string? tokenDispositivoActual);
+
+    /// <summary>
+    /// Genera un token de dispositivo confiable para omitir 2FA por 7 días.
+    /// </summary>
+    Task<string> GenerarTokenDispositivoConfiableAsync(Guid usuarioId);
 }

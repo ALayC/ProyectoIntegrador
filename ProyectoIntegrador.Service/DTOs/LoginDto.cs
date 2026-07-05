@@ -10,4 +10,6 @@ public class LoginDto
 
     [Required(ErrorMessage = "La contraseña es obligatoria.")]
     public string Password { get; set; } = string.Empty;
+
+    public string? TokenDispositivo { get; set; }
 }

@@ -21,8 +21,13 @@ public class Usuario
     public string? TokenRestablecimiento { get; set; }
     public DateTime? FechaExpiracionTokenRestablecimiento { get; set; }
 
+    // 2FA
+    public string? Codigo2FA { get; set; }
+    public DateTime? FechaExpiracion2FA { get; set; }
+
     // Navegación
     public Rol Rol { get; set; } = null!;
+    public ICollection<DispositivoConfiable> DispositivosConfiables { get; set; } = new List<DispositivoConfiable>();
     public Usuario? Contador { get; set; }
     public ICollection<Usuario> Auxiliares { get; set; } = new List<Usuario>();
     public ICollection<Cliente> Clientes { get; set; } = new List<Cliente>();

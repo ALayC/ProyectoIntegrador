@@ -42,20 +42,20 @@ public class LibroMayorExcelService : ILibroMayorExcelService
                 .Font.SetItalic(true);
 
             // ── Resumen ──────────────────────────────────────────────
-            var resumenLabels = new[] { "Saldo inicial", "Débitos", "Créditos" };
-            var resumenValores = new[] { cuenta.SaldoInicial, cuenta.Debitos, cuenta.Creditos };
+            var resumenLabels = new[] { "Saldo inicial (UYU)", "Débitos (UYU)", "Créditos (UYU)" };
+            var resumenValores = new[] { cuenta.SaldoInicialBase, cuenta.DebitosBase, cuenta.CreditosBase };
 
-            // etiqueta y valor para saldo final (según Debitos vs Creditos)
+            // etiqueta y valor para saldo final (según DebitosBase vs CreditosBase)
             string saldoFinalLabel;
             decimal saldoFinalValor;
-            if (cuenta.Debitos > cuenta.Creditos) {
-                saldoFinalLabel = "Saldo deudor";
-                saldoFinalValor = cuenta.Debitos - cuenta.Creditos;
-            } else if (cuenta.Creditos > cuenta.Debitos) {
-                saldoFinalLabel = "Saldo acreedor";
-                saldoFinalValor = cuenta.Creditos - cuenta.Debitos;
+            if (cuenta.DebitosBase > cuenta.CreditosBase) {
+                saldoFinalLabel = "Saldo deudor (UYU)";
+                saldoFinalValor = cuenta.DebitosBase - cuenta.CreditosBase;
+            } else if (cuenta.CreditosBase > cuenta.DebitosBase) {
+                saldoFinalLabel = "Saldo acreedor (UYU)";
+                saldoFinalValor = cuenta.CreditosBase - cuenta.DebitosBase;
             } else {
-                saldoFinalLabel = "Saldo deudor";
+                saldoFinalLabel = "Saldo deudor (UYU)";
                 saldoFinalValor = 0m;
             }
 

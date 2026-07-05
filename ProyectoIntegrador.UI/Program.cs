@@ -19,7 +19,11 @@ if (!string.IsNullOrEmpty(appInsightsConnectionString))
 }
 
 // 🔹 MVC con Views ─────────────────────────────
-builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<ProyectoIntegrador.UI.Filters.ClienteContextFilter>();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.AddService<ProyectoIntegrador.UI.Filters.ClienteContextFilter>();
+});
 
 // 🔹 HttpClient nombrado "API" ─────────────────
 var apiBaseUrl = configuration["ApiBaseUrl"]
@@ -119,6 +123,13 @@ builder.Services.AddScoped<IEstadoResultadosExcelService, EstadoResultadosExcelS
 builder.Services.AddScoped<IEstadoResultadosPdfService, EstadoResultadosPdfService>();
 builder.Services.AddScoped<ProyectoIntegrador.UI.Services.IImportacionExcelService,
                             ProyectoIntegrador.UI.Services.ImportacionExcelService>();
+
+// 🔹 HttpClient nombrado para BCU SOAP ─────────
+builder.Services.AddHttpClient("BCU", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+    client.DefaultRequestHeaders.Add("User-Agent", "ProyectoIntegrador/1.0");
+});
 
 var app = builder.Build();
 

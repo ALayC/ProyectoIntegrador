@@ -1,6 +1,8 @@
 @model EjercicioContableIndexViewModel
 @{
     ViewData["Title"] = "Ejercicios contables";
+    ViewData["ClienteId"] = Model.ClienteId;
+    ViewData["ClienteNombre"] = Model.ClienteNombre;
     var paginado = Model.Paginado;
     var ejercicios = paginado.Datos;
 }

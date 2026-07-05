@@ -11,6 +11,7 @@ using ProyectoIntegrador.Service.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace ProyectoIntegrador.Service.Implementations;
@@ -20,6 +21,7 @@ public class AuthService : IAuthService
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IRolRepository _rolRepository;
     private readonly ITokenRevocadoRepository _tokenRevocadoRepository;
+    private readonly IDispositivoConfiableRepository _dispositivoConfiableRepository;
     private readonly IEmailService _emailService;
     private readonly JwtOptions _jwtOptions;
     private readonly UIOptions _uiOptions;
@@ -29,6 +31,7 @@ public class AuthService : IAuthService
         IUsuarioRepository usuarioRepository,
         IRolRepository rolRepository,
         ITokenRevocadoRepository tokenRevocadoRepository,
+        IDispositivoConfiableRepository dispositivoConfiableRepository,
         IEmailService emailService,
         IOptions<JwtOptions> jwtOptions,
         IOptions<UIOptions> uiOptions,
@@ -37,6 +40,7 @@ public class AuthService : IAuthService
         _usuarioRepository = usuarioRepository;
         _rolRepository = rolRepository;
         _tokenRevocadoRepository = tokenRevocadoRepository;
+        _dispositivoConfiableRepository = dispositivoConfiableRepository;
         _emailService = emailService;
         _jwtOptions = jwtOptions.Value;
         _uiOptions = uiOptions.Value;
@@ -143,20 +147,55 @@ public class AuthService : IAuthService
         if (!usuario.EmailConfirmado)
         {
             _logger.LogWarning("Intento de login con email no confirmado: {Email}", loginDto.Email);
-            throw new ValidacionException("?? Por favor, confirma tu email antes de iniciar sesión. Revisa tu bandeja de entrada.");
+            throw new ValidacionException("Por favor, confirma tu email antes de iniciar sesión. Revisa tu bandeja de entrada.");
         }
 
-        // Generar JWT
-        var token = GenerarToken(usuario, usuario.Rol.Nombre);
+        // Verificar si el dispositivo ya es confiable (cookie de 7 días)
+        if (!string.IsNullOrEmpty(loginDto.TokenDispositivo))
+        {
+            var dispositivo = await _dispositivoConfiableRepository.ObtenerPorToken(loginDto.TokenDispositivo);
+            if (dispositivo is not null && dispositivo.UsuarioId == usuario.Id && dispositivo.FechaExpiracion > DateTime.UtcNow)
+            {
+                _logger.LogInformation("Login con dispositivo confiable: {Email}", usuario.Email);
+                var tokenDirecto = GenerarToken(usuario, usuario.Rol.Nombre);
+                return new AuthResponseDto
+                {
+                    Token = tokenDirecto,
+                    Email = usuario.Email,
+                    NombreCompleto = usuario.NombreCompleto,
+                    Rol = usuario.Rol.Nombre
+                };
+            }
+        }
 
-        _logger.LogInformation("? Login exitoso: {Email} | Rol: {Rol}", usuario.Email, usuario.Rol.Nombre);
+        // Generar y enviar código 2FA
+        var codigo = GenerarCodigo2FA();
+        usuario.Codigo2FA = codigo;
+        usuario.FechaExpiracion2FA = DateTime.UtcNow.AddMinutes(5);
+        await _usuarioRepository.Actualizar(usuario);
+
+        try
+        {
+            await _emailService.Enviar2FaCodeAsync(usuario.Email, codigo);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al enviar código 2FA a: {Email}", usuario.Email);
+        }
+
+        // Generar temp token (JWT de 5 min con claim especial, sin rol real)
+        var tempToken = GenerarTempToken2FA(usuario);
+
+        _logger.LogInformation("2FA iniciado para: {Email}", usuario.Email);
 
         return new AuthResponseDto
         {
-            Token = token,
+            Token = null,
             Email = usuario.Email,
             NombreCompleto = usuario.NombreCompleto,
-            Rol = usuario.Rol.Nombre
+            Rol = string.Empty,
+            Requires2FA = true,
+            TempToken = tempToken
         };
     }
 
@@ -465,15 +504,158 @@ public class AuthService : IAuthService
             throw new AccesoNoAutorizadoException("La cuenta se encuentra inactiva.");
         }
 
-        var token = GenerarToken(usuario, usuario.Rol.Nombre);
-        _logger.LogInformation("LoginConGoogle exitoso: {Email} | Rol: {Rol}", email, usuario.Rol.Nombre);
+        // Generar y enviar código 2FA también para Google
+        var codigo = GenerarCodigo2FA();
+        usuario.Codigo2FA = codigo;
+        usuario.FechaExpiracion2FA = DateTime.UtcNow.AddMinutes(5);
+        await _usuarioRepository.Actualizar(usuario);
+
+        try
+        {
+            await _emailService.Enviar2FaCodeAsync(usuario.Email, codigo);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al enviar código 2FA (Google) a: {Email}", usuario.Email);
+        }
+
+        var tempToken = GenerarTempToken2FA(usuario);
+        _logger.LogInformation("LoginConGoogle: 2FA iniciado para {Email}", email);
 
         return new AuthResponseDto
         {
-            Token = token,
+            Token = null,
             Email = usuario.Email,
             NombreCompleto = usuario.NombreCompleto,
-            Rol = usuario.Rol.Nombre
+            Rol = string.Empty,
+            Requires2FA = true,
+            TempToken = tempToken
         };
+    }
+
+    // ??? Verificar código 2FA ?????????????????????????????????????????????????
+    public async Task<AuthResponseDto> Verificar2FAAsync(Verificar2FADto dto, string? tokenDispositivoActual)
+    {
+        // Validar temp token
+        var handler = new JwtSecurityTokenHandler();
+        if (!handler.CanReadToken(dto.TempToken))
+            throw new ValidacionException("Token temporal inválido.");
+
+        JwtSecurityToken jwt;
+        try
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
+            handler.ValidateToken(dto.TempToken, new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = _jwtOptions.Issuer,
+                ValidAudience = _jwtOptions.Audience,
+                IssuerSigningKey = key,
+                ClockSkew = TimeSpan.Zero
+            }, out var validatedToken);
+            jwt = (JwtSecurityToken)validatedToken;
+        }
+        catch
+        {
+            throw new ValidacionException("El token temporal ha expirado. Por favor, iniciá sesión nuevamente.");
+        }
+
+        var pending2faClaim = jwt.Claims.FirstOrDefault(c => c.Type == "2fa_pending")?.Value;
+        if (pending2faClaim != "true")
+            throw new ValidacionException("Token temporal inválido.");
+
+        var subClaim = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+        if (!Guid.TryParse(subClaim, out var usuarioId))
+            throw new ValidacionException("Token temporal inválido.");
+
+        var usuario = await _usuarioRepository.ObtenerPorId(usuarioId)
+            ?? throw new EntidadNoEncontradaException("Usuario", usuarioId);
+
+        // Validar código
+        if (usuario.Codigo2FA != dto.Codigo)
+        {
+            _logger.LogWarning("Código 2FA incorrecto para: {Email}", usuario.Email);
+            throw new ValidacionException("El código ingresado no es válido.");
+        }
+
+        if (usuario.FechaExpiracion2FA < DateTime.UtcNow)
+        {
+            _logger.LogWarning("Código 2FA expirado para: {Email}", usuario.Email);
+            throw new ValidacionException("El código ha expirado. Iniciá sesión nuevamente.");
+        }
+
+        // Limpiar código
+        usuario.Codigo2FA = null;
+        usuario.FechaExpiracion2FA = null;
+        await _usuarioRepository.Actualizar(usuario);
+
+        // Limpiar dispositivos expirados del usuario
+        await _dispositivoConfiableRepository.EliminarExpiradosPorUsuario(usuario.Id);
+
+        // Si quiere recordar dispositivo, crear token de dispositivo confiable
+        string? nuevoTokenDispositivo = null;
+        if (dto.RecordarDispositivo)
+        {
+            nuevoTokenDispositivo = await GenerarTokenDispositivoConfiableAsync(usuario.Id);
+        }
+
+        var tokenJwt = GenerarToken(usuario, usuario.Rol.Nombre);
+        _logger.LogInformation("2FA verificado exitosamente: {Email}", usuario.Email);
+
+        return new AuthResponseDto
+        {
+            Token = tokenJwt,
+            Email = usuario.Email,
+            NombreCompleto = usuario.NombreCompleto,
+            Rol = usuario.Rol.Nombre,
+            TempToken = nuevoTokenDispositivo
+        };
+    }
+
+    public async Task<string> GenerarTokenDispositivoConfiableAsync(Guid usuarioId)
+    {
+        var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
+        var dispositivo = new DispositivoConfiable
+        {
+            Id = Guid.NewGuid(),
+            UsuarioId = usuarioId,
+            Token = token,
+            FechaExpiracion = DateTime.UtcNow.AddDays(7),
+            CreadoEn = DateTime.UtcNow
+        };
+        await _dispositivoConfiableRepository.Guardar(dispositivo);
+        return token;
+    }
+
+    // ??? Helpers privados ????????????????????????????????????????????????????
+    private static string GenerarCodigo2FA()
+    {
+        return RandomNumberGenerator.GetInt32(100000, 999999).ToString();
+    }
+
+    private string GenerarTempToken2FA(Usuario usuario)
+    {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
+            new Claim("2fa_pending", "true"),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        var token = new JwtSecurityToken(
+            issuer: _jwtOptions.Issuer,
+            audience: _jwtOptions.Audience,
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(5),
+            signingCredentials: credentials);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

@@ -10,6 +10,8 @@ using ProyectoIntegrador.API.Middleware;
 using ProyectoIntegrador.Data.Context;
 using ProyectoIntegrador.Data.Repositories.Implementations;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
+using ProyectoIntegrador.Data.Repositories.Implementations;
+using ProyectoIntegrador.Data.Repositories.Interfaces;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Implementations;
 using ProyectoIntegrador.Service.Interfaces;
@@ -85,6 +87,13 @@ builder.Services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
 // ── CORS ──────────────────────────────────────
 var origenesPermitidos = configuration.GetSection("Cors:OrigenesPermitidos").Get<string[]>()
     ?? ["https://localhost:7001", "http://localhost:5001"];
+
+// ── HttpClient nombrado para BCU SOAP ─────────
+builder.Services.AddHttpClient("BCU", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+    client.DefaultRequestHeaders.Add("User-Agent", "ProyectoIntegrador/1.0");
+});
 
 builder.Services.AddCors(options =>
 {
@@ -169,6 +178,7 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IRolRepository, RolRepository>();
 builder.Services.AddScoped<ITokenRevocadoRepository, TokenRevocadoRepository>();
+builder.Services.AddScoped<IDispositivoConfiableRepository, DispositivoConfiableRepository>();
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IPlanDeCuentasRepository, PlanDeCuentasRepository>();
 builder.Services.AddScoped<IAuditoriaRepository, AuditoriaRepository>();
@@ -179,10 +189,11 @@ builder.Services.AddScoped<IAsientoContableRepository, AsientoContableRepository
 builder.Services.AddScoped<ISaldoCuentaRepository, SaldoCuentaRepository>();
 builder.Services.AddScoped<ILineaAsientoRepository, LineaAsientoRepository>();
 builder.Services.AddScoped<IComprobanteRepository, ComprobanteRepository>();
+builder.Services.AddScoped<ITipoDeCambioRepository, TipoDeCambioRepository>();
+builder.Services.AddScoped<ITipoDeCambioService, TipoDeCambioService>();
 // Los demás repositorios se irán activando a medida que se creen las implementaciones
 // builder.Services.AddScoped<IImportacionRepository, ImportacionRepository>();
 // builder.Services.AddScoped<ICentroDeCostoRepository, CentroDeCostoRepository>();
-// builder.Services.AddScoped<ITipoDeCambioRepository, TipoDeCambioRepository>();
 
 // ── Opciones de configuración: Email ────────────
 builder.Services.Configure<EmailOptions>(configuration.GetSection("Email"));

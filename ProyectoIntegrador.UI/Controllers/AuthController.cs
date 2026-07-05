@@ -43,10 +43,14 @@ public class AuthController : Controller
             return View(model);
         }
 
+        // Leer cookie de dispositivo confiable para pasarla a la API
+        Request.Cookies.TryGetValue("trusted_device", out var tokenDispositivo);
+
         var response = await _apiClient.PostAsync<AuthApiResponse>("api/auth/login", new
         {
             email = model.Email,
-            password = model.Password
+            password = model.Password,
+            tokenDispositivo
         });
 
         if (!response.EsExitoso || response.Data is null)
@@ -54,7 +58,6 @@ public class AuthController : Controller
             var mensajeError = response.MensajeError ?? "Error al iniciar sesión.";
             ModelState.AddModelError(string.Empty, mensajeError);
 
-            // Si el error es por email no confirmado, pasar el email para reenvío
             if (mensajeError.Contains("confirma tu email", StringComparison.OrdinalIgnoreCase))
             {
                 ViewBag.EmailNoConfirmado = model.Email;
@@ -63,10 +66,14 @@ public class AuthController : Controller
             return View(model);
         }
 
-        // Guardar JWT en sesión
-        HttpContext.Session.SetString("JwtToken", response.Data.Token);
+        // Si requiere 2FA, redirigir a la página de verificación
+        if (response.Data.Requires2FA && response.Data.TempToken is not null)
+        {
+            return RedirectToAction(nameof(Verify2FA), new { tempToken = response.Data.TempToken });
+        }
 
-        // Crear cookie de autenticación con claims
+        // Login directo (dispositivo confiable)
+        HttpContext.Session.SetString("JwtToken", response.Data.Token!);
         await CrearCookieDeAutenticacion(response.Data);
 
         return RedirectToAction("Index", "Home");
@@ -109,6 +116,55 @@ public class AuthController : Controller
 
         TempData["AuthExito"] = "Cuenta creada exitosamente. Iniciá sesión.";
         return RedirectToAction(nameof(Login));
+    }
+
+    // ?? GET /Auth/Verify2FA ????????????????????????
+    [HttpGet]
+    public IActionResult Verify2FA(string tempToken)
+    {
+        if (string.IsNullOrWhiteSpace(tempToken))
+            return RedirectToAction(nameof(Login));
+
+        return View(new Verify2FAViewModel { TempToken = tempToken });
+    }
+
+    // ?? POST /Auth/Verify2FA ???????????????????????
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Verify2FA(Verify2FAViewModel model)
+    {
+        if (!ModelState.IsValid)
+            return View(model);
+
+        var response = await _apiClient.PostAsync<AuthApiResponse>("api/auth/verify-2fa", new
+        {
+            tempToken = model.TempToken,
+            codigo = model.Codigo,
+            recordarDispositivo = model.RecordarDispositivo
+        });
+
+        if (!response.EsExitoso || response.Data is null)
+        {
+            ModelState.AddModelError(string.Empty, response.MensajeError ?? "Código inválido.");
+            return View(model);
+        }
+
+        // Si el usuario marcó "recordar dispositivo", guardar cookie 7 días
+        if (model.RecordarDispositivo && response.Data.TempToken is not null)
+        {
+            Response.Cookies.Append("trusted_device", response.Data.TempToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddDays(7)
+            });
+        }
+
+        HttpContext.Session.SetString("JwtToken", response.Data.Token!);
+        await CrearCookieDeAutenticacion(response.Data);
+
+        return RedirectToAction("Index", "Home");
     }
 
     // ?? POST /Auth/Logout ?????????????????????????
@@ -177,7 +233,13 @@ public class AuthController : Controller
             return View("Login");
         }
 
-        HttpContext.Session.SetString("JwtToken", response.Data.Token);
+        // Google también requiere 2FA
+        if (response.Data.Requires2FA && response.Data.TempToken is not null)
+        {
+            return RedirectToAction(nameof(Verify2FA), new { tempToken = response.Data.TempToken });
+        }
+
+        HttpContext.Session.SetString("JwtToken", response.Data.Token!);
         await CrearCookieDeAutenticacion(response.Data);
 
         return RedirectToAction("Index", "Home");
@@ -193,12 +255,12 @@ public class AuthController : Controller
             new(ClaimTypes.Name, authData.NombreCompleto),
             new(ClaimTypes.Email, authData.Email),
             new(ClaimTypes.Role, authData.Rol),
-            new("JwtToken", authData.Token)
+            new("JwtToken", authData.Token ?? string.Empty)
         };
 
         // Extraer el sub (userId) del JWT para guardarlo como claim
         var handler = new JwtSecurityTokenHandler();
-        if (handler.CanReadToken(authData.Token))
+        if (authData.Token is not null && handler.CanReadToken(authData.Token))
         {
             var jwt = handler.ReadJwtToken(authData.Token);
             var subClaim = jwt.Claims.FirstOrDefault(c => c.Type == "sub");
@@ -262,19 +324,15 @@ public class AuthController : Controller
     [HttpGet]
     public IActionResult ResetPassword(string token)
     {
-        // 🔥 LOG TEMPORAL PARA DEBUG
-        Console.WriteLine($"[DEBUG GET] Token recibido: '{token}'");
-        Console.WriteLine($"[DEBUG GET] Token es null/vacío: {string.IsNullOrWhiteSpace(token)}");
+
 
         if (string.IsNullOrWhiteSpace(token))
         {
             TempData["Error"] = "❌ Token de restablecimiento inválido o no proporcionado.";
-            Console.WriteLine($"[DEBUG GET] Redirigiendo a Login por token inválido");
             return RedirectToAction(nameof(Login));
         }
 
         var model = new ResetPasswordViewModel { Token = token };
-        Console.WriteLine($"[DEBUG GET] Modelo creado con token: '{model.Token}'");
         return View(model);
     }
 
@@ -432,10 +490,12 @@ public class AuthController : Controller
     /// </summary>
     private class AuthApiResponse
     {
-        public string Token { get; set; } = string.Empty;
+        public string? Token { get; set; }
         public string Email { get; set; } = string.Empty;
         public string NombreCompleto { get; set; } = string.Empty;
         public string Rol { get; set; } = string.Empty;
+        public bool Requires2FA { get; set; }
+        public string? TempToken { get; set; }
     }
 }
 

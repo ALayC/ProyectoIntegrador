@@ -33,13 +33,42 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Autentica un usuario y devuelve un JWT v·lido por 1 hora.
+    /// Autentica un usuario y devuelve un JWT v√°lido por 1 hora.
     /// </summary>
     [HttpPost("login")]
     [EnableRateLimiting("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
     {
+        // Leer cookie de dispositivo confiable si existe
+        Request.Cookies.TryGetValue("trusted_device", out var tokenDispositivo);
+        loginDto.TokenDispositivo = tokenDispositivo;
+
         var resultado = await _authService.Login(loginDto);
+        return Ok(resultado);
+    }
+
+    /// <summary>
+    /// Verifica el c√≥digo 2FA y emite el JWT real.
+    /// </summary>
+    [HttpPost("verify-2fa")]
+    [EnableRateLimiting("login")]
+    public async Task<IActionResult> Verify2FA([FromBody] Verificar2FADto dto)
+    {
+        Request.Cookies.TryGetValue("trusted_device", out var tokenDispositivoActual);
+        var resultado = await _authService.Verificar2FAAsync(dto, tokenDispositivoActual);
+
+        if (dto.RecordarDispositivo && resultado.TempToken is not null)
+        {
+            Response.Cookies.Append("trusted_device", resultado.TempToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddDays(7)
+            });
+            resultado.TempToken = null;
+        }
+
         return Ok(resultado);
     }
 
@@ -54,7 +83,7 @@ public class AuthController : ControllerBase
         var token = ObtenerTokenDelHeader();
 
         await _authService.Logout(usuarioId, token);
-        return Ok(new { mensaje = "SesiÛn cerrada exitosamente." });
+        return Ok(new { mensaje = "Sesi√≥n cerrada exitosamente." });
     }
 
     /// <summary>
@@ -76,8 +105,8 @@ public class AuthController : ControllerBase
     [EnableRateLimiting("login")]
     public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto dto)
     {
-        Console.WriteLine($"[API recibiÛ] IdToken length: {dto.IdToken?.Length ?? 0}");
-        Console.WriteLine($"[API recibiÛ] AccessToken length: {dto.AccessToken?.Length ?? 0}");
+        Console.WriteLine($"[API recibi√≥] IdToken length: {dto.IdToken?.Length ?? 0}");
+        Console.WriteLine($"[API recibi√≥] AccessToken length: {dto.AccessToken?.Length ?? 0}");
 
         var resultado = await _authService.LoginConGoogle(dto.IdToken, dto.AccessToken);
         return Ok(resultado);
@@ -93,19 +122,19 @@ public class AuthController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(token))
         {
-            return BadRequest(new { error = "Token de confirmaciÛn requerido.", codigo = "TOKEN_REQUERIDO" });
+            return BadRequest(new { error = "Token de confirmaci√≥n requerido.", codigo = "TOKEN_REQUERIDO" });
         }
 
         var resultado = await _authService.ConfirmarEmailAsync(token);
         return Ok(new
         {
-            mensaje = "? Email confirmado exitosamente. Puedes iniciar sesiÛn.",
+            mensaje = "? Email confirmado exitosamente. Puedes iniciar sesi√≥n.",
             usuario = resultado
         });
     }
 
     /// <summary>
-    /// ReenvÌa el email de confirmaciÛn si el anterior expirÛ.
+    /// Reenv√≠a el email de confirmaci√≥n si el anterior expir√≥.
     /// </summary>
     [HttpPost("resend-confirmation-email")]
     [EnableRateLimiting("register")]
@@ -116,33 +145,33 @@ public class AuthController : ControllerBase
             return BadRequest(new { error = "Email requerido.", codigo = "EMAIL_REQUERIDO" });
         }
 
-        // Usar baseUrl de configuraciÛn (apunta a UI)
+        // Usar baseUrl de configuraci√≥n (apunta a UI)
         var baseUrl = _uiOptions.BaseUrl;
 
         await _authService.ReenviarConfirmacionEmailAsync(dto.Email, baseUrl);
         return Ok(new
         {
-            mensaje = "? Email de confirmaciÛn reenviado. Revisa tu bandeja de entrada."
+            mensaje = "? Email de confirmaci√≥n reenviado. Revisa tu bandeja de entrada."
         });
     }
 
     /// <summary>
-    /// Inicia el proceso de recuperaciÛn de contraseÒa.
-    /// EnvÌa email con link de restablecimiento.
+    /// Inicia el proceso de recuperaci√≥n de contrase√±a.
+    /// Env√≠a email con link de restablecimiento.
     /// </summary>
     [HttpPost("forgot-password")]
     [EnableRateLimiting("register")]
-    public async Task<IActionResult> OlvidÈContraseÒa([FromBody] SolicitarResetContraseÒaDto dto)
+    public async Task<IActionResult> Olvid√©Contrase√±a([FromBody] SolicitarResetContrase√±aDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Email))
         {
             return BadRequest(new { error = "Email requerido.", codigo = "EMAIL_REQUERIDO" });
         }
 
-        // Usar baseUrl de configuraciÛn (apunta a UI)
+        // Usar baseUrl de configuraci√≥n (apunta a UI)
         var baseUrl = _uiOptions.BaseUrl;
 
-        await _authService.SolicitarRestablecimientoContraseÒaAsync(dto.Email, baseUrl);
+        await _authService.SolicitarRestablecimientoContrase√±aAsync(dto.Email, baseUrl);
         return Ok(new
         {
             mensaje = "? Email de restablecimiento enviado. Revisa tu bandeja de entrada."
@@ -150,22 +179,22 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Restablece la contraseÒa del usuario usando el token enviado por email.
+    /// Restablece la contrase√±a del usuario usando el token enviado por email.
     /// Devuelve JWT si es exitoso (auto-login).
     /// </summary>
     [HttpPost("reset-password")]
     [EnableRateLimiting("register")]
-    public async Task<IActionResult> RestablecerContraseÒa([FromBody] RestablecerContraseÒaDto dto)
+    public async Task<IActionResult> RestablecerContrase√±a([FromBody] RestablecerContrase√±aDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Token))
         {
             return BadRequest(new { error = "Token requerido.", codigo = "TOKEN_REQUERIDO" });
         }
 
-        var resultado = await _authService.RestablecerContraseÒaAsync(dto.Token, dto.NuevaContraseÒa);
+        var resultado = await _authService.RestablecerContrase√±aAsync(dto.Token, dto.NuevaContrase√±a);
         return Ok(new
         {
-            mensaje = "? ContraseÒa actualizada exitosamente.",
+            mensaje = "? Contrase√±a actualizada exitosamente.",
             usuario = resultado
         });
     }
@@ -192,7 +221,7 @@ public class AuthController : ControllerBase
 
         if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
         {
-            throw new UnauthorizedAccessException("No se encontrÛ el token en el header Authorization.");
+            throw new UnauthorizedAccessException("No se encontr√≥ el token en el header Authorization.");
         }
 
         return authHeader["Bearer ".Length..].Trim();

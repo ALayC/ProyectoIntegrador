@@ -50,13 +50,13 @@ public class AsientosContablesController : Controller
             return View(model);
         }
 
-        var totalDebe = model.Lineas.Sum(l => l.Debe);
-        var totalHaber = model.Lineas.Sum(l => l.Haber);
+        var totalDebe  = model.Lineas.Sum(l => l.Debe  * l.TipoCambio);
+        var totalHaber = model.Lineas.Sum(l => l.Haber * l.TipoCambio);
 
-        if (totalDebe != totalHaber)
+        if (Math.Abs(totalDebe - totalHaber) > 0.001m)
         {
             ModelState.AddModelError(string.Empty,
-                $"El asiento está desbalanceado: Debe={totalDebe:N2}, Haber={totalHaber:N2}. Deben ser iguales.");
+                $"El asiento está desbalanceado en moneda base: Debe={totalDebe:N2}, Haber={totalHaber:N2}. Deben ser iguales.");
             await RecargarSelectsAsync(model);
             return View(model);
         }
@@ -181,6 +181,41 @@ public class AsientosContablesController : Controller
 
         TempData["Exito"] = $"Asiento N° {response.Data!.Numero} (reversión) creado correctamente.";
         return RedirectToAction(nameof(Index), new { clienteId });
+    }
+
+    // ── Proxy para tipo de cambio (evita CORS del browser al API) ──────────
+    [HttpGet]
+    public async Task<IActionResult> CotizacionUsd([FromQuery] string fecha)
+    {
+        // Determinar fecha a consultar
+        DateOnly fechaConsulta;
+        if (!DateOnly.TryParse(fecha, out fechaConsulta))
+            fechaConsulta = DateOnly.FromDateTime(DateTime.Today);
+
+        var response = await _apiClient.GetAsync<CotizacionUsdViewModel>(
+            $"api/tipocambio?moneda=USD&fecha={fechaConsulta:yyyy-MM-dd}");
+
+        if (!response.EsExitoso || response.Data is null)
+            return Json(new { ok = false, esFallback = false });
+
+        // Detectar si es fallback comparando la fecha retornada
+        var esFallback = response.Data.Fecha != fechaConsulta;
+
+        return Json(new
+        {
+            ok = true,
+            valor = response.Data.Valor,
+            fechaReal = response.Data.Fecha.ToString("dd/MM/yyyy"),
+            esFallback
+        });
+    }
+
+    private class CotizacionUsdViewModel
+    {
+        public string Moneda { get; set; } = string.Empty;
+        public DateOnly Fecha { get; set; }
+        public decimal Valor { get; set; }
+        public string Fuente { get; set; } = string.Empty;
     }
 
     // ──────────────────────────────────────────────

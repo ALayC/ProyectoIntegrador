@@ -17,6 +17,7 @@ public class AuthServiceTests
     private readonly Mock<IUsuarioRepository> _mockUsuarioRepo;
     private readonly Mock<IRolRepository> _mockRolRepo;
     private readonly Mock<ITokenRevocadoRepository> _mockTokenRepo;
+    private readonly Mock<IDispositivoConfiableRepository> _mockDispositivoRepo;
     private readonly Mock<IEmailService> _mockEmailService;
     private readonly IOptions<JwtOptions> _jwtOptions;
     private readonly IOptions<UIOptions> _uiOptions;
@@ -27,6 +28,7 @@ public class AuthServiceTests
         _mockUsuarioRepo = new Mock<IUsuarioRepository>();
         _mockRolRepo = new Mock<IRolRepository>();
         _mockTokenRepo = new Mock<ITokenRevocadoRepository>();
+        _mockDispositivoRepo = new Mock<IDispositivoConfiableRepository>();
         _mockEmailService = new Mock<IEmailService>();
 
         _jwtOptions = Options.Create(new JwtOptions
@@ -46,6 +48,7 @@ public class AuthServiceTests
             _mockUsuarioRepo.Object,
             _mockRolRepo.Object,
             _mockTokenRepo.Object,
+            _mockDispositivoRepo.Object,
             _mockEmailService.Object,
             _jwtOptions,
             _uiOptions,
@@ -87,7 +90,7 @@ public class AuthServiceTests
 
         // Assert
         Assert.NotNull(resultado);
-        Assert.NotEmpty(resultado.Token);
+        Assert.Null(resultado.Token); // Token es null hasta confirmar email
         Assert.Equal(registroDto.Email, resultado.Email);
         Assert.Equal(registroDto.NombreCompleto, resultado.NombreCompleto);
         Assert.Equal("Contador", resultado.Rol);
