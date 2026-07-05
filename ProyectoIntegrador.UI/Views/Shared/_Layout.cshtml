@@ -8,6 +8,8 @@
     <link href="~/tabler/dist/css/tabler-vendors.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@latest/tabler-icons.min.css" rel="stylesheet" />
     <link href="~/css/site.css" rel="stylesheet" asp-append-version="true" />
+    <link href="https://unpkg.com/nprogress@0.2.0/nprogress.css" rel="stylesheet" />
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
 </head>
 <body class="sg-body">
     <div class="page">
@@ -16,40 +18,119 @@
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu" aria-controls="sidebar-menu" aria-expanded="false" aria-label="Mostrar menú">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <h1 class="navbar-brand navbar-brand-autodark">
+                <h1 class="navbar-brand navbar-brand-autodark mb-0">
                     <a asp-controller="Home" asp-action="Index" class="text-white text-decoration-none fw-semibold">
                         SIG Contable
                     </a>
+                    <p class="sg-sidebar-subtitle">Sistema Integrado Contable</p>
                 </h1>
-                <div class="collapse navbar-collapse" id="sidebar-menu">
+                <div class="collapse navbar-collapse d-flex flex-column justify-content-between" id="sidebar-menu" style="min-height:calc(100vh - 80px)">
+                    @{
+                        var ctxClienteIdRaw = ViewData["ClienteId"];
+                        Guid? ctxClienteId = ctxClienteIdRaw is Guid cg ? cg : (Guid?)null;
+                        var ctxClienteNombre = ViewData["ClienteNombre"] as string;
+                        var ctxController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+                        var ctxAction    = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+                        bool sgIsResumen      = ctxController == "Clientes" && ctxAction == "Detalles";
+                        bool sgIsContabilidad = ctxController is "LibroMayor" or "AsientosContables" or "EstadoResultados" or "BalanceGeneral" or "Importacion";
+                        bool sgIsFiscal       = ctxController is "LiquidacionIva" or "Comprobantes";
+                        bool sgIsPlan         = (ctxController == "Clientes" && ctxAction == "PlanDeCuentas") || ctxController == "CuentasContables";
+                        bool sgIsEjercicios   = ctxController == "Ejercicios";
+                    }
                     <ul class="navbar-nav pt-lg-3">
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Index">
+                                <span class="nav-link-icon"><i class="ti ti-layout-dashboard"></i></span>
                                 <span class="nav-link-title">Panel principal</span>
                             </a>
                         </li>
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Clientes" asp-action="Index">
-                                    <span class="nav-link-title">Clientes</span>
-                                </a>
-                            </li>
+                            @if (ctxClienteId.HasValue && !string.IsNullOrEmpty(ctxClienteNombre))
+                            {
+                                <li class="nav-item">
+                                    <div class="px-3 pt-1 pb-1">
+                                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:rgba(255,255,255,.35);">
+                                            @ctxClienteNombre
+                                        </div>
+                                    </div>
+                                    <ul class="navbar-nav ps-2">
+                                        <li class="nav-item">
+                                            <a class="nav-link @(sgIsResumen ? "active" : "")"
+                                               asp-controller="Clientes" asp-action="Detalles" asp-route-id="@ctxClienteId">
+                                                <span class="nav-link-icon"><i class="ti ti-layout-dashboard"></i></span>
+                                                <span class="nav-link-title">Resumen</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link @(sgIsContabilidad ? "active" : "")"
+                                               href="@Url.Action("Detalles", "Clientes", new { id = ctxClienteId })#tab-contabilidad">
+                                                <span class="nav-link-icon"><i class="ti ti-book"></i></span>
+                                                <span class="nav-link-title">Contabilidad</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link @(sgIsFiscal ? "active" : "")"
+                                               href="@Url.Action("Detalles", "Clientes", new { id = ctxClienteId })#tab-fiscal">
+                                                <span class="nav-link-icon"><i class="ti ti-receipt-tax"></i></span>
+                                                <span class="nav-link-title">Fiscal</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link @(sgIsPlan ? "active" : "")"
+                                               asp-controller="Clientes" asp-action="PlanDeCuentas" asp-route-id="@ctxClienteId">
+                                                <span class="nav-link-icon"><i class="ti ti-list-tree"></i></span>
+                                                <span class="nav-link-title">Plan de Cuentas</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link @(sgIsEjercicios ? "active" : "")"
+                                               asp-controller="Ejercicios" asp-action="Index" asp-route-clienteId="@ctxClienteId">
+                                                <span class="nav-link-icon"><i class="ti ti-calendar-stats"></i></span>
+                                                <span class="nav-link-title">Ejercicios Contables</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
                             @if (User.IsInRole("Administrador"))
                             {
                                 <li class="nav-item">
                                     <a class="nav-link" asp-controller="Usuarios" asp-action="Index">
+                                        <span class="nav-link-icon"><i class="ti ti-user-cog"></i></span>
                                         <span class="nav-link-title">Usuarios</span>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" asp-controller="Roles" asp-action="Index">
+                                        <span class="nav-link-icon"><i class="ti ti-shield-check"></i></span>
                                         <span class="nav-link-title">Roles y Permisos</span>
                                     </a>
                                 </li>
                             }
                         }
                     </ul>
+                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                    {
+                        <div class="pb-3 px-3">
+                            @{
+                                var nombreUsuario = User.Identity.Name ?? "Usuario";
+                                var inicial = nombreUsuario.Length > 0 ? nombreUsuario[0].ToString().ToUpper() : "U";
+                            }
+                            <div class="d-flex align-items-center gap-2 mb-2 px-1">
+                                <div class="sg-avatar-initial">@inicial</div>
+                                <div class="text-white" style="font-size:13px;opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@nombreUsuario</div>
+                            </div>
+                            <hr class="sg-sidebar-divider" />
+                            <form asp-controller="Auth" asp-action="Logout" method="post">
+                                <button type="submit" class="sg-logout-pill" title="Cerrar sesión">
+                                    <i class="ti ti-logout"></i>
+                                    <span>Cerrar sesión</span>
+                                </button>
+                            </form>
+                        </div>
+                    }
                 </div>
             </div>
         </aside>
@@ -57,17 +138,20 @@
         <div class="page-wrapper">
             <header class="navbar navbar-expand-md d-print-none border-bottom bg-white">
                 <div class="container-xl">
-                    <div class="navbar-nav flex-row ms-auto order-md-last">
+                    <nav class="sg-breadcrumb-nav" aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item">
+                                <a asp-controller="Home" asp-action="Index">Gestión</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">@(ViewData["Title"] ?? "Sistema")</li>
+                        </ol>
+                    </nav>
+                    <div class="navbar-nav flex-row ms-auto order-md-last gap-1">
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
-                            <div class="nav-item d-flex align-items-center me-3 text-secondary">
-                                @User.Identity.Name
-                            </div>
-                            <div class="nav-item">
-                                <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-outline-azure btn-sm">Cerrar sesión</button>
-                                </form>
-                            </div>
+                            <span class="nav-item d-flex align-items-center me-2 text-secondary" style="font-size:13px">@User.Identity.Name</span>
+                            <a href="#" class="sg-topbar-icon" title="Notificaciones"><i class="ti ti-bell"></i></a>
+                            <a href="#" class="sg-topbar-icon" title="Ayuda"><i class="ti ti-help-circle"></i></a>
                         }
                         else
                         {
@@ -123,7 +207,53 @@
         </div>
     </div>
 
+    <button id="sg-back-top" aria-label="Ir arriba" title="Ir arriba">
+        <i class="ti ti-arrow-up" style="font-size:1.1rem"></i>
+    </button>
+
     <script src="~/tabler/dist/js/tabler.min.js" asp-append-version="true"></script>
+    <script src="https://unpkg.com/nprogress@0.2.0/nprogress.js"></script>
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+    <script>
+        NProgress.configure({ showSpinner: false, speed: 300, trickleSpeed: 120 });
+        document.addEventListener('DOMContentLoaded', function () {
+            NProgress.done();
+            AOS.init({ duration: 500, once: true, offset: 60, easing: 'ease-out-cubic' });
+
+            // Alertas auto-cierre
+            document.querySelectorAll('.alert-dismissible').forEach(function (el) {
+                setTimeout(function () {
+                    el.style.transition = 'opacity 0.5s ease';
+                    el.style.opacity = '0';
+                    setTimeout(function () { el.remove(); }, 500);
+                }, 4000);
+            });
+
+            // Botón ir arriba
+            var btn = document.getElementById('sg-back-top');
+            if (btn) {
+                window.addEventListener('scroll', function () {
+                    btn.classList.toggle('sg-visible', window.scrollY > 280);
+                }, { passive: true });
+                btn.addEventListener('click', function () {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            }
+        });
+        document.addEventListener('click', function (e) {
+            var link = e.target.closest('a[href]');
+            if (!link) return;
+            var href = link.getAttribute('href');
+            if (!href || href.startsWith('#') || href.startsWith('javascript') || link.target === '_blank') return;
+            // Skip same-page hash links (e.g. /Clientes/Detalles/id#tab-x)
+            try {
+                var target = new URL(href, window.location.href);
+                if (target.pathname === window.location.pathname && target.hash) return;
+            } catch (ex) { }
+            if (!e.ctrlKey && !e.metaKey && !e.shiftKey) NProgress.start();
+        });
+        document.addEventListener('submit', function () { NProgress.start(); });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

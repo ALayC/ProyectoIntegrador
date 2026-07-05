@@ -155,7 +155,7 @@ public class AuthController : Controller
             Response.Cookies.Append("trusted_device", response.Data.TempToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
+                Secure = Request.IsHttps,
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTimeOffset.UtcNow.AddDays(7)
             });
@@ -324,19 +324,15 @@ public class AuthController : Controller
     [HttpGet]
     public IActionResult ResetPassword(string token)
     {
-        // 🔥 LOG TEMPORAL PARA DEBUG
-        Console.WriteLine($"[DEBUG GET] Token recibido: '{token}'");
-        Console.WriteLine($"[DEBUG GET] Token es null/vacío: {string.IsNullOrWhiteSpace(token)}");
+
 
         if (string.IsNullOrWhiteSpace(token))
         {
             TempData["Error"] = "❌ Token de restablecimiento inválido o no proporcionado.";
-            Console.WriteLine($"[DEBUG GET] Redirigiendo a Login por token inválido");
             return RedirectToAction(nameof(Login));
         }
 
         var model = new ResetPasswordViewModel { Token = token };
-        Console.WriteLine($"[DEBUG GET] Modelo creado con token: '{model.Token}'");
         return View(model);
     }
 

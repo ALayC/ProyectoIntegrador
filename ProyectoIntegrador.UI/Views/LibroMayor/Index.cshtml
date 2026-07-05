@@ -1,9 +1,117 @@
 @model LibroMayorViewModel
 @{
     ViewData["Title"] = "Libro Mayor";
+    ViewData["ClienteId"] = Model.ClienteId;
+    ViewData["ClienteNombre"] = Model.ClienteNombre;
 }
 
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+
+<style>
+    /* ── Choices.js ─────────────────────────────────────────── */
+    .choices__inner {
+        border: 1px solid var(--tblr-border-color, #dce1e7);
+        border-radius: var(--tblr-border-radius, 4px);
+        background-color: #fff;
+        min-height: 38px;
+        font-size: 14px;
+        padding: 4px 8px;
+    }
+
+    .choices__input {
+        font-size: 14px;
+        background-color: transparent;
+    }
+
+    .choices__list--dropdown,
+    .choices__list[aria-expanded] {
+        border-color: var(--tblr-border-color, #dce1e7);
+        border-radius: var(--tblr-border-radius, 4px);
+        background-color: #ffffff !important;
+        font-size: 14px;
+        z-index: 99999 !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+
+        .choices__list--dropdown .choices__item,
+        .choices__list[aria-expanded] .choices__item {
+            background-color: #ffffff;
+            color: #1f2937;
+        }
+
+        .choices__list--dropdown .choices__input,
+        .choices__list[aria-expanded] .choices__input {
+            background-color: #f8fafc !important;
+            border-bottom: 1px solid #dce1e7;
+            color: #1f2937;
+        }
+
+        .choices__list--dropdown .choices__item--selectable.is-highlighted,
+        .choices__list[aria-expanded] .choices__item--selectable.is-highlighted {
+            background-color: #1a3a5c;
+            color: #fff;
+        }
+
+    .choices__item.choices__item--selected {
+        background-color: rgba(26, 58, 92, 0.10);
+        color: #1a3a5c;
+        border-color: rgba(26, 58, 92, 0.25);
+        border-radius: 4px;
+        font-size: 12px;
+    }
+
+    .choices__button {
+        border-left-color: rgba(26, 58, 92, 0.25);
+        filter: brightness(0) saturate(100%) invert(17%) sepia(40%) saturate(800%) hue-rotate(185deg);
+    }
+
+    #filtros-card {
+        position: relative;
+        z-index: 100;
+    }
+
+    #filtros-card,
+    #filtros-card .card-header,
+    #filtros-card .card-body {
+        overflow: visible;
+    }
+
+    /* ── Cuenta cards ───────────────────────────────────────── */
+    .sg-cuenta-card {
+        border-radius: 6px;
+        border-left-width: 4px !important;
+        border-left-style: solid !important;
+        transition: box-shadow 0.15s ease;
+    }
+
+    .sg-cuenta-card:hover {
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .sg-cuenta-zero {
+        opacity: 0.55;
+    }
+
+    .sg-chevron {
+        transition: transform 0.2s ease;
+        display: inline-block;
+    }
+
+    .sg-toggle-btn.collapsed .sg-chevron {
+        transform: rotate(-90deg);
+    }
+
+    .sg-saldo-grid .badge {
+        font-size: 12px;
+        padding: 5px 10px;
+        font-weight: 500;
+        width: 100%;
+        text-align: left;
+        display: block;
+    }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3" data-aos="fade-down">
     <div>
         <h2 class="mb-1"><i class="ti ti-report-analytics"></i> Libro Mayor</h2>
         @if (!string.IsNullOrWhiteSpace(Model.ClienteNombre))
@@ -20,7 +128,6 @@
                 fechaDesde = Model.FechaDesde?.ToString("yyyy-MM-dd"),
                 fechaHasta = Model.FechaHasta?.ToString("yyyy-MM-dd")
             });
-
             if (Model.CuentaIds.Count > 0)
                 exportUrl += "&" + string.Join("&", Model.CuentaIds.Select(id => $"cuentaIds={id}"));
         }
@@ -32,17 +139,14 @@
                 fechaDesde = Model.FechaDesde?.ToString("yyyy-MM-dd"),
                 fechaHasta = Model.FechaHasta?.ToString("yyyy-MM-dd")
             });
-
             if (Model.CuentaIds.Count > 0)
                 pdfUrl += "&" + string.Join("&", Model.CuentaIds.Select(id => $"cuentaIds={id}"));
         }
 
-        <a href="@pdfUrl"
-           class="btn btn-outline-danger @(Model.CuentasMayor.Count == 0 ? "disabled" : "")">
+        <a href="@pdfUrl" class="btn btn-outline-danger @(Model.CuentasMayor.Count == 0 ? "disabled" : "")">
             <i class="ti ti-file-type-pdf"></i> Exportar PDF
         </a>
-        <a href="@exportUrl"
-           class="btn btn-outline-success @(Model.CuentasMayor.Count == 0 ? "disabled" : "")">
+        <a href="@exportUrl" class="btn btn-outline-success @(Model.CuentasMayor.Count == 0 ? "disabled" : "")">
             <i class="ti ti-file-spreadsheet"></i> Exportar Excel
         </a>
         <a asp-controller="Clientes" asp-action="Detalles" asp-route-id="@Model.ClienteId" class="btn btn-outline-azure">
@@ -51,7 +155,10 @@
     </div>
 </div>
 
-<div class="card mb-3">
+<div class="card mb-3" id="filtros-card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="ti ti-filter me-1"></i> Filtros</h3>
+    </div>
     <div class="card-body">
         <form method="get" asp-action="Index" class="row g-3 align-items-end">
             <input type="hidden" name="clienteId" value="@Model.ClienteId" />
@@ -62,40 +169,42 @@
                     @foreach (var ej in Model.Ejercicios)
                     {
                         <option value="@ej.Id" selected="@(Model.EjercicioId == ej.Id)">
-                            @ej.FechaInicio.Year � @ej.FechaFin.Year (@ej.Estado)
+                            @ej.FechaInicio.Year &ndash; @ej.FechaFin.Year (@ej.Estado)
                         </option>
                     }
                 </select>
             </div>
-            <div class="col-md-4">
-                <label class="form-label">Cuentas</label>
-                <select name="cuentaIds" class="form-select" multiple>
-                    @foreach (var cuenta in Model.Cuentas)
-                    {
-                        <option value="@cuenta.Id" selected="@(Model.CuentaIds.Contains(cuenta.Id))">
-                            @cuenta.Codigo � @cuenta.Nombre
-                        </option>
-                    }
-                </select>
-                <div class="form-hint">Pod�s seleccionar una o varias cuentas.</div>
-            </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <label class="form-label">Fecha desde</label>
                 <input type="date" name="fechaDesde" class="form-control"
                        value="@(Model.FechaDesde?.ToString("yyyy-MM-dd") ?? string.Empty)" />
             </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <label class="form-label">Fecha hasta</label>
                 <input type="date" name="fechaHasta" class="form-control"
                        value="@(Model.FechaHasta?.ToString("yyyy-MM-dd") ?? string.Empty)" />
             </div>
-            <div class="col-12 d-flex gap-2">
-                <button type="submit" class="btn btn-azure">
+            <div class="col-md-2 d-flex gap-2 align-items-end">
+                <button type="submit" class="btn btn-azure flex-fill">
                     <i class="ti ti-search"></i> Consultar
                 </button>
                 <a asp-action="Index" asp-route-clienteId="@Model.ClienteId" class="btn btn-outline-secondary">
-                    <i class="ti ti-x"></i> Limpiar
+                    <i class="ti ti-x"></i>
                 </a>
+            </div>
+            <div class="col-12">
+                <label class="form-label">
+                    Cuentas <span class="text-secondary fw-normal small">— dejá vacío para todas</span>
+                </label>
+                <select id="select-cuentas" name="cuentaIds" multiple class="form-select">
+                    @foreach (var cuenta in Model.Cuentas)
+                    {
+                        var isSelected = Model.CuentaIds.Contains(cuenta.Id);
+                        <option value="@cuenta.Id" selected="@isSelected">
+                            @cuenta.Codigo – @cuenta.Nombre
+                        </option>
+                    }
+                </select>
             </div>
         </form>
     </div>
@@ -109,90 +218,198 @@
                 <div class="empty-img">
                     <i class="ti ti-report-off fs-1 text-secondary"></i>
                 </div>
-                <p class="empty-title">No hay movimientos para el per�odo seleccionado</p>
-                <p class="empty-subtitle text-secondary">Ajust� los filtros para consultar otras cuentas o fechas.</p>
+                <p class="empty-title">No hay movimientos para el período seleccionado</p>
+                <p class="empty-subtitle text-secondary">Ajustá los filtros para consultar otras cuentas o fechas.</p>
             </div>
         </div>
     </div>
 }
 else
 {
-    <div class="accordion" id="libroMayorAccordion">
+    // Helpers locales
+        int GetLevel(string codigo) => codigo.Count(c => c == '.');
+        bool EsPadre(int idx) =>
+            idx + 1 < Model.CuentasMayor.Count &&
+            Model.CuentasMayor[idx + 1].Codigo.StartsWith(Model.CuentasMayor[idx].Codigo + ".");
+
+        string BorderColor(string tipo) => tipo switch
+        {
+            "Activo"     => "#206bc4",
+            "Pasivo"     => "#f59f00",
+            "Patrimonio" => "#2fb344",
+            "Ingreso"    => "#4299e1",
+            "Egreso"     => "#d63939",
+            _            => "#6c757d"
+        };
+
+        string TipoIcon(string tipo) => tipo switch
+        {
+            "Activo"     => "ti-trending-up",
+            "Pasivo"     => "ti-trending-down",
+            "Patrimonio" => "ti-shield",
+            "Ingreso"    => "ti-cash",
+            "Egreso"     => "ti-receipt",
+            _            => "ti-file"
+        };
+
+        string BadgeClass(string tipo) => tipo switch
+        {
+            "Activo"     => "bg-azure-lt text-azure",
+            "Pasivo"     => "bg-yellow-lt text-yellow",
+            "Patrimonio" => "bg-success-lt text-success",
+            "Ingreso"    => "bg-info-lt text-info",
+            "Egreso"     => "bg-danger-lt text-danger",
+            _            => "bg-secondary-lt text-secondary"
+        };
+
+    <div>
         @for (int i = 0; i < Model.CuentasMayor.Count; i++)
         {
-            var cuenta = Model.CuentasMayor[i];
-            var collapseId = $"collapseMayor{i}";
-            <div class="accordion-item mb-2">
-                <h2 class="accordion-header" id="heading-@i">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="false" aria-controls="@collapseId">
-                        <div class="d-flex flex-wrap justify-content-between align-items-center w-100 gap-2">
+            var cuenta      = Model.CuentasMayor[i];
+            var level       = GetLevel(cuenta.Codigo);
+            var esPadre     = EsPadre(i);
+            var tieneMovs   = cuenta.Movimientos.Count > 0;
+            var esCero      = cuenta.DebitosBase == 0 && cuenta.CreditosBase == 0 && cuenta.SaldoInicialBase == 0;
+            var collapseId  = $"collapse-mov-{i}";
+            var borderColor = BorderColor(cuenta.Tipo);
+            var icon        = TipoIcon(cuenta.Tipo);
+            var badgeCls    = BadgeClass(cuenta.Tipo);
+
+            string saldoFinalLabel;
+            decimal saldoFinalValor;
+            if (cuenta.DebitosBase > cuenta.CreditosBase)
+            {
+                saldoFinalLabel = "Saldo deudor";
+                saldoFinalValor = cuenta.DebitosBase - cuenta.CreditosBase;
+            }
+            else if (cuenta.CreditosBase > cuenta.DebitosBase)
+            {
+                saldoFinalLabel = "Saldo acreedor";
+                saldoFinalValor = cuenta.CreditosBase - cuenta.DebitosBase;
+            }
+            else
+            {
+                saldoFinalLabel = "Saldo deudor";
+                saldoFinalValor = 0m;
+            }
+
+            <div class="card mb-2 sg-cuenta-card @(esCero ? "sg-cuenta-zero" : "")"
+                 style="border-left-color: @borderColor;"
+                 data-aos="fade-up" data-aos-delay="@(i * 30)">
+
+                <div class="card-body py-2 px-3">
+                    <!-- Header row -->
+                    <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <i class="ti @icon" style="color: @borderColor; font-size: 1.1rem;"></i>
                             <div>
-                                <div class="fw-semibold">@cuenta.Codigo  @cuenta.Nombre</div>
-                                <div class="text-secondary small">@cuenta.Tipo  @cuenta.Naturaleza</div>
-                            </div>
-                            <div class="d-flex flex-wrap gap-2">
-                                <span class="badge bg-azure-lt text-azure">Saldo inicial: @cuenta.SaldoInicialBase.ToString("N2") UYU</span>
-                                <span class="badge bg-success-lt text-success">D&#233;bitos: @cuenta.DebitosBase.ToString("N2") UYU</span>
-                                <span class="badge bg-danger-lt text-danger">Cr&#233;ditos: @cuenta.CreditosBase.ToString("N2") UYU</span>
-                                <span class="badge bg-primary-lt text-primary">
-                                    @{ 
-                                        string saldoFinalLabel;
-                                        decimal saldoFinalValor;
-                                        if (cuenta.DebitosBase > cuenta.CreditosBase) {
-                                            saldoFinalLabel = "Saldo deudor";
-                                            saldoFinalValor = cuenta.DebitosBase - cuenta.CreditosBase;
-                                        } else if (cuenta.CreditosBase > cuenta.DebitosBase) {
-                                            saldoFinalLabel = "Saldo acreedor";
-                                            saldoFinalValor = cuenta.CreditosBase - cuenta.DebitosBase;
-                                        } else {
-                                            saldoFinalLabel = "Saldo deudor";
-                                            saldoFinalValor = 0m;
-                                        }
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="fw-semibold">
+                                        <span class="text-muted me-1" style="font-family:monospace; font-size:12px;">@cuenta.Codigo</span>
+                                        @cuenta.Nombre
+                                    </span>
+                                    @if (esCero)
+                                    {
+                                        <span class="badge bg-secondary-lt text-secondary" style="font-size:11px;">Sin movimientos</span>
                                     }
-                                    @saldoFinalLabel: @saldoFinalValor.ToString("N2") UYU
-                                </span>
+                                    @if (esPadre)
+                                    {
+                                        <span class="badge" style="background:rgba(0,0,0,0.05);color:#6c757d;font-size:11px;">Cuenta padre</span>
+                                    }
+                                </div>
+                                <div class="text-secondary" style="font-size:12px;">@cuenta.Tipo · @cuenta.Naturaleza</div>
                             </div>
                         </div>
-                    </button>
-                </h2>
-                <div id="@collapseId" class="accordion-collapse collapse" aria-labelledby="heading-@i" data-bs-parent="#libroMayorAccordion">
-                    <div class="accordion-body">
-                        <div class="table-responsive">
-                            <table class="table table-striped table-hover align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th style="width:120px">Fecha</th>
-                                        <th style="width:110px">Asiento</th>
-                                        <th>Glosa</th>
-                                        <th class="text-end">Debe</th>
-                                        <th class="text-end">Haber</th>
-                                        <th class="text-end">Saldo</th>
-                                        <th class="text-center">Moneda</th>
-                                        <th class="text-end">Saldo base</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var movimiento in cuenta.Movimientos)
-                                    {
-                                        <tr>
-                                            <td>@movimiento.Fecha.ToString("dd/MM/yyyy")</td>
-                                            <td class="text-secondary">@movimiento.NumeroAsiento</td>
-                                            <td>@movimiento.Glosa</td>
-                                            <td class="text-end">@movimiento.Debe.ToString("N2")</td>
-                                            <td class="text-end">@movimiento.Haber.ToString("N2")</td>
-                                            <td class="text-end fw-semibold">@movimiento.SaldoAcumulado.ToString("N2")</td>
-                                            <td class="text-center">
-                                                <span class="badge bg-secondary-lt">@movimiento.Moneda</span>
-                                            </td>
-                                            <td class="text-end text-secondary">@movimiento.SaldoAcumuladoBase.ToString("N2")</td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
+
+                        @if (tieneMovs)
+                        {
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary sg-toggle-btn collapsed"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#@collapseId"
+                                    aria-expanded="false">
+                                <i class="ti ti-chevron-down sg-chevron"></i>
+                                Ver movimientos
+                            </button>
+                        }
+                    </div>
+
+                    <!-- Saldo grid -->
+                    <div class="row g-2 mt-2 sg-saldo-grid">
+                        <div class="col-6 col-md-3">
+                            <span class="badge @badgeCls">Saldo inicial: @cuenta.SaldoInicialBase.ToString("N2") UYU</span>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <span class="badge bg-success-lt text-success">Débitos: @cuenta.DebitosBase.ToString("N2") UYU</span>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <span class="badge bg-danger-lt text-danger">Créditos: @cuenta.CreditosBase.ToString("N2") UYU</span>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <span class="badge bg-primary-lt text-primary">@saldoFinalLabel: @saldoFinalValor.ToString("N2") UYU</span>
                         </div>
                     </div>
                 </div>
+
+                @if (tieneMovs)
+                {
+                    <div id="@collapseId" class="collapse">
+                        <div class="card-body pt-0">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width:120px">Fecha</th>
+                                            <th style="width:110px">Asiento</th>
+                                            <th>Glosa</th>
+                                            <th class="text-end">Debe</th>
+                                            <th class="text-end">Haber</th>
+                                            <th class="text-end">Saldo</th>
+                                            <th class="text-center">Moneda</th>
+                                            <th class="text-end">Saldo base</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var movimiento in cuenta.Movimientos)
+                                        {
+                                            <tr>
+                                                <td>@movimiento.Fecha.ToString("dd/MM/yyyy")</td>
+                                                <td class="text-secondary">@movimiento.NumeroAsiento</td>
+                                                <td>@movimiento.Glosa</td>
+                                                <td class="text-end">@movimiento.Debe.ToString("N2")</td>
+                                                <td class="text-end">@movimiento.Haber.ToString("N2")</td>
+                                                <td class="text-end fw-semibold">@movimiento.SaldoAcumulado.ToString("N2")</td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-secondary-lt">@movimiento.Moneda</span>
+                                                </td>
+                                                <td class="text-end text-secondary">@movimiento.SaldoAcumuladoBase.ToString("N2")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                }
             </div>
         }
     </div>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script>
+        var choicesInstance = new Choices('#select-cuentas', {
+            removeItemButton: true,
+            searchPlaceholderValue: 'Buscar cuenta...',
+            noResultsText: 'No se encontraron cuentas',
+            noChoicesText: 'No hay cuentas disponibles',
+            itemSelectText: '',
+            placeholder: true,
+            shouldSort: false,
+            classNames: {
+                containerOuter: 'choices'
+            }
+        });
+    </script>
 }

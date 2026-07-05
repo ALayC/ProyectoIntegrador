@@ -1,6 +1,8 @@
 @model LiquidacionIvaViewModel
 @{
     ViewData["Title"] = "Liquidación de IVA";
+    ViewData["ClienteId"] = Model.ClienteId;
+    ViewData["ClienteNombre"] = Model.ClienteNombre;
     var meses = new[]
     {
         "Enero","Febrero","Marzo","Abril","Mayo","Junio",

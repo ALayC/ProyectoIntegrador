@@ -1,78 +1,447 @@
 @model Verify2FAViewModel
 @{
     ViewData["Title"] = "Verificación en dos pasos";
-    Layout = "_AuthLayout";
+    Layout = null;
 }
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Acceso</title>
+    <link href="~/tabler/dist/css/tabler.min.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/tabler/dist/css/tabler-vendors.min.css" rel="stylesheet" asp-append-version="true" />
+    <link href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@latest/tabler-icons.min.css" rel="stylesheet" />
+    <link href="~/css/site.css" rel="stylesheet" asp-append-version="true" />
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
 
-<div class="card card-md sg-auth-card">
-    <div class="card-body">
-        <div class="text-center mb-4">
-            <span class="avatar avatar-lg bg-azure-lt mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-shield-lock" width="28" height="28" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"></path>
-                    <circle cx="12" cy="11" r="1"></circle>
-                    <line x1="12" y1="12" x2="12" y2="14.5"></line>
-                </svg>
-            </span>
-            <h2 class="h2 mb-1">Verificación en dos pasos</h2>
-            <p class="text-secondary">
-                Ingresá el código de 6 dígitos que enviamos a tu email.
-            </p>
-        </div>
-
-        @if (!ViewData.ModelState.IsValid)
-        {
-            <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
         }
 
-        <form asp-action="Verify2FA" method="post" autocomplete="off" novalidate>
-            <input asp-for="TempToken" type="hidden" />
+        .login-wrapper {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-            <div class="mb-3">
-                <label asp-for="Codigo" class="form-label">Código de verificación</label>
-                <input asp-for="Codigo"
-                       class="form-control form-control-lg text-center"
-                       placeholder="000000"
-                       maxlength="6"
-                       inputmode="numeric"
-                       pattern="\d{6}"
-                       autocomplete="one-time-code"
-                       autofocus />
-                <span asp-validation-for="Codigo" class="text-danger small"></span>
-            </div>
+        /* ── LEFT PANEL ── */
+        .login-left {
+            flex: 0 0 50%;
+            width: 50%;
+            background: #1a3a5c;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 48px 56px;
+            color: #fff;
+        }
 
-            <div class="mb-3">
-                <label class="form-check cursor-pointer">
-                    <input asp-for="RecordarDispositivo" class="form-check-input" type="checkbox" />
-                    <span class="form-check-label text-secondary">
-                        Recordar este dispositivo por 7 días
-                    </span>
-                </label>
-            </div>
+        .login-left::before {
+            content: '';
+            position: absolute;
+            width: 420px;
+            height: 420px;
+            border-radius: 50%;
+            border: 64px solid rgba(255,255,255,.05);
+            top: -140px;
+            right: -140px;
+            pointer-events: none;
+        }
 
-            <div class="form-footer mt-4">
-                <button type="submit" class="btn btn-azure w-100">Verificar</button>
-            </div>
-        </form>
+        .login-left::after {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 50px solid rgba(255,255,255,.05);
+            bottom: -100px;
+            left: -90px;
+            pointer-events: none;
+        }
 
-        <div class="text-center mt-3">
-            <small class="text-secondary">
-                ¿No recibiste el código?
-                <a asp-action="Login" class="link-azure">Volver al inicio de sesión</a>
-            </small>
-        </div>
-    </div>
-</div>
+        .login-logo-box {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: rgba(255,255,255,.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            font-size: 28px;
+            color: #fff;
+            flex-shrink: 0;
+        }
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-    <script>
-        // Auto-submit cuando se completan los 6 dígitos
-        document.getElementById('Codigo').addEventListener('input', function () {
-            if (this.value.length === 6 && /^\d{6}$/.test(this.value)) {
-                this.closest('form').submit();
+        .login-brand-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .login-tagline {
+            font-size: 14px;
+            color: rgba(255,255,255,.5);
+            margin-bottom: 40px;
+            line-height: 1.6;
+            max-width: 340px;
+        }
+
+        .login-features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .login-feature-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .login-feature-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(255,255,255,.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: rgba(255,255,255,.8);
+            flex-shrink: 0;
+        }
+
+        .login-feature-text {
+            font-size: 13px;
+            color: rgba(255,255,255,.6);
+        }
+
+        .login-copyright {
+            margin-top: auto;
+            padding-top: 48px;
+            font-size: 12px;
+            color: rgba(255,255,255,.3);
+        }
+
+        /* ── RIGHT PANEL ── */
+        .login-right {
+            flex: 0 0 50%;
+            width: 50%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 40px;
+            overflow-y: auto;
+        }
+
+        .login-form-wrapper {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* ── 2FA ICON ── */
+        .twofa-icon-box {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: rgba(26,58,92,.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+            color: #1a3a5c;
+        }
+
+        /* ── OTP INPUT ── */
+        .otp-input {
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: 12px;
+            text-align: center;
+            color: #1a3a5c;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 14px 16px;
+            width: 100%;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .otp-input:focus {
+            outline: none;
+            border-color: #1a3a5c;
+            box-shadow: 0 0 0 3px rgba(26,58,92,.08);
+        }
+
+        .otp-input::placeholder {
+            color: #cbd5e1;
+            letter-spacing: 10px;
+        }
+
+        /* ── PROGRESS DOTS ── */
+        .otp-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .otp-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            transition: background .15s;
+        }
+
+        .otp-dot.filled {
+            background: #1a3a5c;
+        }
+
+        /* ── CHECKBOX ── */
+        .twofa-check-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #64748b;
+            cursor: pointer;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 0.5px solid #f1f5f9;
+            background: #f8fafc;
+        }
+
+        .twofa-check-label input[type="checkbox"] {
+            accent-color: #1a3a5c;
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+        }
+
+        /* ── BUTTONS ── */
+        .btn-verify {
+            background: #1a3a5c;
+            color: #fff;
+            border: none;
+            width: 100%;
+            padding: 11px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: background .2s;
+        }
+
+        .btn-verify:hover {
+            background: #15304f;
+            color: #fff;
+        }
+
+        .btn-verify:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .login-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1a3a5c;
+            margin-bottom: 4px;
+        }
+
+        .login-subtitle {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 28px;
+        }
+
+        .login-back-link {
+            border-top: 0.5px solid #f1f5f9;
+            padding-top: 20px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .login-back-link a {
+            color: #1a3a5c;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-back-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* ── RESPONSIVE ── */
+        @@media (max-width: 768px) {
+            .login-left {
+                display: none;
             }
-        });
+
+            .login-right {
+                width: 100%;
+                flex: unset;
+                background: #f0f4f8;
+                padding: 32px 16px;
+            }
+
+            .login-form-wrapper {
+                background: #fff;
+                border-radius: 12px;
+                padding: 32px 24px;
+                box-shadow: 0 4px 24px rgba(0,0,0,.06);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+
+        <!-- Panel izquierdo: marca -->
+        <div class="login-left" data-aos="fade-right" data-aos-duration="500">
+            <div class="login-logo-box">
+                <i class="ti ti-report-money"></i>
+            </div>
+            <div class="login-brand-name">SIG Contable</div>
+            <div class="login-tagline">Sistema Integrado de Gestión<br>Contable y Fiscal — Uruguay</div>
+
+            <ul class="login-features">
+                <li class="login-feature-item">
+                    <span class="login-feature-icon"><i class="ti ti-shield-check"></i></span>
+                    <span class="login-feature-text">Verificación en dos pasos activa</span>
+                </li>
+                <li class="login-feature-item">
+                    <span class="login-feature-icon"><i class="ti ti-mail"></i></span>
+                    <span class="login-feature-text">Código enviado a tu email registrado</span>
+                </li>
+                <li class="login-feature-item">
+                    <span class="login-feature-icon"><i class="ti ti-clock"></i></span>
+                    <span class="login-feature-text">El código expira en pocos minutos</span>
+                </li>
+                <li class="login-feature-item">
+                    <span class="login-feature-icon"><i class="ti ti-device-laptop"></i></span>
+                    <span class="login-feature-text">Podés recordar el dispositivo por 7 días</span>
+                </li>
+            </ul>
+
+            <div class="login-copyright">&copy; @DateTime.Now.Year SIG Contable — Uruguay</div>
+        </div>
+
+        <!-- Panel derecho: formulario 2FA -->
+        <div class="login-right" data-aos="fade-left" data-aos-duration="500">
+            <div class="login-form-wrapper">
+
+                <div class="twofa-icon-box">
+                    <i class="ti ti-shield-lock"></i>
+                </div>
+
+                <div class="login-title">Verificación en dos pasos</div>
+                <div class="login-subtitle">Ingresá el código de 6 dígitos que enviamos a tu email.</div>
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    var globalError = ViewData.ModelState[string.Empty]?.Errors.FirstOrDefault()?.ErrorMessage;
+                    if (!string.IsNullOrWhiteSpace(globalError))
+                    {
+                        <div class="alert alert-danger mb-3" role="alert" style="font-size:13px;">
+                            <i class="ti ti-alert-circle me-1"></i>@globalError
+                        </div>
+                    }
+                }
+
+                <form asp-action="Verify2FA" method="post" autocomplete="off" novalidate id="form-2fa">
+                    <input asp-for="TempToken" type="hidden" />
+
+                    <div class="mb-3">
+                        <label asp-for="Codigo" class="form-label" style="font-size:13px;font-weight:500;color:#374151;">
+                            Código de verificación
+                        </label>
+                        <input asp-for="Codigo"
+                               id="Codigo"
+                               class="otp-input"
+                               placeholder="••••••"
+                               maxlength="6"
+                               inputmode="numeric"
+                               pattern="\d{6}"
+                               autocomplete="one-time-code"
+                               autofocus />
+                        <div class="otp-dots mt-2" id="otp-dots" aria-hidden="true">
+                            <span class="otp-dot"></span>
+                            <span class="otp-dot"></span>
+                            <span class="otp-dot"></span>
+                            <span class="otp-dot"></span>
+                            <span class="otp-dot"></span>
+                            <span class="otp-dot"></span>
+                        </div>
+                        <span asp-validation-for="Codigo" class="text-danger small d-block mt-1"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="twofa-check-label">
+                            <input asp-for="RecordarDispositivo" type="checkbox" />
+                            <span>Recordar este dispositivo por 7 días</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-verify" id="btn-verify">
+                        <i class="ti ti-shield-check"></i> Verificar
+                    </button>
+                </form>
+
+                <div class="login-back-link">
+                    ¿No recibiste el código?
+                    <a asp-action="Login"><i class="ti ti-arrow-left" style="font-size:12px;"></i> Volver al inicio de sesión</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="~/tabler/dist/js/tabler.min.js" asp-append-version="true"></script>
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+    <script>
+        AOS.init({ once: true });
+
+        (function () {
+            var input = document.getElementById('Codigo');
+            var dots  = document.querySelectorAll('#otp-dots .otp-dot');
+            var form  = document.getElementById('form-2fa');
+
+            input.addEventListener('input', function () {
+                var val = this.value.replace(/\D/g, '').slice(0, 6);
+                this.value = val;
+
+                dots.forEach(function (dot, i) {
+                    dot.classList.toggle('filled', i < val.length);
+                });
+
+                if (val.length === 6) {
+                    document.getElementById('btn-verify').focus();
+                }
+            });
+        })();
     </script>
-}
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+</body>
+</html>

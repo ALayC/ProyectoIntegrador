@@ -3,42 +3,89 @@
     var nivel = ViewData["Nivel"] as int? ?? 0;
     var paddingLeft = nivel * 24;
     var tieneHijas = Model.Hijas?.Count > 0;
-    ViewData["Title"] = "Detalle de cuenta contable";
-    var estadoClase = Model.Estado == "Activa" ? "bg-green-lt text-green" : "bg-red-lt text-red";
-    var imputableClase = Model.EsImputable ? "bg-green-lt text-green" : "bg-yellow-lt text-yellow";
-    var sistemaClase = Model.EsSistema ? "bg-azure-lt text-azure" : "bg-muted-lt text-muted";
     var clienteId = ViewData["ClienteId"] is Guid cid ? cid : Guid.Empty;
+
+    var estadoClase = Model.Estado == "Activa" ? "bg-green-lt text-green" : "bg-red-lt text-red";
+    var imputableClase = Model.EsImputable ? "bg-green-lt text-green" : "bg-secondary-lt text-secondary";
+
+    // Inferir tipo desde el primer dígito del código
+    var primerDigito = Model.Codigo.Length > 0 ? Model.Codigo[0] : '0';
+    string borderColor = primerDigito switch
+    {
+        '1' => "#206bc4",  // Activo → azul
+        '2' => "#f59f00",  // Pasivo → amarillo
+        '3' => "#2fb344",  // Patrimonio → verde
+        '4' => "#4299e1",  // Ingreso → celeste
+        '5' => "#d63939",  // Egreso → rojo
+        '6' => "#ae3ec9",  // Costo → violeta
+        _ => "#6c757d"
+    };
+
+    string tipoIcon = primerDigito switch
+    {
+        '1' => "ti-trending-up",
+        '2' => "ti-trending-down",
+        '3' => "ti-shield",
+        '4' => "ti-cash",
+        '5' => "ti-receipt",
+        '6' => "ti-package",
+        _ => "ti-file"
+    };
+
+    string codigoBadgeStyle = "background:rgba(0,0,0,0.06);color:#1a3a5c;font-family:monospace;font-size:11px;";
 }
 
-<div class="list-group-item">
-    <div class="d-flex align-items-start gap-3" style="padding-left: @(paddingLeft)px;">
+<div class="list-group-item sg-cuenta-fila"
+     data-codigo="@Model.Codigo"
+     data-nombre="@Model.Nombre"
+     style="border-left: 3px solid @borderColor; margin-bottom:2px; border-radius:4px;">
+
+    <div class="d-flex align-items-start gap-2" style="padding-left: @(paddingLeft)px;">
+
         @if (tieneHijas)
         {
             <details class="w-100 tree-node">
-                <summary class="d-flex align-items-center gap-3 cursor-pointer">
-                    <span class="text-secondary"><i class="ti ti-chevron-right tree-caret"></i></span>
-                    <span class="avatar avatar-sm bg-azure-lt text-azure">
-                        <i class="ti ti-folder"></i>
+                <summary class="d-flex align-items-center gap-2 py-1" style="cursor:pointer; list-style:none;">
+                    <i class="ti ti-chevron-right sg-toggle-icon text-secondary" style="font-size:14px; transition:transform .2s;"></i>
+                    <span class="avatar avatar-sm rounded"
+                          style="background:@(borderColor)18; color:@borderColor; flex-shrink:0;">
+                        <i class="ti ti-folder" style="font-size:14px;"></i>
                     </span>
-                    <span class="flex-fill">
-                        <span class="d-flex align-items-center justify-content-between gap-3">
-                            <a asp-controller="CuentasContables" asp-action="Details" asp-route-id="@Model.Id" asp-route-clienteId="@ViewData["ClienteId"]" class="fw-semibold text-dark text-decoration-none">
+                    <div class="flex-fill d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                        <div>
+                            <a asp-controller="CuentasContables"
+                               asp-action="Details"
+                               asp-route-id="@Model.Id"
+                               asp-route-clienteId="@clienteId"
+                               class="fw-semibold text-dark text-decoration-none"
+                               onclick="event.stopPropagation()">
                                 @Model.Nombre
                             </a>
-                            <span class="d-flex align-items-center gap-2">
-                                <span class="badge bg-azure-lt text-azure">@Model.Codigo</span>
-                                <span class="badge @estadoClase">@Model.Estado</span>
-                                <span class="badge @imputableClase">@(Model.EsImputable ? "Imputable" : "No imputable")</span>
-                            </span>
-                        </span>
-                        <span class="text-secondary small">Cuenta con subniveles</span>
-                    </span>
+                            <div class="text-secondary" style="font-size:11px;">
+                                Cuenta con subniveles · @Model.Hijas.Count hijo@(Model.Hijas.Count == 1 ? "" : "s")
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-1 flex-wrap">
+                            <span class="badge" style="@codigoBadgeStyle">@Model.Codigo</span>
+                            <span class="badge @estadoClase" style="font-size:11px;">@Model.Estado</span>
+                            @if (Model.EsImputable)
+                            {
+                                <span class="badge @imputableClase" style="font-size:11px;">Imputable</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-yellow-lt text-yellow" style="font-size:11px;">No imputable</span>
+                            }
+                        </div>
+                    </div>
                 </summary>
-                <div class="mt-3 tree-children">
-                    <div class="list-group list-group-flush">
+                <div class="sg-cuenta-hijos mt-1">
+                    <div class="list-group list-group-flush"
+                         style="border-left: 1px dashed @(borderColor)55; margin-left:10px; padding-left:4px;">
                         @foreach (var hija in Model.Hijas)
                         {
-                            @await Html.PartialAsync("_CuentaContableFila", hija, new ViewDataDictionary(ViewData) { ["Nivel"] = nivel + 1 })
+                            @await Html.PartialAsync("_CuentaContableFila", hija,
+                                new ViewDataDictionary(ViewData) { ["Nivel"] = nivel + 1 })
                         }
                     </div>
                 </div>
@@ -46,18 +93,29 @@
         }
         else
         {
-            <a asp-controller="CuentasContables" asp-action="Details" asp-route-id="@Model.Id" asp-route-clienteId="@ViewData["ClienteId"]" class="d-flex align-items-center gap-3 w-100 text-decoration-none">
-                <span class="text-secondary"><i class="ti ti-file"></i></span>
-                <div class="flex-fill">
-                    <div class="d-flex align-items-center justify-content-between gap-3">
-                        <div class="fw-semibold text-dark">@Model.Nombre</div>
-                        <span class="d-flex align-items-center gap-2">
-                            <span class="badge bg-muted-lt text-muted">@Model.Codigo</span>
-                            <span class="badge @estadoClase">@Model.Estado</span>
-                            <span class="badge @imputableClase">@(Model.EsImputable ? "Imputable" : "No imputable")</span>
-                        </span>
+            <a asp-controller="CuentasContables"
+               asp-action="Details"
+               asp-route-id="@Model.Id"
+               asp-route-clienteId="@clienteId"
+               class="d-flex align-items-center gap-2 w-100 text-decoration-none py-1">
+                <i class="ti @tipoIcon" style="color:@borderColor; font-size:14px; flex-shrink:0;"></i>
+                <div class="flex-fill d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                    <div>
+                        <div class="fw-semibold text-dark" style="font-size:14px;">@Model.Nombre</div>
+                        <div class="text-secondary" style="font-size:11px;">Cuenta auxiliar</div>
                     </div>
-                    <div class="text-secondary small">Cuenta auxiliar</div>
+                    <div class="d-flex align-items-center gap-1 flex-wrap">
+                        <span class="badge" style="@codigoBadgeStyle">@Model.Codigo</span>
+                        <span class="badge @estadoClase" style="font-size:11px;">@Model.Estado</span>
+                        @if (Model.EsImputable)
+                        {
+                            <span class="badge @imputableClase" style="font-size:11px;">Imputable</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-yellow-lt text-yellow" style="font-size:11px;">No imputable</span>
+                        }
+                    </div>
                 </div>
             </a>
         }
