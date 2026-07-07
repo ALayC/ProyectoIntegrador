@@ -44,5 +44,6 @@ public static class AuditoriaConstantes
         public const string Revertir = "Revertir";
         public const string AsignarPermiso = "AsignarPermiso";
         public const string RemoverPermiso = "RemoverPermiso";
+        public const string Importar = "Importar";
     }
 }

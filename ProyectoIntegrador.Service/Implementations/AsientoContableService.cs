@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using ProyectoIntegrador.Data.Context;
 using ProyectoIntegrador.Data.Entities;
 using ProyectoIntegrador.Data.Repositories.Interfaces;
+using ProyectoIntegrador.Service.Constants;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Exceptions;
 using ProyectoIntegrador.Service.Interfaces;
@@ -16,6 +17,7 @@ public class AsientoContableService : IAsientoContableService
     private readonly IEjercicioContableRepository _ejercicioRepository;
     private readonly ISaldoCuentaRepository _saldoRepository;
     private readonly AppDbContext _context;
+    private readonly IAuditoriaService _auditoriaService;
     private readonly ILogger<AsientoContableService> _logger;
 
     public AsientoContableService(
@@ -24,6 +26,7 @@ public class AsientoContableService : IAsientoContableService
         IEjercicioContableRepository ejercicioRepository,
         ISaldoCuentaRepository saldoRepository,
         AppDbContext context,
+        IAuditoriaService auditoriaService,
         ILogger<AsientoContableService> logger)
     {
         _asientoRepository = asientoRepository;
@@ -31,6 +34,7 @@ public class AsientoContableService : IAsientoContableService
         _ejercicioRepository = ejercicioRepository;
         _saldoRepository = saldoRepository;
         _context = context;
+        _auditoriaService = auditoriaService;
         _logger = logger;
     }
 
@@ -207,6 +211,25 @@ public class AsientoContableService : IAsientoContableService
                 resultado.TotalErrores++;
             }
         }
+
+        // Registrar auditoría de la importación
+        await _auditoriaService.Registrar(
+            usuarioId,
+            AuditoriaConstantes.Entidades.Importacion,
+            AuditoriaConstantes.Acciones.Importar,
+            datosAnteriores: null,
+            datosNuevos: new
+            {
+                dto.ClienteId,
+                dto.EjercicioId,
+                resultado.TotalEnviados,
+                resultado.TotalCreados,
+                resultado.TotalErrores,
+                FechaImportacion = DateTime.UtcNow
+            });
+
+        _logger.LogInformation("Importación bulk completada | ClienteId: {ClienteId} | EjercicioId: {EjercicioId} | TotalCreados: {TotalCreados} | TotalErrores: {TotalErrores} | UsuarioId: {UsuarioId}",
+            dto.ClienteId, dto.EjercicioId, resultado.TotalCreados, resultado.TotalErrores, usuarioId);
 
         return resultado;
     }
