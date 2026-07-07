@@ -116,6 +116,7 @@ builder.Services.AddHttpContextAccessor();
 
 // 🔹 ApiClient (servicio auxiliar) ─────────────
 builder.Services.AddScoped<ProyectoIntegrador.UI.Services.ApiClient>();
+builder.Services.AddScoped<ProyectoIntegrador.UI.Services.AiService>();
 builder.Services.AddScoped<ProyectoIntegrador.UI.Services.ILibroMayorExcelService,
                             ProyectoIntegrador.UI.Services.LibroMayorExcelService>();
 builder.Services.AddScoped<ILibroMayorPdfService, LibroMayorPdfService>();

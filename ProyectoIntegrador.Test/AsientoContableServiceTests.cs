@@ -8,6 +8,7 @@ using ProyectoIntegrador.Data.Repositories.Interfaces;
 using ProyectoIntegrador.Service.DTOs;
 using ProyectoIntegrador.Service.Exceptions;
 using ProyectoIntegrador.Service.Implementations;
+using ProyectoIntegrador.Service.Interfaces;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ProyectoIntegrador.Test;
@@ -22,6 +23,7 @@ public class AsientoContableServiceTests : IDisposable
     private readonly Mock<ICuentaContableRepository> _mockCuentaRepo;
     private readonly Mock<IEjercicioContableRepository> _mockEjercicioRepo;
     private readonly Mock<ISaldoCuentaRepository> _mockSaldoRepo;
+    private readonly Mock<IAuditoriaService> _mockAuditoriaService;
     private readonly AppDbContext _context;
     private readonly AsientoContableService _service;
 
@@ -41,6 +43,7 @@ public class AsientoContableServiceTests : IDisposable
         _mockCuentaRepo = new Mock<ICuentaContableRepository>();
         _mockEjercicioRepo = new Mock<IEjercicioContableRepository>();
         _mockSaldoRepo = new Mock<ISaldoCuentaRepository>();
+        _mockAuditoriaService = new Mock<IAuditoriaService>();
 
         _service = new AsientoContableService(
             _mockAsientoRepo.Object,
@@ -48,6 +51,7 @@ public class AsientoContableServiceTests : IDisposable
             _mockEjercicioRepo.Object,
             _mockSaldoRepo.Object,
             _context,
+            _mockAuditoriaService.Object,
             NullLogger<AsientoContableService>.Instance);
     }
 
