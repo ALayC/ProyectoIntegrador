@@ -64,9 +64,17 @@
         <div style="font-size:20px;font-weight:600;color:#1a3a5c;"><i class="ti ti-users me-1"></i>Mis Clientes</div>
         <div class="text-muted" style="font-size:13px;">Gestión de clientes registrados en el sistema</div>
     </div>
-    <a asp-action="Crear" class="btn btn-sm" style="background:#1a3a5c;color:#fff;">
-        <i class="ti ti-plus me-1"></i> Nuevo Cliente
-    </a>
+    <div class="d-flex gap-2">
+        @if (User.IsInRole("Contador") || User.IsInRole("Administrador"))
+        {
+            <a asp-controller="Auxiliares" asp-action="Index" class="btn btn-sm btn-outline-azure">
+                <i class="ti ti-users-group me-1"></i> Mis Auxiliares
+            </a>
+        }
+        <a asp-action="Crear" class="btn btn-sm" style="background:#1a3a5c;color:#fff;">
+            <i class="ti ti-plus me-1"></i> Nuevo Cliente
+        </a>
+    </div>
 </div>
 
 @{

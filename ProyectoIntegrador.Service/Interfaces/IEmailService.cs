@@ -28,4 +28,9 @@ public interface IEmailService
     /// <param name="email">Email del destinatario</param>
     /// <param name="code">Código 2FA de 6 dígitos</param>
     Task Enviar2FaCodeAsync(string email, string code);
+
+    /// <summary>
+    /// Env?a email de invitaci?n para que un usuario se registre como auxiliar contable.
+    /// </summary>
+    Task EnviarInvitacionAuxiliarAsync(string email, string nombreContador, string baseUrl);
 }

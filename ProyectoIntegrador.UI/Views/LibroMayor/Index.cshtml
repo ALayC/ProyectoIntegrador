@@ -3,6 +3,7 @@
     ViewData["Title"] = "Libro Mayor";
     ViewData["ClienteId"] = Model.ClienteId;
     ViewData["ClienteNombre"] = Model.ClienteNombre;
+    var esAuxiliar = User.IsInRole("Auxiliar Contable");
 }
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
@@ -143,12 +144,24 @@
                 pdfUrl += "&" + string.Join("&", Model.CuentaIds.Select(id => $"cuentaIds={id}"));
         }
 
-        <a href="@pdfUrl" class="btn btn-outline-danger @(Model.CuentasMayor.Count == 0 ? "disabled" : "")">
-            <i class="ti ti-file-type-pdf"></i> Exportar PDF
-        </a>
-        <a href="@exportUrl" class="btn btn-outline-success @(Model.CuentasMayor.Count == 0 ? "disabled" : "")">
-            <i class="ti ti-file-spreadsheet"></i> Exportar Excel
-        </a>
+        @if (esAuxiliar)
+        {
+            <button class="btn btn-outline-danger" disabled title="No disponible para auxiliares contables" style="opacity:.5;cursor:not-allowed;">
+                <i class="ti ti-file-type-pdf"></i> Exportar PDF
+            </button>
+            <button class="btn btn-outline-success" disabled title="No disponible para auxiliares contables" style="opacity:.5;cursor:not-allowed;">
+                <i class="ti ti-file-spreadsheet"></i> Exportar Excel
+            </button>
+        }
+        else
+        {
+            <a href="@pdfUrl" class="btn btn-outline-danger @(Model.CuentasMayor.Count == 0 ? "disabled" : "")">
+                <i class="ti ti-file-type-pdf"></i> Exportar PDF
+            </a>
+            <a href="@exportUrl" class="btn btn-outline-success @(Model.CuentasMayor.Count == 0 ? "disabled" : "")">
+                <i class="ti ti-file-spreadsheet"></i> Exportar Excel
+            </a>
+        }
         <a asp-controller="Clientes" asp-action="Detalles" asp-route-id="@Model.ClienteId" class="btn btn-outline-azure">
             <i class="ti ti-arrow-left"></i> Volver
         </a>

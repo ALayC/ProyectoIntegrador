@@ -22,6 +22,7 @@ public class AuthService : IAuthService
     private readonly IRolRepository _rolRepository;
     private readonly ITokenRevocadoRepository _tokenRevocadoRepository;
     private readonly IDispositivoConfiableRepository _dispositivoConfiableRepository;
+    private readonly IInvitacionAuxiliarRepository _invitacionRepository;
     private readonly IEmailService _emailService;
     private readonly JwtOptions _jwtOptions;
     private readonly UIOptions _uiOptions;
@@ -32,6 +33,7 @@ public class AuthService : IAuthService
         IRolRepository rolRepository,
         ITokenRevocadoRepository tokenRevocadoRepository,
         IDispositivoConfiableRepository dispositivoConfiableRepository,
+        IInvitacionAuxiliarRepository invitacionRepository,
         IEmailService emailService,
         IOptions<JwtOptions> jwtOptions,
         IOptions<UIOptions> uiOptions,
@@ -41,6 +43,7 @@ public class AuthService : IAuthService
         _rolRepository = rolRepository;
         _tokenRevocadoRepository = tokenRevocadoRepository;
         _dispositivoConfiableRepository = dispositivoConfiableRepository;
+        _invitacionRepository = invitacionRepository;
         _emailService = emailService;
         _jwtOptions = jwtOptions.Value;
         _uiOptions = uiOptions.Value;
@@ -57,11 +60,15 @@ public class AuthService : IAuthService
             throw new DuplicadoException("email", registroDto.Email);
         }
 
-        // Obtener rol Contador por defecto
-        var rolContador = await _rolRepository.ObtenerPorId(SeedData.RolContadorId)
-            ?? throw new EntidadNoEncontradaException("Rol", SeedData.RolContadorId);
+        // Detectar si existe una invitación pendiente para este email
+        var invitacion = await _invitacionRepository.ObtenerPendientePorEmail(registroDto.Email);
+        var esAuxiliar = invitacion is not null;
 
-        // Generar token de confirmación de email (24 horas de validez)
+        var rolId = esAuxiliar ? SeedData.RolAuxiliarId : SeedData.RolContadorId;
+        var rolContador = await _rolRepository.ObtenerPorId(rolId)
+            ?? throw new EntidadNoEncontradaException("Rol", rolId);
+
+        // Generar token de confirmaci
         var tokenConfirmacion = Guid.NewGuid().ToString("N"); // Sin guiones
         var fechaExpiracion = DateTime.UtcNow.AddHours(24);
 
@@ -75,7 +82,7 @@ public class AuthService : IAuthService
             ProveedorAuth = "Local",
             Estado = "Activo",
             RolId = rolContador.Id,
-            ContadorId = null, // Contador no tiene ContadorId
+            ContadorId = esAuxiliar ? invitacion!.ContadorId : null,
             CreatedAt = DateTime.UtcNow,
             EmailConfirmado = false, // Email no confirmado aún
             TokenConfirmacionEmail = tokenConfirmacion,
@@ -84,7 +91,13 @@ public class AuthService : IAuthService
 
         await _usuarioRepository.Guardar(usuario);
 
-        // Enviar email de confirmación (sin await para no bloquear registro)
+        if (esAuxiliar)
+        {
+            invitacion!.Estado = "Aceptada";
+            await _invitacionRepository.Actualizar(invitacion);
+        }
+
+        // Enviar email de confirmaci
         try
         {
             var baseUrl = _uiOptions.BaseUrl;
@@ -395,14 +408,19 @@ public class AuthService : IAuthService
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claimsList = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
-            new Claim(ClaimTypes.Role, nombreRol),
-            new Claim("rolId", usuario.RolId.ToString()),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
+            new(JwtRegisteredClaimNames.Email, usuario.Email),
+            new(ClaimTypes.Role, nombreRol),
+            new("rolId", usuario.RolId.ToString()),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
+
+        if (usuario.ContadorId.HasValue)
+            claimsList.Add(new Claim("contadorId", usuario.ContadorId.Value.ToString()));
+
+        var claims = claimsList.ToArray();
 
         var token = new JwtSecurityToken(
             issuer: _jwtOptions.Issuer,
