@@ -25,7 +25,7 @@ public class ClientesController : ControllerBase
         [FromQuery] int pagina = 1,
      [FromQuery] int cantidadPorPagina = 20)
     {
-        var contadorId = ObtenerUsuarioIdDelToken();
+        var contadorId = ObtenerContadorEfectivo();
         var resultado = await _clienteService.ObtenerPorContador(contadorId, pagina, cantidadPorPagina);
         return Ok(resultado);
     }
@@ -120,5 +120,18 @@ public class ClientesController : ControllerBase
         }
 
         return usuarioId;
+    }
+
+    /// <summary>
+    /// Para auxiliares devuelve el ContadorId (ven los clientes del contador).
+    /// Para contadores/admin devuelve su propio Id.
+    /// </summary>
+    private Guid ObtenerContadorEfectivo()
+    {
+        var claimContador = User.FindFirst("contadorId");
+        if (claimContador is not null && Guid.TryParse(claimContador.Value, out var contadorId))
+            return contadorId;
+
+        return ObtenerUsuarioIdDelToken();
     }
 }

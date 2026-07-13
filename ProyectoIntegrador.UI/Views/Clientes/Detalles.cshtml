@@ -4,6 +4,7 @@
     ViewData["ClienteId"] = Model.Id;
     ViewData["ClienteNombre"] = Model.RazonSocial;
     var esActivo = Model.Estado == "Activo";
+    var esAuxiliar = User.IsInRole("Auxiliar Contable");
 }
 
 <style>
@@ -126,20 +127,36 @@
         <a asp-action="Index" asp-controller="Clientes" class="btn btn-outline-secondary">
             <i class="ti ti-arrow-left me-1"></i>Volver
         </a>
-        <a asp-action="Editar" asp-controller="Clientes" asp-route-id="@Model.Id" class="btn sg-btn-primary-dark">
-            <i class="ti ti-edit me-1"></i>Editar cliente
-        </a>
-        @if (esActivo)
+        @if (esAuxiliar)
         {
-            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modal-desactivar">
-                <i class="ti ti-ban me-1"></i>Desactivar
+            <button type="button" class="btn sg-btn-primary-dark"
+                    data-bs-toggle="modal" data-bs-target="#modal-sin-permiso"
+                    style="opacity:.55;">
+                <i class="ti ti-lock me-1"></i>Editar cliente
+            </button>
+            <button type="button" class="btn btn-outline-danger"
+                    data-bs-toggle="modal" data-bs-target="#modal-sin-permiso"
+                    style="opacity:.55;">
+                <i class="ti ti-lock me-1"></i>@(esActivo ? "Desactivar" : "Activar")
             </button>
         }
         else
         {
-            <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#modal-activar">
-                <i class="ti ti-circle-check me-1"></i>Activar
-            </button>
+            <a asp-action="Editar" asp-controller="Clientes" asp-route-id="@Model.Id" class="btn sg-btn-primary-dark">
+                <i class="ti ti-edit me-1"></i>Editar cliente
+            </a>
+            @if (esActivo)
+            {
+                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modal-desactivar">
+                    <i class="ti ti-ban me-1"></i>Desactivar
+                </button>
+            }
+            else
+            {
+                <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#modal-activar">
+                    <i class="ti ti-circle-check me-1"></i>Activar
+                </button>
+            }
         }
     </div>
 </div>
@@ -253,9 +270,20 @@
                         <h4 class="card-title fw-semibold mb-1">Libro Mayor</h4>
                         <p class="text-muted mb-3" style="font-size:13px">Agrupación de movimientos por cuenta contable con saldos acumulados.</p>
                         <div class="mt-auto">
-                            <a asp-action="Index" asp-controller="LibroMayor" asp-route-clienteId="@Model.Id" class="btn btn-sm sg-btn-primary-dark">
-                                <i class="ti ti-arrow-right me-1"></i>Ver Libro Mayor
-                            </a>
+                            @if (esAuxiliar)
+                            {
+                                <button type="button" class="btn btn-sm sg-btn-primary-dark"
+                                        data-bs-toggle="modal" data-bs-target="#modal-sin-permiso"
+                                        style="opacity:.55;">
+                                    <i class="ti ti-lock me-1"></i>Ver Libro Mayor
+                                </button>
+                            }
+                            else
+                            {
+                                <a asp-action="Index" asp-controller="LibroMayor" asp-route-clienteId="@Model.Id" class="btn btn-sm sg-btn-primary-dark">
+                                    <i class="ti ti-arrow-right me-1"></i>Ver Libro Mayor
+                                </a>
+                            }
                         </div>
                     </div>
                 </div>
@@ -267,9 +295,20 @@
                         <h4 class="card-title fw-semibold mb-1">Estado de Resultados</h4>
                         <p class="text-muted mb-3" style="font-size:13px">Resumen de ingresos, gastos y resultado del ejercicio contable.</p>
                         <div class="mt-auto">
-                            <a asp-action="Index" asp-controller="EstadoResultados" asp-route-clienteId="@Model.Id" class="btn btn-sm sg-btn-primary-dark">
-                                <i class="ti ti-arrow-right me-1"></i>Ver Estado de Resultados
-                            </a>
+                            @if (esAuxiliar)
+                            {
+                                <button type="button" class="btn btn-sm sg-btn-primary-dark"
+                                        data-bs-toggle="modal" data-bs-target="#modal-sin-permiso"
+                                        style="opacity:.55;">
+                                    <i class="ti ti-lock me-1"></i>Ver Estado de Resultados
+                                </button>
+                            }
+                            else
+                            {
+                                <a asp-action="Index" asp-controller="EstadoResultados" asp-route-clienteId="@Model.Id" class="btn btn-sm sg-btn-primary-dark">
+                                    <i class="ti ti-arrow-right me-1"></i>Ver Estado de Resultados
+                                </a>
+                            }
                         </div>
                     </div>
                 </div>
@@ -281,9 +320,20 @@
                         <h4 class="card-title fw-semibold mb-1">Balance General</h4>
                         <p class="text-muted mb-3" style="font-size:13px">Activos, pasivos y patrimonio del cliente en un período determinado.</p>
                         <div class="mt-auto">
-                            <a asp-action="Index" asp-controller="BalanceGeneral" asp-route-clienteId="@Model.Id" class="btn btn-sm sg-btn-primary-dark">
-                                <i class="ti ti-arrow-right me-1"></i>Ver Balance General
-                            </a>
+                            @if (esAuxiliar)
+                            {
+                                <button type="button" class="btn btn-sm sg-btn-primary-dark"
+                                        data-bs-toggle="modal" data-bs-target="#modal-sin-permiso"
+                                        style="opacity:.55;">
+                                    <i class="ti ti-lock me-1"></i>Ver Balance General
+                                </button>
+                            }
+                            else
+                            {
+                                <a asp-action="Index" asp-controller="BalanceGeneral" asp-route-clienteId="@Model.Id" class="btn btn-sm sg-btn-primary-dark">
+                                    <i class="ti ti-arrow-right me-1"></i>Ver Balance General
+                                </a>
+                            }
                         </div>
                     </div>
                 </div>
@@ -301,9 +351,20 @@
                         <h4 class="card-title fw-semibold mb-1">IVA</h4>
                         <p class="text-muted mb-3" style="font-size:13px">Liquidación y gestión del Impuesto al Valor Agregado del cliente.</p>
                         <div class="mt-auto">
-                            <a asp-action="Index" asp-controller="LiquidacionIva" asp-route-clienteId="@Model.Id" class="btn btn-sm sg-btn-primary-dark">
-                                <i class="ti ti-arrow-right me-1"></i>Ver IVA
-                            </a>
+                            @if (esAuxiliar)
+                            {
+                                <button class="btn btn-sm sg-btn-primary-dark" disabled
+                                        title="No disponible para auxiliares contables"
+                                        style="opacity:.5;cursor:not-allowed;">
+                                    <i class="ti ti-lock me-1"></i>Ver IVA
+                                </button>
+                            }
+                            else
+                            {
+                                <a asp-action="Index" asp-controller="LiquidacionIva" asp-route-clienteId="@Model.Id" class="btn btn-sm sg-btn-primary-dark">
+                                    <i class="ti ti-arrow-right me-1"></i>Ver IVA
+                                </a>
+                            }
                         </div>
                     </div>
                 </div>

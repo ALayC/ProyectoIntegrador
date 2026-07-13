@@ -173,6 +173,44 @@ public class EmailService : IEmailService
         }
     }
 
+
+    public async Task EnviarInvitacionAuxiliarAsync(string email, string nombreContador, string baseUrl)
+    {
+        try
+        {
+            var linkRegistro = $"{baseUrl}/Auth/Register";
+
+            var cuerpoHtml = $@"
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset='utf-8' />
+                <title>Invitacion - Auxiliar Contable</title>
+            </head>
+            <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;'>
+                <div style='max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 5px;'>
+                    <h2 style='color: #333;'>Invitacion como Auxiliar Contable</h2>
+                    <p style='color: #666;'><strong>{nombreContador}</strong> te ha invitado a unirte al sistema como auxiliar contable.</p>
+                    <p style='color: #666;'>Registrate con este email (<strong>{email}</strong>) y quedas vinculado automaticamente.</p>
+                    <p style='text-align: center; margin: 30px 0;'>
+                        <a href='{linkRegistro}' style='background-color: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;'>
+                            Registrarme
+                        </a>
+                    </p>
+                    <p style='color: #999; font-size: 12px;'>Invitacion valida por 7 dias.</p>
+                </div>
+            </body>
+            </html>";
+
+            await EnviarEmailAsync(email, $"Invitacion como Auxiliar Contable - {nombreContador}", cuerpoHtml, isHtml: true);
+            _logger.LogInformation("Email de invitacion auxiliar enviado a: {Email}", email);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al enviar invitacion auxiliar a: {Email}", email);
+            throw;
+        }
+    }
     /// <summary>
     /// Método privado genérico para enviar emails.
     /// </summary>

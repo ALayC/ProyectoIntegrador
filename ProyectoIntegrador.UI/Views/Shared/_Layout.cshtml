@@ -78,18 +78,44 @@
                                             </a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link @(sgIsPlan ? "active" : "")"
-                                               asp-controller="Clientes" asp-action="PlanDeCuentas" asp-route-id="@ctxClienteId">
-                                                <span class="nav-link-icon"><i class="ti ti-list-tree"></i></span>
-                                                <span class="nav-link-title">Plan de Cuentas</span>
-                                            </a>
+                                            @if (User.IsInRole("Auxiliar Contable"))
+                                            {
+                                                <a class="nav-link @(sgIsPlan ? "active" : "") sg-nav-bloqueado"
+                                                   href="#" data-bs-toggle="modal" data-bs-target="#modal-sin-permiso"
+                                                   style="opacity:.55;">
+                                                    <span class="nav-link-icon"><i class="ti ti-list-tree"></i></span>
+                                                    <span class="nav-link-title">Plan de Cuentas</span>
+                                                    <span class="ms-1"><i class="ti ti-lock" style="font-size:11px;opacity:.7;"></i></span>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a class="nav-link @(sgIsPlan ? "active" : "")"
+                                                   asp-controller="Clientes" asp-action="PlanDeCuentas" asp-route-id="@ctxClienteId">
+                                                    <span class="nav-link-icon"><i class="ti ti-list-tree"></i></span>
+                                                    <span class="nav-link-title">Plan de Cuentas</span>
+                                                </a>
+                                            }
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link @(sgIsEjercicios ? "active" : "")"
-                                               asp-controller="Ejercicios" asp-action="Index" asp-route-clienteId="@ctxClienteId">
-                                                <span class="nav-link-icon"><i class="ti ti-calendar-stats"></i></span>
-                                                <span class="nav-link-title">Ejercicios Contables</span>
-                                            </a>
+                                            @if (User.IsInRole("Auxiliar Contable"))
+                                            {
+                                                <a class="nav-link @(sgIsEjercicios ? "active" : "") sg-nav-bloqueado"
+                                                   href="#" data-bs-toggle="modal" data-bs-target="#modal-sin-permiso"
+                                                   style="opacity:.55;">
+                                                    <span class="nav-link-icon"><i class="ti ti-calendar-stats"></i></span>
+                                                    <span class="nav-link-title">Ejercicios Contables</span>
+                                                    <span class="ms-1"><i class="ti ti-lock" style="font-size:11px;opacity:.7;"></i></span>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a class="nav-link @(sgIsEjercicios ? "active" : "")"
+                                                   asp-controller="Ejercicios" asp-action="Index" asp-route-clienteId="@ctxClienteId">
+                                                    <span class="nav-link-icon"><i class="ti ti-calendar-stats"></i></span>
+                                                    <span class="nav-link-title">Ejercicios Contables</span>
+                                                </a>
+                                            }
                                         </li>
                                     </ul>
                                 </li>
@@ -106,6 +132,15 @@
                                     <a class="nav-link" asp-controller="Roles" asp-action="Index">
                                         <span class="nav-link-icon"><i class="ti ti-shield-check"></i></span>
                                         <span class="nav-link-title">Roles y Permisos</span>
+                                    </a>
+                                </li>
+                            }
+                            @if (User.IsInRole("Contador") || User.IsInRole("Administrador"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(ctxController == "Auxiliares" ? "active" : "")" asp-controller="Auxiliares" asp-action="Index">
+                                        <span class="nav-link-icon"><i class="ti ti-users-group"></i></span>
+                                        <span class="nav-link-title">Mis Auxiliares</span>
                                     </a>
                                 </li>
                             }
@@ -429,5 +464,31 @@
             }
         })();
     </script>
+
+    @* Modal: sin permiso (auxiliar contable) *@
+    <div class="modal modal-blur fade" id="modal-sin-permiso" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body text-center py-3">
+                    <div class="mb-3">
+                        <span class="avatar avatar-lg rounded" style="background:#fff3cd;">
+                            <i class="ti ti-lock fs-2" style="color:#f59f00;"></i>
+                        </span>
+                    </div>
+                    <h4 class="mb-1">Acceso restringido</h4>
+                    <p class="text-secondary mb-0">
+                        No tenés permisos para acceder a esta sección.<br>
+                        Contactá a tu contador para solicitar acceso.
+                    </p>
+                </div>
+                <div class="modal-footer border-0 pt-0 justify-content-center">
+                    <button type="button" class="btn btn-azure px-4" data-bs-dismiss="modal">Entendido</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
