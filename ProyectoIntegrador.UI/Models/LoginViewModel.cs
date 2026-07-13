@@ -12,4 +12,7 @@ public class LoginViewModel
     [DataType(DataType.Password)]
     [Display(Name = "Contraseña")]
     public string Password { get; set; } = string.Empty;
+
+    [Display(Name = "Recordar por 7 d\u00edas")]
+    public bool Recordar { get; set; }
 }

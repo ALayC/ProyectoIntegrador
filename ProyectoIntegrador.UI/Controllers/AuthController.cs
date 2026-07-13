@@ -74,7 +74,7 @@ public class AuthController : Controller
 
         // Login directo (dispositivo confiable)
         HttpContext.Session.SetString("JwtToken", response.Data.Token!);
-        await CrearCookieDeAutenticacion(response.Data);
+        await CrearCookieDeAutenticacion(response.Data, model.Recordar);
 
         return RedirectToAction("Index", "Home");
     }
@@ -248,7 +248,7 @@ public class AuthController : Controller
     // ??????????????????????????????????????????????
     // Helpers privados
     // ??????????????????????????????????????????????
-    private async Task CrearCookieDeAutenticacion(AuthApiResponse authData)
+    private async Task CrearCookieDeAutenticacion(AuthApiResponse authData, bool recordar = false)
     {
         var claims = new List<Claim>
         {
@@ -278,8 +278,10 @@ public class AuthController : Controller
             principal,
             new AuthenticationProperties
             {
-                IsPersistent = false,
-                ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(60)
+                IsPersistent = recordar,
+                ExpiresUtc = recordar
+                    ? DateTimeOffset.UtcNow.AddDays(7)
+                    : DateTimeOffset.UtcNow.AddMinutes(60)
             });
     }
 
