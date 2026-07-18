@@ -9,8 +9,15 @@ namespace ProyectoIntegrador.UI.Controllers;
 public class EjerciciosController : Controller
 {
     private readonly ApiClient _apiClient;
+    private readonly IReporteCierreExcelService _excelService;
+    private readonly IReporteCierrePdfService _pdfService;
 
-    public EjerciciosController(ApiClient apiClient) => _apiClient = apiClient;
+    public EjerciciosController(ApiClient apiClient, IReporteCierreExcelService excelService, IReporteCierrePdfService pdfService)
+    {
+        _apiClient = apiClient;
+        _excelService = excelService;
+        _pdfService = pdfService;
+    }
 
     [HttpGet]
     public async Task<IActionResult> Index(Guid clienteId, int pagina = 1, int cantidadPorPagina = 10)
@@ -258,5 +265,47 @@ public class EjerciciosController : Controller
         };
 
         return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportarExcelCierre(Guid clienteId, Guid ejercicioId)
+    {
+        var vm = await ObtenerReporteCierreVm(clienteId, ejercicioId);
+        if (vm is null) return RedirectToAction(nameof(ReporteCierre), new { clienteId, ejercicioId });
+
+        var bytes = _excelService.Generar(vm);
+        var nombre = $"AsientosCierre_{vm.ClienteNombre}_{DateTime.Today:yyyyMMdd}.xlsx".Replace(" ", "_");
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", nombre);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportarPdfCierre(Guid clienteId, Guid ejercicioId)
+    {
+        var vm = await ObtenerReporteCierreVm(clienteId, ejercicioId);
+        if (vm is null) return RedirectToAction(nameof(ReporteCierre), new { clienteId, ejercicioId });
+
+        var bytes = _pdfService.Generar(vm);
+        var nombre = $"AsientosCierre_{vm.ClienteNombre}_{DateTime.Today:yyyyMMdd}.pdf".Replace(" ", "_");
+        return File(bytes, "application/pdf", nombre);
+    }
+
+    private async Task<ReporteCierreViewModel?> ObtenerReporteCierreVm(Guid clienteId, Guid ejercicioId)
+    {
+        var clienteResponse = await _apiClient.GetAsync<ClienteListViewModel>($"api/clientes/{clienteId}");
+        if (!clienteResponse.EsExitoso || clienteResponse.Data is null) return null;
+
+        var ejercicioResponse = await _apiClient.GetAsync<EjercicioContableViewModel>($"api/ejercicios/{ejercicioId}");
+        if (!ejercicioResponse.EsExitoso || ejercicioResponse.Data is null) return null;
+
+        var asientosResponse = await _apiClient.GetAsync<List<AsientoCierreViewModel>>(
+            $"api/ejercicios/{ejercicioId}/asientos-cierre");
+
+        return new ReporteCierreViewModel
+        {
+            ClienteId = clienteId,
+            ClienteNombre = clienteResponse.Data.RazonSocial,
+            Ejercicio = ejercicioResponse.Data,
+            Asientos = asientosResponse.Data ?? new()
+        };
     }
 }
