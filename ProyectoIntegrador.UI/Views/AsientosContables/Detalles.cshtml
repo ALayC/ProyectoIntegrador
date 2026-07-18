@@ -214,6 +214,36 @@
     </div>
 </div>
 
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var modalEl = document.getElementById('modalRevertir');
+        if (!modalEl) return;
+
+        // Mover el modal al <body> para sacarlo de cualquier contenedor del layout
+        // que cree un "stacking context" (transform/position/filter). Si no se hace,
+        // el .modal-backdrop queda por encima del modal y bloquea todos los clicks
+        // (la vista se "congela" al abrir el modal).
+        if (modalEl.parentNode !== document.body) {
+            document.body.appendChild(modalEl);
+        }
+
+        var form = modalEl.querySelector('form');
+        var btn = document.getElementById('btnConfirmarRevertir');
+        var pendingSubmit = false;
+
+        form && form.addEventListener('submit', function () {
+            if (pendingSubmit) return;
+            pendingSubmit = true;
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Procesando...';
+            }
+        });
+    });
+</script>
+}
+
 @* Modal de Confirmación de Reversión *@
 <div class="modal fade" id="modalRevertir" tabindex="-1" aria-labelledby="modalRevertirLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -241,7 +271,7 @@
                     <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">
                         <i class="ti ti-x"></i> Cancelar
                     </button>
-                    <button type="submit" class="btn btn-warning">
+                    <button type="submit" class="btn btn-warning" id="btnConfirmarRevertir">
                         <i class="ti ti-arrows-exchange"></i> Sí, Revertir Asiento
                     </button>
                 </div>
