@@ -51,15 +51,21 @@ public class EjerciciosController : ControllerBase
     public async Task<IActionResult> Actualizar(Guid id, [FromBody] ActualizarEjercicioContableDto dto)
         => Ok(await _ejercicioService.Actualizar(id, dto));
 
-    /// <summary>Cierra un ejercicio contable.</summary>
+    /// <summary>Cierra un ejercicio contable y genera los asientos de cierre.</summary>
     [HttpPost("{id:guid}/cerrar")]
     [RequierePermiso("Ejercicios", "Editar")]
     public async Task<IActionResult> Cerrar(Guid id)
     {
         var usuarioId = ObtenerUsuarioIdDelToken();
-        await _ejercicioService.Cerrar(id, usuarioId);
-        return Ok(new { mensaje = "Ejercicio contable cerrado correctamente." });
+        var resultado = await _ejercicioService.Cerrar(id, usuarioId);
+        return Ok(resultado);
     }
+
+    /// <summary>Devuelve los asientos de cierre de un ejercicio contable.</summary>
+    [HttpGet("{id:guid}/asientos-cierre")]
+    [RequierePermiso("Ejercicios", "Consultar")]
+    public async Task<IActionResult> ObtenerAsientosCierre(Guid id)
+        => Ok(await _ejercicioService.ObtenerAsientosCierre(id));
 
     private Guid ObtenerUsuarioIdDelToken()
     {

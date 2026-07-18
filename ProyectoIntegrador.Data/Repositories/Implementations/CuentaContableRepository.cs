@@ -64,6 +64,21 @@ public class CuentaContableRepository : ICuentaContableRepository
             .ToListAsync();
     }
 
+    public async Task<List<CuentaContable>> ObtenerImputablesPorTipos(Guid planCuentasId, IEnumerable<string> tipos)
+    {
+        var lista = tipos.ToList();
+        return await _context.CuentasContables
+            .Where(c => c.PlanCuentasId == planCuentasId && c.EsImputable && lista.Contains(c.Tipo))
+            .OrderBy(c => c.Codigo)
+            .ToListAsync();
+    }
+
+    public async Task<CuentaContable?> ObtenerPorNombre(Guid planCuentasId, string nombre)
+    {
+        return await _context.CuentasContables
+            .FirstOrDefaultAsync(c => c.PlanCuentasId == planCuentasId && c.Nombre == nombre);
+    }
+
     public async Task<bool> ExisteCodigo(Guid planCuentasId, string codigo)
     {
         return await _context.CuentasContables.AnyAsync(c => c.PlanCuentasId == planCuentasId && c.Codigo == codigo);
