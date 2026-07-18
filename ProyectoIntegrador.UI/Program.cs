@@ -23,6 +23,17 @@ builder.Services.AddScoped<ProyectoIntegrador.UI.Filters.ClienteContextFilter>()
 builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.AddService<ProyectoIntegrador.UI.Filters.ClienteContextFilter>();
+})
+.AddDataAnnotationsLocalization()
+.AddViewLocalization();
+
+// 🔹 Configuración de cultura (usar InvariantCulture para parsing de números) ────
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[] { System.Globalization.CultureInfo.InvariantCulture };
+    options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(System.Globalization.CultureInfo.InvariantCulture);
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
 });
 
 // 🔹 HttpClient nombrado "API" ─────────────────
@@ -143,6 +154,9 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+// 🔹 RequestLocalization (debe ir antes de UseRouting)
+app.UseRequestLocalization();
 
 app.UseRouting();
 

@@ -375,11 +375,11 @@ else
                                             <th style="width:120px">Fecha</th>
                                             <th style="width:110px">Asiento</th>
                                             <th>Glosa</th>
-                                            <th class="text-end">Debe</th>
-                                            <th class="text-end">Haber</th>
-                                            <th class="text-end">Saldo</th>
-                                            <th class="text-center">Moneda</th>
-                                            <th class="text-end">Saldo base</th>
+                                            <th class="text-end">Debe (UYU)</th>
+                                            <th class="text-end">Haber (UYU)</th>
+                                            <th class="text-end">Saldo (UYU)</th>
+                                            <th class="text-center">Moneda orig.</th>
+                                            <th class="text-end">Valor orig.</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -389,13 +389,27 @@ else
                                                 <td>@movimiento.Fecha.ToString("dd/MM/yyyy")</td>
                                                 <td class="text-secondary">@movimiento.NumeroAsiento</td>
                                                 <td>@movimiento.Glosa</td>
-                                                <td class="text-end">@movimiento.Debe.ToString("N2")</td>
-                                                <td class="text-end">@movimiento.Haber.ToString("N2")</td>
-                                                <td class="text-end fw-semibold">@movimiento.SaldoAcumulado.ToString("N2")</td>
+                                                <td class="text-end">@movimiento.DebeBase.ToString("N2")</td>
+                                                <td class="text-end">@movimiento.HaberBase.ToString("N2")</td>
+                                                <td class="text-end fw-semibold">@movimiento.SaldoAcumuladoBase.ToString("N2")</td>
                                                 <td class="text-center">
-                                                    <span class="badge bg-secondary-lt">@movimiento.Moneda</span>
+                                                    @if (movimiento.Moneda != "UYU")
+                                                    {
+                                                        <span class="badge bg-warning-lt text-warning" title="Original: @movimiento.Debe.ToString("N2") / @movimiento.Haber.ToString("N2") @movimiento.Moneda × TC @movimiento.TipoCambio.ToString("N6")">
+                                                            @movimiento.Moneda
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary-lt">@movimiento.Moneda</span>
+                                                    }
                                                 </td>
-                                                <td class="text-end text-secondary">@movimiento.SaldoAcumuladoBase.ToString("N2")</td>
+                                                <td class="text-end text-secondary">
+                                                    @if (movimiento.Moneda != "UYU")
+                                                    {
+                                                        <small title="Tipo de cambio aplicado">@movimiento.Debe.ToString("N2") / @movimiento.Haber.ToString("N2")</small>
+                                                    }
+                                                </td>
                                             </tr>
                                         }
                                     </tbody>
