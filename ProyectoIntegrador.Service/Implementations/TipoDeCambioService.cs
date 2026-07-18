@@ -262,10 +262,57 @@ public class TipoDeCambioService : ITipoDeCambioService
                         System.Globalization.DateTimeStyles.None, out fecha))
                     continue;
 
-                if (!decimal.TryParse(tcvStr.Trim(),
-                    System.Globalization.NumberStyles.Any,
-                    System.Globalization.CultureInfo.InvariantCulture, out var tcv))
+                // El BCU puede devolver con coma (40,189) o punto (40.189)
+                // Limpiamos separadores de miles y normalizamos el decimal
+                decimal tcv;
+                var tcvLimpio = tcvStr.Trim();
+
+                // Estrategia: Si contiene AMBOS punto y coma, determinar cuál es el decimal
+                // Si solo contiene uno, asumimos que es el decimal
+                if (tcvLimpio.Contains('.') && tcvLimpio.Contains(','))
+                {
+                    // Ambos presentes: el último es el decimal
+                    var ultimoPunto = tcvLimpio.LastIndexOf('.');
+                    var ultimaComa = tcvLimpio.LastIndexOf(',');
+
+                    if (ultimaComa > ultimoPunto)
+                    {
+                        // Formato: 40.189,52 → quitar puntos, cambiar coma por punto
+                        tcvLimpio = tcvLimpio.Replace(".", "").Replace(",", ".");
+                    }
+                    else
+                    {
+                        // Formato: 40,189.52 → quitar comas
+                        tcvLimpio = tcvLimpio.Replace(",", "");
+                    }
+                }
+                else if (tcvLimpio.Contains(','))
+                {
+                    // Solo coma: puede ser decimal o separador de miles
+                    // Si hay solo una coma y está cerca del final (2 o 3 dígitos después), es decimal
+                    var ultimaComa = tcvLimpio.LastIndexOf(',');
+                    var digitosDespues = tcvLimpio.Length - ultimaComa - 1;
+                    if (digitosDespues <= 3 && tcvLimpio.Count(c => c == ',') == 1)
+                    {
+                        // Formato: 40,189 → cambiar coma por punto
+                        tcvLimpio = tcvLimpio.Replace(",", ".");
+                    }
+                    else
+                    {
+                        // Formato: 1,000 o 40,000,189 → quitar comas
+                        tcvLimpio = tcvLimpio.Replace(",", "");
+                    }
+                }
+                // Si solo tiene puntos, asumimos formato americano (punto decimal o separador de miles)
+                // Los puntos se manejan naturalmente por InvariantCulture
+
+                if (!decimal.TryParse(tcvLimpio, System.Globalization.NumberStyles.Number,
+                        System.Globalization.CultureInfo.InvariantCulture, out tcv))
+                {
+                    _logger.LogWarning("No se pudo parsear TCV del BCU: '{TcvStr}' (limpio: '{TcvLimpio}') para fecha {Fecha}", 
+                        tcvStr, tcvLimpio, fechaStr);
                     continue;
+                }
 
                 if (tcv > 0)
                     resultados.Add((fecha, Math.Round(tcv, 4)));
