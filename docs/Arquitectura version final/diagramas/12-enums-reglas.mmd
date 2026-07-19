@@ -1,0 +1,26 @@
+flowchart TD
+	subgraph Enums["Diccionario de enumeraciones"]
+		U["Usuario:\nProveedorAuth: Local, Google\nEstado: Activo, Inactivo"]
+		CL["Cliente:\nEstado: Activo, Inactivo\nTipoContribuyente: CEDE, ResponsableIVA,\nMonotributo, LiteralE, NoAlcanzado, Exento\nMonedaBase: UYU, USD"]
+		CC["CuentaContable:\nTipo: Activo, Pasivo, Patrimonio, Ingreso, Egreso\nNaturaleza: Deudora, Acreedora\nEstado: Activa, Inactiva"]
+		EJ["EjercicioContable:\nEstado: Abierto, Cerrado"]
+		AS["AsientoContable:\nEstado: Confirmado, Revertido"]
+		CO["Comprobante (enum C#):\nTipo: Factura, Boleta, NotaDebito, NotaCredito\nEstado: Activo, Anulado"]
+		MO["LineaAsiento / SaldoCuenta:\nMoneda: UYU, USD"]
+		TC["TipoDeCambio:\nFuenteOrigen: BCU, Manual"]
+		CDC["CentroDeCosto:\nEstado: Activo, Inactivo"]
+		IA["InvitacionAuxiliar:\nEstado: Pendiente, Aceptada, Revocada"]
+	end
+
+	subgraph Eliminacion["Política de eliminación lógica"]
+		EST["Con estado activo/inactivo:\nUsuarios, Clientes, Cuentas,\nCentros de Costo, Roles"]
+		HIS["Inmutables / históricas:\nAsientos (reversión),\nComprobantes (Anulado + DeletedAt),\nImportaciones, Auditorías,\nPermisos, Tokens Revocados"]
+	end
+
+	subgraph Reglas["Reglas transversales"]
+		R1["Jerarquía usuarios:\nContadorId solo para Auxiliar\n(null en Admin/Contador)"]
+		R2["Propiedad de clientes:\nCliente.ContadorId\nauxiliares heredan acceso\nfiltrado por usuario autenticado"]
+		R3["Auditoría:\nDatosAnteriores/DatosNuevos en JSON"]
+		R4["Balance contable:\nDebe = Haber"]
+		R5["Cuentas imputables:\nsolo EsImputable=true\nadmite movimientos"]
+	end

@@ -1,0 +1,26 @@
+sequenceDiagram
+	actor U as Usuario
+	participant UI as UI (MVC)
+	participant G as Google OAuth 2.0
+	participant API as API (AuthController)
+	participant SVC as AuthService
+	participant DB as SQL Database
+
+	U->>UI: Click "Iniciar con Google"
+	UI->>G: Redirección OAuth (consent screen)
+	G-->>U: Solicita credenciales / consentimiento
+	U->>G: Autoriza
+	G-->>UI: idToken de Google
+	UI->>API: POST /api/auth/google (idToken)
+	API->>SVC: LoginGoogle(idToken)
+	SVC->>G: Validar idToken
+	G-->>SVC: Datos del usuario (email, nombre)
+	SVC->>DB: Buscar usuario por email
+	alt Usuario no existe
+		SVC->>DB: Crear usuario (ProveedorAuth=Google, EmailConfirmado=true)
+	end
+	SVC->>SVC: Generar JWT (1 hora)
+	SVC-->>API: AuthResponseDto (token + datos)
+	API-->>UI: 200 OK (JWT)
+	UI->>UI: Guardar token en sesión
+	UI-->>U: Acceso concedido

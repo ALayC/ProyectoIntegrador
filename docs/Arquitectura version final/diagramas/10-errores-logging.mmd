@@ -1,0 +1,46 @@
+flowchart TD
+	REQ[Request HTTP] --> MW[ExceptionMiddleware\nprimero en el pipeline]
+	MW --> TRY{Ejecuta acción}
+	TRY -->|Sin excepción| OK[Respuesta normal 2xx/3xx]
+	TRY -->|Lanza excepción| MAP{Mapeo excepción -> HTTP}
+
+	MAP -->|AsientoDesbalanceadoException| E400[400 Bad Request]
+	MAP -->|AsientoNoBalanceadoException| E400
+	MAP -->|EjercicioCerradoException| E400
+	MAP -->|EjercicioSolapadoException| E400
+	MAP -->|CuentaNoImputableException| E400
+	MAP -->|CuentaJerarquiaInvalidaException| E400
+	MAP -->|CuentaConMovimientosException| E400
+	MAP -->|ImportacionInvalidaException| E400
+	MAP -->|ValidacionException| E400
+
+	MAP -->|AccesoNoAutorizadoException| E403[403 Forbidden]
+	MAP -->|EntidadNoEncontradaException| E404[404 Not Found]
+
+	MAP -->|AsientoYaRevertidoException| E409[409 Conflict]
+	MAP -->|DuplicadoException| E409
+	MAP -->|CuentaDuplicadaException| E409
+
+	MAP -->|Cualquier otra| E500[500 Internal Server Error\nmensaje genérico]
+
+	E400 --> JSON["JSON: { status, error }"]
+	E403 --> JSON
+	E404 --> JSON
+	E409 --> JSON
+	E500 --> JSON
+
+	subgraph Logging["Logging"]
+		E400 -.-> LW[Warning]
+		E403 -.-> LWIP[Warning + IP]
+		E500 -.-> LE[Error + stack trace\nsolo en el log]
+	end
+
+	JSON --> CLI[Cliente\nsin stack trace]
+
+	subgraph Destinos["Destino de logs"]
+		LW --> DEST{ConnectionString AI?}
+		LE --> DEST
+		LWIP --> DEST
+		DEST -->|Sí| AI[Azure Application Insights]
+		DEST -->|No| CON[Consola / desarrollo]
+	end

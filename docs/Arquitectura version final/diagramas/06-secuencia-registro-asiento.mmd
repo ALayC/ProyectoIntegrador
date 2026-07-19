@@ -1,0 +1,32 @@
+sequenceDiagram
+	actor U as Usuario
+	participant UI as UI (MVC)
+	participant API as API (AsientosContablesController)
+	participant SVC as AsientoContableService
+	participant DB as SQL Database
+
+	U->>UI: Completa asiento (líneas Debe/Haber)
+	UI->>API: POST /api/asientos (AsientoContableDto)
+	API->>SVC: Crear(dto)
+	SVC->>SVC: Validar Debe = Haber
+	alt No balanceado
+		SVC-->>API: AsientoNoBalanceadoException
+		API-->>UI: 400 Bad Request
+		UI-->>U: Error de balance
+	else Balanceado
+		SVC->>DB: Validar ejercicio Abierto
+		alt Ejercicio cerrado
+			SVC-->>API: EjercicioCerradoException
+			API-->>UI: 400 Bad Request
+		else Ejercicio abierto
+			SVC->>DB: BEGIN TRAN (SERIALIZABLE)
+			SVC->>DB: Obtener último número (cliente + ejercicio)
+			SVC->>DB: Insertar asiento (número + 1) y líneas
+			SVC->>DB: Actualizar SALDOS_CUENTA
+			SVC->>DB: COMMIT
+			SVC->>DB: Registrar auditoría
+			SVC-->>API: AsientoContableDto creado
+			API-->>UI: 201 Created
+			UI-->>U: Confirmación
+		end
+	end

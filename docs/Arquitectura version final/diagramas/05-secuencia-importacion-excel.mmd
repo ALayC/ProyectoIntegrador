@@ -1,0 +1,27 @@
+sequenceDiagram
+	actor U as Usuario
+	participant UI as UI (MVC)
+	participant API as API (ComprobantesController)
+	participant SVC as ComprobanteService
+	participant DB as SQL Database
+
+	Note over U,DB: Fase 1 — Carga y validación
+	U->>UI: Sube archivo .xlsx (plantilla)
+	UI->>API: POST /api/comprobantes/importar/validar (archivo)
+	API->>SVC: ValidarImportacion(archivo)
+	SVC->>SVC: Validar estructura, tipos, balance
+	SVC->>DB: Validar cuentas, ejercicios abiertos, duplicados
+	SVC-->>API: Resumen (válidos / inválidos / duplicados)
+	API-->>UI: Resumen de validación
+	UI-->>U: Muestra registros y errores por fila
+
+	Note over U,DB: Fase 2 — Confirmación y persistencia
+	U->>UI: Confirma importación
+	UI->>API: POST /api/comprobantes/importar/confirmar
+	API->>SVC: ConfirmarImportacion(registrosValidos)
+	SVC->>DB: Persistir comprobantes válidos
+	SVC->>DB: Registrar Importacion (importados / rechazados)
+	SVC->>DB: Registrar auditoría
+	SVC-->>API: Resultado final
+	API-->>UI: 200 OK
+	UI-->>U: Importación completada
