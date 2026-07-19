@@ -8,5 +8,6 @@ public interface IEjercicioContableService
     Task<EjercicioContableResponseDto> ObtenerPorId(Guid id);
     Task<PaginadoDto<EjercicioContableResponseDto>> ObtenerPorCliente(Guid clienteId, int pagina, int cantidadPorPagina);
     Task<EjercicioContableResponseDto> Actualizar(Guid id, ActualizarEjercicioContableDto dto);
-    Task Cerrar(Guid id, Guid usuarioId);
+    Task<CierreEjercicioResponseDto> Cerrar(Guid id, Guid usuarioId);
+    Task<List<AsientoContableDto>> ObtenerAsientosCierre(Guid ejercicioId);
 }
