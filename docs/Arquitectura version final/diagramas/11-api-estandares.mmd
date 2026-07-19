@@ -1,0 +1,41 @@
+flowchart LR
+	subgraph Rutas["Convención de rutas"]
+		CRUD["/api/{entidad}\nGET/POST/PUT/DELETE"]
+		REP["/api/reportes/{nombre-reporte}\n?formato=pdf|excel"]
+	end
+
+	subgraph Paginacion["Paginación (OFFSET/FETCH)"]
+		IN["Entrada:\npagina=1\ncantidadPorPagina=20 (máx 100)"]
+		FILT[Aplicar filtros] --> SKIP[.Skip / .Take]
+		SKIP --> OUT["PaginadoDto:\ndatos, pagina,\ncantidadPorPagina,\ntotalRegistros, totalPaginas"]
+		IN --> FILT
+	end
+
+	subgraph Errores["Formato de error"]
+		ERR["{ status, error }"]
+		R429["429: { error, codigo=RATE_LIMIT_EXCEDIDO, detalles }"]
+	end
+
+	subgraph Controllers["Controllers"]
+		C1[AuthController]
+		C2[UsuariosController]
+		C3[RolesController / PermisosController]
+		C4[AuxiliarController]
+		C5[ClientesController]
+		C6[CuentasContablesController]
+		C7[EjerciciosController]
+		C8[AsientosContablesController]
+		C9[ComprobantesController]
+		C10[TipoDeCambioController]
+		C11[LibroMayorController]
+		C12[EstadoResultadosController]
+		C13[BalanceGeneralController]
+		C14[LiquidacionIvaController]
+		C15[AuditoriaController]
+	end
+
+	CRUD --> Controllers
+	REP --> C11
+	REP --> C12
+	REP --> C13
+	REP --> C14

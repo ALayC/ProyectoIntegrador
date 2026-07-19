@@ -1,0 +1,9 @@
+flowchart LR
+	U[Usuario / Navegador] -->|HTTPS| UI[Azure App Service — UI]
+	UI -->|HTTPS + JWT| API[Azure App Service — API]
+	API -->|EF Core| DB[(Azure SQL Database)]
+	API -.telemetría.-> AI[Application Insights]
+	UI -.telemetría.-> AI
+	API -->|SOAP| BCU[[API BCU]]
+	API -->|SMTP| MAIL[[Servidor Email]]
+	DB --> BK[(Backups / Point-in-Time Restore)]

@@ -1,0 +1,29 @@
+C4Container
+	title Diagrama de Contenedores (C4 Nivel 2) - Sistema Contable ProyectoIntegrador
+
+	Person(usuario, "Usuario", "Administrador / Contador / Auxiliar")
+
+	System_Boundary(sistema, "ProyectoIntegrador") {
+		Container(ui, "UI", "ASP.NET Core + Razor + Tabler", "Interfaz de usuario. Consume la API vía ApiClient")
+		Container(api, "API", "ASP.NET Core Web API", "Controllers, JWT, permisos, rate limiting, middlewares")
+		Container(svc, "Servicios", "Biblioteca .NET", "Lógica de negocio, DTOs, excepciones de dominio")
+		Container(data, "Datos", "EF Core", "Entidades, repositorios, AppDbContext, migraciones")
+		ContainerDb(db, "Base de datos", "Azure SQL Database", "Persistencia relacional")
+	}
+
+	System_Ext(google, "Google OAuth 2.0", "Autenticación")
+	System_Ext(bcu, "API del BCU", "Cotizaciones")
+	System_Ext(smtp, "Servidor SMTP", "Emails")
+	System_Ext(appinsights, "Application Insights", "Telemetría")
+
+	Rel(usuario, ui, "Usa", "HTTPS")
+	Rel(ui, api, "Consume", "HTTPS + JWT")
+	Rel(api, svc, "Invoca")
+	Rel(svc, data, "Usa repositorios")
+	Rel(data, db, "Lee/escribe", "EF Core")
+
+	Rel(api, google, "Valida idToken", "HTTPS")
+	Rel(svc, bcu, "Cotizaciones", "HTTP")
+	Rel(svc, smtp, "Notificaciones", "SMTP")
+	Rel(api, appinsights, "Telemetría", "HTTPS")
+	Rel(ui, appinsights, "Telemetría", "HTTPS")
