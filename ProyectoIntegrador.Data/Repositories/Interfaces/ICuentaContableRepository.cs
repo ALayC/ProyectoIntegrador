@@ -11,6 +11,8 @@ public interface ICuentaContableRepository
     Task<int> ContarPorPlanDeCuentas(Guid planCuentasId);
     Task<List<CuentaContable>> ObtenerHijas(Guid cuentaPadreId);
     Task<List<CuentaContable>> ObtenerImputables(Guid planCuentasId);
+    Task<List<CuentaContable>> ObtenerImputablesPorTipos(Guid planCuentasId, IEnumerable<string> tipos);
+    Task<CuentaContable?> ObtenerPorNombre(Guid planCuentasId, string nombre);
     Task<bool> ExisteCodigo(Guid planCuentasId, string codigo);
     Task<bool> TieneMovimientos(Guid cuentaContableId);
     Task Guardar(CuentaContable cuentaContable);

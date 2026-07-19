@@ -44,6 +44,12 @@ public class AsientosContablesController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Crear(Guid clienteId, CrearAsientoViewModel model)
     {
+        // DEBUG: Log de valores recibidos
+        foreach (var linea in model.Lineas)
+        {
+            System.Diagnostics.Debug.WriteLine($"Línea - Moneda: {linea.Moneda}, Debe: {linea.Debe}, Haber: {linea.Haber}, TC: {linea.TipoCambio}");
+        }
+
         if (!ModelState.IsValid)
         {
             await RecargarSelectsAsync(model);

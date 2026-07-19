@@ -45,3 +45,16 @@ public class ActualizarEjercicioContableDto
     [Required(ErrorMessage = "La fecha de fin es obligatoria.")]
     public DateOnly? FechaFin { get; set; }
 }
+
+/// <summary>
+/// DTO de respuesta para el cierre de ejercicio contable.
+/// </summary>
+public class CierreEjercicioResponseDto
+{
+    public Guid EjercicioId { get; set; }
+    public decimal TotalIngresos { get; set; }
+    public decimal TotalEgresos { get; set; }
+    public decimal ResultadoNeto { get; set; }
+    public int AsientosGenerados { get; set; }
+    public List<AsientoContableDto> AsientosCierre { get; set; } = new();
+}

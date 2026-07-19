@@ -11,6 +11,7 @@ public class AsientoContable
     public DateOnly Fecha { get; set; }
     public string Glosa { get; set; } = string.Empty;
     public string Estado { get; set; } = string.Empty; // Confirmado, Revertido
+    public bool EsTipoCierre { get; set; }
 
     // Navegación
     public Cliente Cliente { get; set; } = null!;

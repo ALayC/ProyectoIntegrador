@@ -140,6 +140,12 @@ else
                                         <button type="button" class="btn btn-sm btn-outline-secondary" disabled>
                                             <i class="ti ti-lock"></i>
                                         </button>
+                                        <a asp-action="ReporteCierre" asp-controller="Ejercicios"
+                                           asp-route-clienteId="@Model.ClienteId"
+                                           asp-route-ejercicioId="@ejercicio.Id"
+                                           class="btn btn-sm btn-outline-secondary" title="Ver asientos de cierre">
+                                            <i class="ti ti-file-text"></i>
+                                        </a>
                                     }
                                 </td>
                             </tr>

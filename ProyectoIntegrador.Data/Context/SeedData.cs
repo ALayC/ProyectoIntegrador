@@ -73,8 +73,9 @@ public static class SeedData
     public static readonly Guid AportesIrrevocablesId = new("d0000000-3100-0200-0000-000000000001");
 
     // Nivel 3 – Resultados (3.2.X)
-    public static readonly Guid ResultadosAcumuladosId = new("d0000000-3200-0100-0000-000000000001");
-    public static readonly Guid ResultadoEjercicioId   = new("d0000000-3200-0200-0000-000000000001");
+    public static readonly Guid ResultadosAcumuladosId  = new("d0000000-3200-0100-0000-000000000001");
+    public static readonly Guid ResultadoEjercicioId    = new("d0000000-3200-0200-0000-000000000001");
+    public static readonly Guid ResumenResultadosId     = new("d0000000-3200-0300-0000-000000000001");
 
     // Nivel 3 – Ingresos Operativos (4.1.X)
     public static readonly Guid VentasMercaderiaId    = new("d0000000-4100-0100-0000-000000000001");
@@ -433,8 +434,9 @@ public static class SeedData
             new CuentaContable { Id = AportesIrrevocablesId, PlanCuentasId = PlanTemplateId, CuentaPadreId = CapitalId, Codigo = "3.1.2", Nombre = "Aportes irrevocables",  Tipo = "Patrimonio", Naturaleza = "Acreedora", EsImputable = true, EsSistema = false, Estado = "Activa" },
 
             // NIVEL 3 — Resultados (3.2.X)
-            new CuentaContable { Id = ResultadosAcumuladosId, PlanCuentasId = PlanTemplateId, CuentaPadreId = ResultadosId, Codigo = "3.2.1", Nombre = "Resultados acumulados",    Tipo = "Patrimonio", Naturaleza = "Acreedora", EsImputable = true, EsSistema = false, Estado = "Activa" },
-            new CuentaContable { Id = ResultadoEjercicioId,   PlanCuentasId = PlanTemplateId, CuentaPadreId = ResultadosId, Codigo = "3.2.2", Nombre = "Resultado del ejercicio",  Tipo = "Patrimonio", Naturaleza = "Acreedora", EsImputable = true, EsSistema = false, Estado = "Activa" },
+            new CuentaContable { Id = ResultadosAcumuladosId, PlanCuentasId = PlanTemplateId, CuentaPadreId = ResultadosId, Codigo = "3.2.1", Nombre = "Resultados acumulados",    Tipo = "Patrimonio", Naturaleza = "Acreedora", EsImputable = true,  EsSistema = false, Estado = "Activa" },
+            new CuentaContable { Id = ResultadoEjercicioId,   PlanCuentasId = PlanTemplateId, CuentaPadreId = ResultadosId, Codigo = "3.2.2", Nombre = "Resultado del ejercicio",  Tipo = "Patrimonio", Naturaleza = "Acreedora", EsImputable = true,  EsSistema = false, Estado = "Activa" },
+            new CuentaContable { Id = ResumenResultadosId,    PlanCuentasId = PlanTemplateId, CuentaPadreId = ResultadosId, Codigo = "3.2.3", Nombre = "Resumen de resultados",    Tipo = "Patrimonio", Naturaleza = "Acreedora", EsImputable = true,  EsSistema = true,  Estado = "Activa" },
 
             // NIVEL 3 — Ingresos Operativos (4.1.X)
             new CuentaContable { Id = VentasMercaderiaId,    PlanCuentasId = PlanTemplateId, CuentaPadreId = IngresosOperativosId, Codigo = "4.1.1", Nombre = "Ventas de mercadería",    Tipo = "Ingreso", Naturaleza = "Acreedora", EsImputable = true, EsSistema = false, Estado = "Activa" },
