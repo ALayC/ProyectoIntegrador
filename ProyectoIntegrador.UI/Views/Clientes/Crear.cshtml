@@ -11,7 +11,10 @@
                     <i class="ti ti-plus"></i> Nuevo Cliente
                 </h3>
 
-                <div asp-validation-summary="All" class="alert alert-danger" role="alert" style="display:none;"></div>
+                @if (!ViewContext.ViewData.ModelState.IsValid)
+                {
+                    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+                }
 
                 <form asp-action="Crear" method="post">
                     <div class="row">
@@ -93,14 +96,4 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script>
-               $(function () {
-          var alertDiv = $('.alert-danger');
-                alertDiv.each(function () {
-        if ($(this).text().trim().length > 0) {
-           $(this).show();
-                   }
-                   });
-               });
-    </script>
 }

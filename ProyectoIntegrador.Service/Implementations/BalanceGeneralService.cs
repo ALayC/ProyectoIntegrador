@@ -56,7 +56,7 @@ namespace ProyectoIntegrador.Service.Implementations
                 {
                     continue;
                 }
-                nodos[cuenta.Id].Saldo += CalcularSaldoMovimiento(linea, cuenta.Naturaleza);
+                nodos[cuenta.Id].Saldo += CalcularSaldoMovimiento(linea, cuenta.Tipo);
             }
 
             foreach (var cuenta in cuentas)
@@ -116,9 +116,9 @@ namespace ProyectoIntegrador.Service.Implementations
 
             var totalActivos = activos.Sum(a => a.Saldo);
 
-            var totalPasivos = pasivos.Sum(p => p.Saldo);
+            var totalPasivos = Math.Abs(pasivos.Sum(p => p.Saldo));
 
-            var totalPatrimonio = patrimonio.Sum(p => p.Saldo);
+            var totalPatrimonio = Math.Abs(patrimonio.Sum(p => p.Saldo));
 
             var totalPasivoPatrimonio = totalPasivos + totalPatrimonio;
 
@@ -147,11 +147,14 @@ namespace ProyectoIntegrador.Service.Implementations
             return resultado;
         }
 
-        private static decimal CalcularSaldoMovimiento(LineaAsiento linea, string naturaleza)
+        private static decimal CalcularSaldoMovimiento(LineaAsiento linea, string tipoCuenta)
         {
             var debeBase  = linea.Debe  * linea.TipoCambio;
             var haberBase = linea.Haber * linea.TipoCambio;
-            return naturaleza == "Acreedora"
+
+            // Pasivo, Patrimonio e Ingreso tienen naturaleza acreedora
+            // Activo y Egreso tienen naturaleza deudora
+            return tipoCuenta is "Pasivo" or "Patrimonio" or "Ingreso"
                 ? haberBase - debeBase
                 : debeBase  - haberBase;
         }
