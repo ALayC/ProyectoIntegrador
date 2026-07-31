@@ -34,7 +34,14 @@ if (!string.IsNullOrEmpty(appInsightsConnectionString))
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         configuration.GetConnectionString("DefaultConnection"),
-        sqlOptions => sqlOptions.MigrationsAssembly("ProyectoIntegrador.Data")));
+        sqlOptions =>
+        {
+            sqlOptions.MigrationsAssembly("ProyectoIntegrador.Data");
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(30),
+                errorNumbersToAdd: null);
+        }));
 
 // ── Autenticación JWT Bearer ──────────────────
 var jwtSecretKey = configuration["Jwt:SecretKey"]
