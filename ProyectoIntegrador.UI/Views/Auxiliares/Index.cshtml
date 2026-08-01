@@ -8,9 +8,18 @@
         <h2 class="mb-1"><i class="ti ti-users-group"></i> Auxiliares Contables</h2>
         <div class="text-secondary">Gestioná las invitaciones y accesos de tus auxiliares.</div>
     </div>
-    <a asp-controller="Usuarios" asp-action="Index" class="btn btn-outline-secondary">
-        <i class="ti ti-arrow-left me-1"></i>Volver
-    </a>
+    @if (User.IsInRole("Administrador"))
+    {
+        <a asp-controller="Usuarios" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="ti ti-arrow-left me-1"></i>Volver
+        </a>
+    }
+    else
+    {
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="ti ti-arrow-left me-1"></i>Volver
+        </a>
+    }
 </div>
 
 @if (TempData["Success"] is string ok)

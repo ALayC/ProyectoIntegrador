@@ -133,6 +133,8 @@ builder.Services.AddScoped<ProyectoIntegrador.UI.Services.ILibroMayorExcelServic
 builder.Services.AddScoped<ILibroMayorPdfService, LibroMayorPdfService>();
 builder.Services.AddScoped<IEstadoResultadosExcelService, EstadoResultadosExcelService>();
 builder.Services.AddScoped<IEstadoResultadosPdfService, EstadoResultadosPdfService>();
+builder.Services.AddScoped<IBalanceGeneralExcelService, BalanceGeneralExcelService>();
+builder.Services.AddScoped<IBalanceGeneralPdfService, BalanceGeneralPdfService>();
 builder.Services.AddScoped<IReporteCierreExcelService, ReporteCierreExcelService>();
 builder.Services.AddScoped<IReporteCierrePdfService, ReporteCierrePdfService>();
 builder.Services.AddScoped<ProyectoIntegrador.UI.Services.IImportacionExcelService,
