@@ -1,0 +1,30 @@
+flowchart TD
+	subgraph Autenticacion["Autenticación"]
+		A[Usuario] -->|credenciales locales| B[AuthService]
+		A -->|idToken Google| G[Google OAuth 2.0]
+		G --> B
+		B -->|bcrypt verifica PasswordHash| B
+		B -->|genera JWT 1h| JWT[Token JWT]
+	end
+
+	subgraph Validacion["Validación de request"]
+		JWT --> V{JwtBearer valida}
+		V -->|Issuer/Audience/Lifetime/SigningKey| OK1[Firma válida]
+		OK1 --> REV{OnTokenValidated: EstaRevocado?}
+		REV -->|Sí, en TOKENS_REVOCADOS| R401[401 No autorizado]
+		REV -->|No| PERM{PermisosActionFilter:\nRequierePermiso?}
+		PERM -->|Sin permiso| R403[403 Prohibido]
+		PERM -->|Con permiso| RL{RateLimiter\nlímite superado?}
+		RL -->|Sí| R429[429 Too Many Requests\nRetry-After]
+		RL -->|No| CTRL[Controller ejecuta acción]
+	end
+
+	subgraph DosFactores["2FA / seguridad extra"]
+		DF[Codigo2FA + FechaExpiracion2FA]
+		DC[DispositivoConfiable\nrecordar navegador]
+		EC[Confirmación email\nReset contraseña]
+	end
+
+	B -.puede exigir.-> DosFactores
+	LOGOUT[Logout] -->|registra token| TR[(TOKENS_REVOCADOS)]
+	TR -.-> REV

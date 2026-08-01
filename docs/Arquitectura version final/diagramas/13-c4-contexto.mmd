@@ -1,0 +1,22 @@
+C4Context
+	title Diagrama de Contexto (C4 Nivel 1) - Sistema Contable ProyectoIntegrador
+
+	Person(admin, "Administrador", "Gestiona usuarios del sistema")
+	Person(contador, "Contador", "Gestiona la contabilidad de sus clientes")
+	Person(auxiliar, "Auxiliar Contable", "Apoya al contador; hereda acceso a sus clientes")
+
+	System(sistema, "Sistema Contable ProyectoIntegrador", "Gestión contable multi-cliente: asientos, comprobantes, reportes, IVA")
+
+	System_Ext(google, "Google OAuth 2.0", "Autenticación federada")
+	System_Ext(bcu, "API del BCU", "Cotizaciones de moneda")
+	System_Ext(smtp, "Servidor SMTP", "Envío de notificaciones y confirmaciones")
+	System_Ext(appinsights, "Azure Application Insights", "Telemetría y observabilidad")
+
+	Rel(admin, sistema, "Administra usuarios")
+	Rel(contador, sistema, "Registra contabilidad, consulta reportes")
+	Rel(auxiliar, sistema, "Carga asientos y comprobantes")
+
+	Rel(sistema, google, "Valida idToken", "HTTPS")
+	Rel(sistema, bcu, "Obtiene cotizaciones", "SOAP/HTTP")
+	Rel(sistema, smtp, "Envía emails", "SMTP")
+	Rel(sistema, appinsights, "Envía telemetría", "HTTPS")

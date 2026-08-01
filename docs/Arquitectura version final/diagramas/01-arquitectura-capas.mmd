@@ -1,0 +1,50 @@
+flowchart TD
+	subgraph UI["ProyectoIntegrador.UI (MVC + Razor + Tabler)"]
+		MVC[Controllers MVC]
+		VIEWS[Razor Views / ViewModels]
+		APICLIENT[ApiClient - HttpClient]
+	end
+
+	subgraph API["ProyectoIntegrador.API (Web API)"]
+		MW1[ExceptionMiddleware]
+		MW2[RequestLoggingMiddleware]
+		RL[RateLimiter]
+		AUTHZ["Autenticación JWT + Filtro de Permisos"]
+		CTRL[API Controllers]
+	end
+
+	subgraph SVC["ProyectoIntegrador.Service (Lógica de negocio)"]
+		SI[Interfaces de servicio]
+		SIMPL[Implementaciones de servicio]
+		EXC[Excepciones de dominio]
+		DTO[DTOs]
+	end
+
+	subgraph DATA["ProyectoIntegrador.Data (EF Core)"]
+		REPOI[Interfaces de repositorio]
+		REPO[Repositorios]
+		CTX[AppDbContext]
+	end
+
+	DB[(Azure SQL Database)]
+	BCU[[API BCU - SOAP]]
+	AI[[Azure Application Insights]]
+	SMTP[[Servidor de Email SMTP]]
+
+	VIEWS --> MVC --> APICLIENT
+	APICLIENT -->|HTTP + JWT| CTRL
+	MW1 -.-> CTRL
+	MW2 -.-> CTRL
+	RL -.-> CTRL
+	AUTHZ -.-> CTRL
+	CTRL --> SI
+	SIMPL -.implementa.-> SI
+	CTRL --> SIMPL
+	SIMPL --> REPOI
+	REPO -.implementa.-> REPOI
+	SIMPL --> REPO
+	REPO --> CTX --> DB
+	SIMPL -->|cotizaciones| BCU
+	SIMPL -->|notificaciones| SMTP
+	API -.telemetría.-> AI
+	SVC -.telemetría.-> AI

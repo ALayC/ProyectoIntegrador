@@ -1,0 +1,208 @@
+erDiagram
+	ROLES ||--o{ USUARIOS : "rol_id"
+	ROLES ||--o{ ROLES_PERMISOS : incluye
+	PERMISOS ||--o{ ROLES_PERMISOS : asignado
+	USUARIOS ||--o{ USUARIOS : "contador_id (auxiliar)"
+	USUARIOS ||--o{ TOKENS_REVOCADOS : revoca
+	USUARIOS ||--o{ DISPOSITIVOS_CONFIABLES : registra
+	USUARIOS ||--o{ INVITACIONES_AUXILIAR : "contador_id emite"
+
+	USUARIOS ||--o{ CLIENTES : "contador_id posee"
+	CLIENTES ||--o| PLANES_CUENTAS : posee
+	PLANES_CUENTAS ||--o{ CUENTAS_CONTABLES : contiene
+	CUENTAS_CONTABLES ||--o{ CUENTAS_CONTABLES : "cuenta_padre_id"
+	CLIENTES ||--o{ EJERCICIOS_CONTABLES : define
+
+	CLIENTES ||--o{ ASIENTOS_CONTABLES : registra
+	USUARIOS ||--o{ ASIENTOS_CONTABLES : crea
+	EJERCICIOS_CONTABLES ||--o{ ASIENTOS_CONTABLES : agrupa
+	ASIENTOS_CONTABLES ||--o| ASIENTOS_CONTABLES : "asiento_origen_id"
+	ASIENTOS_CONTABLES ||--o{ LINEAS_ASIENTO : compone
+	CUENTAS_CONTABLES ||--o{ LINEAS_ASIENTO : imputa
+	CENTROS_COSTO ||--o{ LINEAS_ASIENTO : "centro_costo_id"
+
+	CLIENTES ||--o{ COMPROBANTES : emite
+	ASIENTOS_CONTABLES ||--o{ COMPROBANTES : "asiento_id"
+	CLIENTES ||--o{ IMPORTACIONES : carga
+	USUARIOS ||--o{ IMPORTACIONES : ejecuta
+
+	CLIENTES ||--o{ SALDOS_CUENTA : acumula
+	CUENTAS_CONTABLES ||--o{ SALDOS_CUENTA : "cuenta_contable_id"
+	EJERCICIOS_CONTABLES ||--o{ SALDOS_CUENTA : "ejercicio_id"
+
+	CLIENTES ||--o{ CENTROS_COSTO : segmenta
+	USUARIOS ||--o{ AUDITORIA : genera
+
+	USUARIOS {
+		uuid Id PK
+		varchar Email
+		varchar PasswordHash "nullable"
+		varchar NombreCompleto
+		varchar ProveedorAuth "Local, Google"
+		varchar Estado "Activo, Inactivo"
+		uuid RolId FK
+		uuid ContadorId FK "nullable"
+		datetime CreatedAt
+		bool EmailConfirmado
+		varchar Codigo2FA "nullable"
+		datetime FechaExpiracion2FA "nullable"
+	}
+	ROLES {
+		uuid Id PK
+		varchar Nombre
+		bool EsPredefinido
+	}
+	PERMISOS {
+		uuid Id PK
+		varchar Nombre
+		varchar Modulo
+		varchar Accion
+	}
+	ROLES_PERMISOS {
+		uuid RolId PK,FK
+		uuid PermisoId PK,FK
+	}
+	TOKENS_REVOCADOS {
+		uuid Id PK
+		uuid UsuarioId FK
+		varchar Token
+		datetime ExpiraEn
+	}
+	DISPOSITIVOS_CONFIABLES {
+		uuid Id PK
+		uuid UsuarioId FK
+		varchar Token
+		datetime FechaExpiracion
+		datetime CreadoEn
+	}
+	INVITACIONES_AUXILIAR {
+		uuid Id PK
+		varchar Email
+		uuid ContadorId FK
+		datetime FechaCreacion
+		datetime FechaExpiracion
+		varchar Estado "Pendiente, Aceptada, Revocada"
+	}
+	CLIENTES {
+		uuid Id PK
+		uuid ContadorId FK
+		varchar Rut
+		varchar RazonSocial
+		varchar NombreFantasia "nullable"
+		varchar Email
+		varchar Telefono
+		varchar Direccion "nullable"
+		varchar TipoContribuyente
+		varchar MonedaBase "UYU, USD"
+		varchar Estado "Activo, Inactivo"
+	}
+	PLANES_CUENTAS {
+		uuid Id PK
+		uuid ClienteId FK "nullable"
+		bool EsTemplate
+	}
+	CUENTAS_CONTABLES {
+		uuid Id PK
+		uuid PlanCuentasId FK
+		uuid CuentaPadreId FK "nullable"
+		varchar Codigo
+		varchar Nombre
+		varchar Tipo "Activo, Pasivo, Patrimonio, Ingreso, Egreso"
+		varchar Naturaleza "Deudora, Acreedora"
+		bool EsImputable
+		bool EsSistema
+		varchar Estado "Activa, Inactiva"
+	}
+	EJERCICIOS_CONTABLES {
+		uuid Id PK
+		uuid ClienteId FK
+		date FechaInicio
+		date FechaFin
+		varchar Estado "Abierto, Cerrado"
+	}
+	ASIENTOS_CONTABLES {
+		uuid Id PK
+		uuid ClienteId FK
+		uuid UsuarioId FK
+		uuid EjercicioId FK
+		uuid AsientoOrigenId FK "nullable"
+		int Numero
+		date Fecha
+		varchar Glosa
+		varchar Estado "Confirmado, Revertido"
+		bool EsTipoCierre
+	}
+	LINEAS_ASIENTO {
+		uuid Id PK
+		uuid AsientoId FK
+		uuid CuentaContableId FK
+		uuid CentroCostoId FK "nullable"
+		decimal Debe
+		decimal Haber
+		varchar Moneda "UYU, USD"
+		decimal TipoCambio
+		decimal ImporteMonedaBase
+	}
+	COMPROBANTES {
+		uuid Id PK
+		uuid ClienteId FK
+		int Tipo "Factura, Boleta, NotaDebito, NotaCredito"
+		varchar Numero
+		varchar RUT
+		date Fecha
+		decimal ImporteNeto
+		decimal TasaIVA
+		decimal ImporteIVA
+		decimal ImporteTotal
+		int Estado "Activo, Anulado"
+		uuid AsientoId FK "nullable"
+		datetime CreatedAt
+		datetime UpdatedAt "nullable"
+		datetime DeletedAt "nullable"
+	}
+	IMPORTACIONES {
+		uuid Id PK
+		uuid UsuarioId FK
+		uuid ClienteId FK
+		varchar NombreArchivo
+		datetime FechaImportacion
+		int RegistrosImportados
+		int RegistrosRechazados
+	}
+	SALDOS_CUENTA {
+		uuid Id PK
+		uuid ClienteId FK
+		uuid CuentaContableId FK
+		uuid EjercicioId FK
+		date Periodo
+		decimal DebeAcumulado
+		decimal HaberAcumulado
+		decimal Saldo
+		varchar Moneda
+		decimal DebeAcumuladoBase
+		decimal HaberAcumuladoBase
+		decimal SaldoBase
+	}
+	CENTROS_COSTO {
+		uuid Id PK
+		uuid ClienteId FK
+		varchar Codigo
+		varchar Nombre
+		varchar Estado "Activo, Inactivo"
+	}
+	TIPOS_CAMBIO {
+		uuid Id PK
+		varchar Moneda
+		date Fecha
+		decimal Valor
+		varchar FuenteOrigen "BCU, Manual"
+	}
+	AUDITORIA {
+		uuid Id PK
+		uuid UsuarioId FK
+		varchar Entidad
+		varchar Accion
+		datetime FechaHora
+		nvarchar DatosAnteriores "JSON, nullable"
+		nvarchar DatosNuevos "JSON, nullable"
+	}

@@ -1,0 +1,218 @@
+classDiagram
+	class Usuario {
+		+Guid Id
+		+string Email
+		+string? PasswordHash
+		+string NombreCompleto
+		+string ProveedorAuth
+		+string Estado
+		+Guid RolId
+		+Guid? ContadorId
+		+DateTime CreatedAt
+		+bool EmailConfirmado
+		+string? Codigo2FA
+		+DateTime? FechaExpiracion2FA
+	}
+	class Rol {
+		+Guid Id
+		+string Nombre
+		+bool EsPredefinido
+	}
+	class Permiso {
+		+Guid Id
+		+string Nombre
+		+string Modulo
+		+string Accion
+	}
+	class RolPermiso {
+		+Guid RolId
+		+Guid PermisoId
+	}
+	class TokenRevocado {
+		+Guid Id
+		+Guid UsuarioId
+		+string Token
+		+DateTime ExpiraEn
+	}
+	class DispositivoConfiable {
+		+Guid Id
+		+Guid UsuarioId
+		+string Token
+		+DateTime FechaExpiracion
+		+DateTime CreadoEn
+	}
+	class InvitacionAuxiliar {
+		+Guid Id
+		+string Email
+		+Guid ContadorId
+		+DateTime FechaCreacion
+		+DateTime FechaExpiracion
+		+string Estado
+	}
+	class Cliente {
+		+Guid Id
+		+Guid ContadorId
+		+string Rut
+		+string RazonSocial
+		+string? NombreFantasia
+		+string Email
+		+string Telefono
+		+string? Direccion
+		+string TipoContribuyente
+		+string MonedaBase
+		+string Estado
+	}
+	class PlanDeCuentas {
+		+Guid Id
+		+Guid? ClienteId
+		+bool EsTemplate
+	}
+	class CuentaContable {
+		+Guid Id
+		+Guid PlanCuentasId
+		+Guid? CuentaPadreId
+		+string Codigo
+		+string Nombre
+		+string Tipo
+		+string Naturaleza
+		+bool EsImputable
+		+bool EsSistema
+		+string Estado
+	}
+	class EjercicioContable {
+		+Guid Id
+		+Guid ClienteId
+		+DateOnly FechaInicio
+		+DateOnly FechaFin
+		+string Estado
+	}
+	class AsientoContable {
+		+Guid Id
+		+Guid ClienteId
+		+Guid UsuarioId
+		+Guid EjercicioId
+		+Guid? AsientoOrigenId
+		+int Numero
+		+DateOnly Fecha
+		+string Glosa
+		+string Estado
+		+bool EsTipoCierre
+	}
+	class LineaAsiento {
+		+Guid Id
+		+Guid AsientoId
+		+Guid CuentaContableId
+		+Guid? CentroCostoId
+		+decimal Debe
+		+decimal Haber
+		+string Moneda
+		+decimal TipoCambio
+		+decimal ImporteMonedaBase
+	}
+	class Comprobante {
+		+Guid Id
+		+Guid ClienteId
+		+TipoComprobante Tipo
+		+string Numero
+		+string RUT
+		+DateOnly Fecha
+		+decimal ImporteNeto
+		+decimal TasaIVA
+		+decimal ImporteIVA
+		+decimal ImporteTotal
+		+EstadoComprobante Estado
+		+Guid? AsientoId
+		+DateTime CreatedAt
+		+DateTime? UpdatedAt
+		+DateTime? DeletedAt
+	}
+	class Importacion {
+		+Guid Id
+		+Guid UsuarioId
+		+Guid ClienteId
+		+string NombreArchivo
+		+DateTime FechaImportacion
+		+int RegistrosImportados
+		+int RegistrosRechazados
+	}
+	class SaldoCuenta {
+		+Guid Id
+		+Guid ClienteId
+		+Guid CuentaContableId
+		+Guid EjercicioId
+		+DateOnly Periodo
+		+decimal DebeAcumulado
+		+decimal HaberAcumulado
+		+decimal Saldo
+		+string Moneda
+		+decimal SaldoBase
+	}
+	class CentroDeCosto {
+		+Guid Id
+		+Guid ClienteId
+		+string Codigo
+		+string Nombre
+		+string Estado
+	}
+	class TipoDeCambio {
+		+Guid Id
+		+string Moneda
+		+DateOnly Fecha
+		+decimal Valor
+		+string FuenteOrigen
+	}
+	class Auditoria {
+		+Guid Id
+		+Guid UsuarioId
+		+string Entidad
+		+string Accion
+		+DateTime FechaHora
+		+string? DatosAnteriores
+		+string? DatosNuevos
+	}
+	class TipoComprobante {
+		<<enumeration>>
+		Factura
+		Boleta
+		NotaDebito
+		NotaCredito
+	}
+	class EstadoComprobante {
+		<<enumeration>>
+		Activo
+		Anulado
+	}
+
+	Rol "1" --> "0..*" Usuario : usuarios
+	Rol "1" --> "0..*" RolPermiso
+	Permiso "1" --> "0..*" RolPermiso
+	Usuario "1" --> "0..*" Usuario : auxiliares
+	Usuario "1" --> "0..*" TokenRevocado
+	Usuario "1" --> "0..*" DispositivoConfiable
+	Usuario "1" --> "0..*" InvitacionAuxiliar
+	Usuario "1" --> "0..*" Cliente
+	Usuario "1" --> "0..*" AsientoContable
+	Usuario "1" --> "0..*" Importacion
+	Usuario "1" --> "0..*" Auditoria
+
+	Cliente "1" --> "0..1" PlanDeCuentas
+	PlanDeCuentas "1" --> "0..*" CuentaContable
+	CuentaContable "1" --> "0..*" CuentaContable : cuentasHijas
+	Cliente "1" --> "0..*" EjercicioContable
+	Cliente "1" --> "0..*" AsientoContable
+	Cliente "1" --> "0..*" Comprobante
+	Cliente "1" --> "0..*" CentroDeCosto
+	Cliente "1" --> "0..*" Importacion
+	Cliente "1" --> "0..*" SaldoCuenta
+
+	EjercicioContable "1" --> "0..*" AsientoContable
+	EjercicioContable "1" --> "0..*" SaldoCuenta
+	AsientoContable "1" --> "0..*" AsientoContable : asientosReversion
+	AsientoContable "1" --> "1..*" LineaAsiento
+	AsientoContable "1" --> "0..*" Comprobante
+	CuentaContable "1" --> "0..*" LineaAsiento
+	CuentaContable "1" --> "0..*" SaldoCuenta
+	CentroDeCosto "1" --> "0..*" LineaAsiento
+
+	Comprobante --> TipoComprobante
+	Comprobante --> EstadoComprobante

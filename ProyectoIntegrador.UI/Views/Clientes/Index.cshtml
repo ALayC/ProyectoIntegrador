@@ -67,7 +67,7 @@
     <div class="d-flex gap-2">
         @if (User.IsInRole("Contador") || User.IsInRole("Administrador"))
         {
-            <a asp-controller="Auxiliares" asp-action="Index" class="btn btn-sm btn-outline-azure">
+            <a asp-controller="Auxiliares" asp-action="Index" class="btn btn-sm btn-outline-secondary">
                 <i class="ti ti-users-group me-1"></i> Mis Auxiliares
             </a>
         }
@@ -149,20 +149,10 @@ else
 {
     <div class="card" data-aos="fade-up" data-aos-delay="60">
         <div class="card-header d-flex align-items-center gap-2 flex-wrap">
-            <div class="flex-grow-1">
-                <label for="buscar-clientes" class="form-label visually-hidden">Buscar clientes por RUT o razón social</label>
-                <div class="input-icon" style="max-width:280px;">
-                    <span class="input-icon-addon"><i class="ti ti-search"></i></span>
-                    <input id="buscar-clientes" type="text" class="form-control form-control-sm" placeholder="Buscar por RUT o razón social" aria-label="Buscar clientes por RUT o razón social" />
-                </div>
-            </div>
-            <div class="d-flex gap-1 ms-auto">
-                <button type="button" class="btn btn-sm btn-outline-secondary" title="Filtrar">
-                    <i class="ti ti-filter"></i> Filtrar
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" title="Exportar">
-                    <i class="ti ti-download"></i> Exportar
-                </button>
+            <label for="buscar-clientes" class="form-label visually-hidden">Buscar clientes por RUT o razón social</label>
+            <div class="input-icon" style="max-width:280px;">
+                <span class="input-icon-addon"><i class="ti ti-search"></i></span>
+                <input id="buscar-clientes" type="text" class="form-control form-control-sm" placeholder="Buscar por RUT o razón social" aria-label="Buscar clientes por RUT o razón social" />
             </div>
         </div>
         <div class="table-responsive">

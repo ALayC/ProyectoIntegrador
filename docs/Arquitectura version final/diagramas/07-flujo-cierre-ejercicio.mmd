@@ -1,0 +1,13 @@
+flowchart TD
+	A[Iniciar cierre de ejercicio] --> B[Calcular diferencias de cambio]
+	B --> C[Generar asiento de diferencias de cambio]
+	C --> D["Generar asiento de cierre (EsTipoCierre = true)"]
+	D --> E[Saldar cuentas de resultado -ingresos/egresos-]
+	E --> F[Trasladar resultado neto a cuenta patrimonial]
+	F --> G[Arrastrar saldos patrimoniales al nuevo ejercicio]
+	G --> H[Cuentas de resultado inician en cero]
+	H --> I[Cambiar estado del ejercicio a Cerrado]
+	I --> J[Registrar en auditoría]
+	J --> K{Intento de operar en ejercicio cerrado?}
+	K -->|Sí| L[Lanzar EjercicioCerradoException]
+	K -->|No| M[Fin]

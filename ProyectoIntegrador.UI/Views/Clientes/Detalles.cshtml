@@ -124,9 +124,6 @@
         </div>
     </div>
     <div class="d-flex gap-2 flex-wrap align-items-start">
-        <a asp-action="Index" asp-controller="Clientes" class="btn btn-outline-secondary">
-            <i class="ti ti-arrow-left me-1"></i>Volver
-        </a>
         @if (esAuxiliar)
         {
             <button type="button" class="btn sg-btn-primary-dark"
@@ -158,6 +155,9 @@
                 </button>
             }
         }
+        <a id="btn-volver" asp-action="Index" asp-controller="Clientes" class="btn btn-outline-secondary">
+            <i class="ti ti-arrow-left me-1"></i>Volver
+        </a>
     </div>
 </div>
 
@@ -507,8 +507,10 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var tabPanes = document.querySelectorAll('#clienteTabsContent .tab-pane');
+            var btnVolver = document.getElementById('btn-volver');
+            var skipNextHashChange = false;
 
-            function showTab(targetId) {
+            function showTab(targetId, updateUrl) {
                 tabPanes.forEach(function (pane) {
                     pane.classList.remove('show', 'active');
                 });
@@ -516,12 +518,46 @@
                 if (target) {
                     target.classList.add('show', 'active');
                 }
-                history.replaceState(null, null, targetId);
+                if (updateUrl !== false) {
+                    skipNextHashChange = false;
+                    window.location.hash = targetId;
+                } else {
+                    skipNextHashChange = true;
+                }
+                updateVolverButton(targetId);
+            }
+
+            function updateVolverButton(currentTab) {
+                if (!btnVolver) return;
+
+                // Si estamos en la pestaña Resumen, volver al index de clientes
+                if (currentTab === '#tab-resumen') {
+                    btnVolver.onclick = null;
+                } else {
+                    // Si estamos en cualquier otra pestaña, volver a Resumen
+                    btnVolver.onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        // Cambiar pestaña directamente sin tocar el hash
+                        tabPanes.forEach(function (pane) {
+                            pane.classList.remove('show', 'active');
+                        });
+                        var resumeTab = document.querySelector('#tab-resumen');
+                        if (resumeTab) {
+                            resumeTab.classList.add('show', 'active');
+                        }
+                        updateVolverButton('#tab-resumen');
+                        return false;
+                    };
+                }
             }
 
             window.addEventListener('hashchange', function () {
+                if (skipNextHashChange) {
+                    skipNextHashChange = false;
+                    return;
+                }
                 showTab(window.location.hash || '#tab-resumen');
-                if (typeof NProgress !== 'undefined') NProgress.done();
             });
 
             showTab(window.location.hash || '#tab-resumen');
