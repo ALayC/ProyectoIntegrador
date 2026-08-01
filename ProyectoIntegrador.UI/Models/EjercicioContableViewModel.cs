@@ -9,6 +9,19 @@ public class EjercicioContableViewModel
     public DateOnly FechaInicio { get; set; }
     public DateOnly FechaFin { get; set; }
     public string Estado { get; set; } = string.Empty;
+
+    public string PeriodoDisplay
+    {
+        get
+        {
+            var meses = new[] { "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic" };
+            var mesInicio = meses[FechaInicio.Month - 1];
+            var mesFin = meses[FechaFin.Month - 1];
+            var anioInicio = FechaInicio.Year.ToString().Substring(2); // Últimos 2 dígitos
+            var anioFin = FechaFin.Year.ToString().Substring(2);
+            return $"{mesInicio}/{anioInicio} - {mesFin}/{anioFin}";
+        }
+    }
 }
 
 public class EjercicioContableIndexViewModel

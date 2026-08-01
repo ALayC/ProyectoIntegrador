@@ -334,7 +334,7 @@
                         <option value="">— Seleccione ejercicio —</option>
                         @foreach (var ej in Model.Ejercicios)
                         {
-                            <option value="@ej.Id">@ej.FechaInicio.Year – @ej.FechaFin.Year (@ej.Estado)</option>
+                            <option value="@ej.Id">@ej.PeriodoDisplay (@ej.Estado)</option>
                         }
                     </select>
                     <span asp-validation-for="EjercicioId" class="text-danger small"></span>
@@ -434,8 +434,8 @@
         <a asp-action="Index" asp-route-clienteId="@Model.ClienteId" class="btn btn-ghost-secondary">
             Cancelar
         </a>
-        <button type="submit" id="btn-submit" class="btn btn-primary">
-            <i class="ti ti-device-floppy"></i> Registrar asiento
+        <button type="submit" id="btn-submit" class="btn sg-btn-primary-dark">
+            <i class="ti ti-device-floppy me-1"></i>Registrar asiento
         </button>
     </div>
 </form>
