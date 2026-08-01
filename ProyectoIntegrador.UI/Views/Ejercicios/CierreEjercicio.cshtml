@@ -30,7 +30,7 @@
            class="btn btn-outline-secondary">
             <i class="ti ti-calendar me-1"></i>Ver ejercicios
         </a>
-        <a asp-action="Detalles" asp-controller="Clientes" asp-route-id="@Model.ClienteId"
+        <a href="@Url.Action("Detalles", "Clientes", new { id = Model.ClienteId })#tab-contabilidad"
            class="btn btn-outline-secondary">
             <i class="ti ti-arrow-left me-1"></i>Volver al cliente
         </a>
@@ -73,7 +73,7 @@
                         <p class="empty-title">Sin ejercicios abiertos</p>
                         <p class="empty-subtitle text-muted">No hay ejercicios disponibles para cerrar.</p>
                         <a asp-action="Crear" asp-controller="Ejercicios" asp-route-clienteId="@Model.ClienteId"
-                           class="btn btn-sm btn-azure mt-2">
+                           class="btn btn-sm sg-btn-primary-dark mt-2">
                             <i class="ti ti-plus me-1"></i>Crear ejercicio
                         </a>
                     </div>
@@ -246,11 +246,11 @@
                         <a asp-action="ReporteCierre" asp-controller="Ejercicios"
                            asp-route-clienteId="@Model.ClienteId"
                            asp-route-ejercicioId="@seleccionado!.Id"
-                           class="btn btn-outline-azure">
+                           class="btn btn-outline-secondary">
                             <i class="ti ti-file-text me-1"></i>Ver asientos de cierre
                         </a>
                         <a asp-action="Crear" asp-controller="Ejercicios" asp-route-clienteId="@Model.ClienteId"
-                           class="btn btn-azure">
+                           class="btn sg-btn-primary-dark">
                             <i class="ti ti-plus me-1"></i>Nuevo ejercicio
                         </a>
                     </div>
@@ -342,7 +342,7 @@
                         <p class="empty-title">Sin ejercicios disponibles</p>
                         <p class="empty-subtitle text-muted">No hay ejercicios abiertos para este cliente. Creá uno para comenzar.</p>
                         <a asp-action="Crear" asp-controller="Ejercicios" asp-route-clienteId="@Model.ClienteId"
-                           class="btn btn-azure mt-2">
+                           class="btn sg-btn-primary-dark mt-2">
                             <i class="ti ti-plus me-1"></i>Crear ejercicio
                         </a>
                     </div>
