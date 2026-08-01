@@ -169,7 +169,7 @@
                                     <option value="">Seleccionar...</option>
                                     @foreach (var ej in ejercicios)
                                     {
-                                        <option value="@ej.Id">@ej.FechaInicio.Year - @ej.FechaFin.Year (@ej.Estado)</option>
+                                        <option value="@ej.Id">@ej.PeriodoDisplay (@ej.Estado)</option>
                                     }
                                 </select>
                             </div>

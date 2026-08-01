@@ -125,7 +125,7 @@
                     @foreach (var ej in Model.Ejercicios)
                     {
                         <option value="@ej.Id" selected="@(Model.EjercicioId == ej.Id)">
-                            @ej.FechaInicio.Year – @ej.FechaFin.Year (@ej.Estado)
+                            @ej.PeriodoDisplay (@ej.Estado)
                         </option>
                     }
                 </select>
@@ -224,7 +224,7 @@ else
                                     @if (ejercicio is not null)
                                     {
                                         <span class="text-secondary">
-                                            @ejercicio.FechaInicio.Year–@ejercicio.FechaFin.Year
+                                            @ejercicio.PeriodoDisplay
                                         </span>
                                     }
                                     else

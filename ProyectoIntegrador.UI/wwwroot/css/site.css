@@ -231,6 +231,25 @@ details[open] .tree-caret {
     cursor: not-allowed;
 }
 
+/* ── Override btn-outline-azure para usar azul oscuro ─────────── */
+.btn-outline-azure {
+    color: var(--sg-primary);
+    border-color: var(--sg-primary);
+}
+
+.btn-outline-azure:hover,
+.btn-outline-azure:focus {
+    background: var(--sg-primary);
+    border-color: var(--sg-primary);
+    color: #fff;
+}
+
+.btn-outline-azure:active {
+    background: #15304e;
+    border-color: #15304e;
+    color: #fff;
+}
+
 /* ── Tabla hover suave ──────────────────────────────────────── */
 .table-hover > tbody > tr {
     transition: background-color 0.15s ease;
