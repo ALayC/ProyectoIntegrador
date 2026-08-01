@@ -43,8 +43,8 @@
             Detalle del plan de cuentas de @ViewData["ClienteNombre"]
         </div>
     </div>
-    <a asp-action="Index" class="btn btn-sm btn-outline-azure">
-        <i class="ti ti-arrow-left"></i> Volver
+    <a asp-action="Detalles" asp-controller="Clientes" asp-route-id="@ViewData["ClienteId"]" class="btn btn-sm btn-outline-secondary">
+        <i class="ti ti-arrow-left me-1"></i>Volver
     </a>
 </div>
 

@@ -11,21 +11,6 @@
     var anioActual = DateTime.Today.Year;
 }
 
-<style>
-    .sg-btn-primary-dark {
-        background: #1a3a5c;
-        color: #fff;
-        border: none;
-    }
-
-        .sg-btn-primary-dark:hover,
-        .sg-btn-primary-dark:focus {
-            background: #15304e;
-            color: #fff;
-            border: none;
-        }
-</style>
-
 <div class="page-header d-print-none">
     <div class="container-xl">
         <div class="row align-items-center">
@@ -39,7 +24,7 @@
                 }
             </div>
             <div class="col-auto ms-auto">
-                <a asp-controller="Clientes" asp-action="Detalles" asp-route-id="@Model.ClienteId" class="btn btn-outline-secondary">
+                <a href="@Url.Action("Detalles", "Clientes", new { id = Model.ClienteId })#tab-fiscal" class="btn btn-outline-secondary">
                     <i class="ti ti-arrow-left me-1"></i>Volver
                 </a>
             </div>

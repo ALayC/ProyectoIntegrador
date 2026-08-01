@@ -16,7 +16,7 @@
                 <div class="text-secondary">Detalle de la cuenta seleccionada</div>
             </div>
             <div class="col-auto ms-auto">
-                <a asp-controller="Clientes" asp-action="PlanDeCuentas" asp-route-id="@clienteId" class="btn btn-outline-azure">
+                <a asp-controller="Clientes" asp-action="PlanDeCuentas" asp-route-id="@clienteId" class="btn btn-outline-secondary">
                     <i class="ti ti-arrow-left"></i> Volver al plan
                 </a>
             </div>
@@ -59,13 +59,13 @@
                 <div class="d-flex gap-2 flex-wrap">
                     @if (esAuxiliar)
                     {
-                        <button class="btn btn-azure" disabled title="No disponible para auxiliares contables" style="opacity:.5;cursor:not-allowed;">
+                        <button class="btn sg-btn-primary-dark" disabled title="No disponible para auxiliares contables" style="opacity:.5;cursor:not-allowed;">
                             <i class="ti ti-edit"></i> Editar
                         </button>
                     }
                     else
                     {
-                        <a asp-action="Edit" asp-route-id="@Model.Id" asp-route-clienteId="@clienteId" class="btn btn-azure">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" asp-route-clienteId="@clienteId" class="btn sg-btn-primary-dark">
                             <i class="ti ti-edit"></i> Editar
                         </a>
                         @if (Model.Estado == "Activa")

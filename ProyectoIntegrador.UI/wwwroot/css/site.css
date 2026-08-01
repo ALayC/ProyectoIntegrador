@@ -206,6 +206,31 @@ details[open] .tree-caret {
     transform: scale(0.96);
 }
 
+/* ── Botón primario oscuro ──────────────────────────────────── */
+.sg-btn-primary-dark {
+    background: var(--sg-primary);
+    color: #fff;
+    border: none;
+}
+
+.sg-btn-primary-dark:hover,
+.sg-btn-primary-dark:focus {
+    background: #15304e;
+    color: #fff;
+    border: none;
+}
+
+.sg-btn-primary-dark:active {
+    background: #0f243a;
+    color: #fff;
+}
+
+.sg-btn-primary-dark:disabled {
+    background: var(--sg-primary);
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* ── Tabla hover suave ──────────────────────────────────────── */
 .table-hover > tbody > tr {
     transition: background-color 0.15s ease;

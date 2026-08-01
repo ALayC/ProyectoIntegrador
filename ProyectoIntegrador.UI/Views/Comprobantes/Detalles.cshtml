@@ -24,12 +24,12 @@
         <div class="text-secondary">@clienteNombre</div>
     </div>
     <div class="d-flex gap-2">
-        <a asp-action="Index" asp-route-clienteId="@clienteId" class="btn btn-outline-azure">
+        <a asp-action="Index" asp-route-clienteId="@clienteId" class="btn btn-outline-secondary">
             <i class="ti ti-arrow-left"></i> Volver
         </a>
         @if (!bloqueadoPorAsiento && !bloqueadoPorEstado)
         {
-            <a asp-action="Editar" asp-route-id="@Model.Id" asp-route-clienteId="@clienteId" class="btn btn-azure">
+            <a asp-action="Editar" asp-route-id="@Model.Id" asp-route-clienteId="@clienteId" class="btn sg-btn-primary-dark">
                 <i class="ti ti-edit"></i> Editar
             </a>
             <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmar-anular">
@@ -84,7 +84,7 @@
                         <div class="text-secondary">Asiento asociado</div>
                         @if (Model.TieneAsiento)
                         {
-                            <a asp-controller="AsientosContables" asp-action="Detalles" asp-route-id="@Model.AsientoId" asp-route-clienteId="@clienteId" class="btn btn-sm btn-azure">
+                            <a asp-controller="AsientosContables" asp-action="Detalles" asp-route-id="@Model.AsientoId" asp-route-clienteId="@clienteId" class="btn btn-sm sg-btn-primary-dark">
                                 <i class="ti ti-eye"></i> Ver
                             </a>
                         }
@@ -132,7 +132,7 @@
             <div class="card-body d-flex flex-wrap gap-2">
                 @if (!bloqueadoPorAsiento && !bloqueadoPorEstado)
                 {
-                    <button type="button" class="btn btn-outline-azure" data-bs-toggle="modal" data-bs-target="#generar-asiento">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#generar-asiento">
                         <i class="ti ti-file-plus"></i> Generar asiento
                     </button>
                 }
@@ -205,7 +205,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-azure" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-azure">Generar asiento</button>
+                        <button type="submit" class="btn sg-btn-primary-dark">Generar asiento</button>
                     </div>
                 </form>
             </div>
